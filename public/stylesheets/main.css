@@ -1,0 +1,45 @@
+.game_container {
+    position: relative;
+    width: 500px;
+    height: 900px;
+    background-color: #9b48e7;
+}
+
+.game_container > div {
+    position: relative;
+    top: 50px;
+    background-color: #f42d49;
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+.message_box {
+    position: relative;
+    margin-left: 25px;
+    margin-right: 25px;
+    margin-top: 5px;
+    height:150px;
+    background-color: #555555;
+}
+
+.chat_control_box {
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.game_map {
+    position: relative;
+    height:400px;
+}
+
+.chat_control_box input[type="button"] {
+    position: relative;
+    width:40px;
+    height:20px;
+    margin-left: 3px;
+    font-size: 10px;
+}
+
+.unit_command_control_box {
+    
+}
