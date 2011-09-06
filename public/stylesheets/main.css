@@ -1,45 +1,55 @@
-.game_container {
-    position: relative;
-    width: 500px;
-    height: 900px;
-    background-color: #9b48e7;
+/* 
+    Document   : main
+    Created on : 5-Sep-2011, 8:26:28 PM
+    Author     : detriusxiiuser
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+root { 
+    display: block;
 }
 
-.game_container > div {
-    position: relative;
-    top: 50px;
-    background-color: #f42d49;
-    margin-left: 50px;
-    margin-right: 50px;
+.header {
+    width: 100%;
+    background-color: green;
 }
 
-.message_box {
-    position: relative;
-    margin-left: 25px;
-    margin-right: 25px;
-    margin-top: 5px;
-    height:150px;
-    background-color: #555555;
+.header > ul {
+    margin-left: 15%;
 }
 
-.chat_control_box {
-    position: relative;
-    padding-bottom: 10px;
+.header ul li {
+    display: inline-block;
+    font-size: xx-large;
+    width: 100px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 100px;
+    vertical-align: top;
 }
 
-.game_map {
-    position: relative;
-    height:400px;
+.selected {
+    color: gold;
 }
 
-.chat_control_box input[type="button"] {
-    position: relative;
-    width:40px;
-    height:20px;
-    margin-left: 3px;
-    font-size: 10px;
+.clicked {
+    color: crimson;
 }
 
-.unit_command_control_box {
-    
+.body {
+    width: 70%;
+    padding-left: 15%;
+    background-color: white;
+    font-size: xx-large;
+}
+
+.footer {
+    width: 100%;
+    background-color: red;
 }

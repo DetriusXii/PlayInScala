@@ -16,7 +16,11 @@ object Application extends Controller {
 
     def index = Template
 
-    def login_credentials(username : String, password : String ) = {
+    def players = {
+      val 
+    }
+  
+    /*def login_credentials(username : String, password : String ) = {
       Redirect("/redirected_page?username=" + username) 
     }
 
@@ -75,6 +79,6 @@ object Application extends Controller {
       val unitCommands = String.format("[%s]", formattedUnitCommandList.mkString(","))
       val units = String.format("[%s]", formattedUnitList.mkString(","))
       Template(("unitCommands", unitCommands), ("units", units))
-    }
+    }*/
     
 }
