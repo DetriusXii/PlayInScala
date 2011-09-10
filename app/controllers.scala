@@ -13,11 +13,11 @@ import scala.actors.Actor
 import scala.util.parsing.json._
 
 object Application extends Controller {
-
+  
     def index = Template
 
     def players = {
-      val 
+      DB.getConnection
     }
   
     /*def login_credentials(username : String, password : String ) = {
