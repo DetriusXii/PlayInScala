@@ -14,6 +14,21 @@ $(document).ready(function() {
    }).mouseup(function() {
       $(this).removeClass("clicked");
       $(this).addClass("selected");
+   }).click(function() {
+      var url = $(this).attr("href");
+      window.location = url;
+   });
+   
+   $(".gamePanel").hover(function() {
+       $(this).addClass("selected");
+   }, function () {
+       $(this).removeClass("selected clicked");
+   }).mousedown(function() {
+      $(this).removeClass("selected");
+      $(this).addClass("clicked");
+   }).mouseup(function() {
+      $(this).removeClass("clicked");
+      $(this).addClass("selected");
    });
 });
 

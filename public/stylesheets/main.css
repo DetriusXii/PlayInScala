@@ -14,6 +14,9 @@
 root { 
     display: block;
 }
+body {
+    background-color: grey;
+}
 
 .header {
     width: 100%;
@@ -34,19 +37,36 @@ root {
     vertical-align: top;
 }
 
-.selected {
+.header ul li.selected {
     color: gold;
 }
 
-.clicked {
+.header ul li.clicked {
     color: crimson;
 }
 
 .body {
     width: 70%;
     padding-left: 15%;
-    background-color: white;
     font-size: xx-large;
+}
+
+.panel {
+    border: 2px;
+    border-color: black;
+    border-style: solid;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    border-radius: 2px;
+    background-color: #f3ce75;
+}
+
+.gamePanel.selected {
+    background-color: #fd7318;
+}
+
+.gamePanel.clicked {
+    background-color: #c44e00;
 }
 
 .footer {

@@ -1,23 +1,50 @@
 package controllers
 
-import org.apache.commons.mail.SimpleEmail
-import play._
-import play.libs.Mail
-import play.mvc._
-import play.mvc.results.Redirect
-import play.mvc.results.RenderHtml
-import scala.actors.remote.RemoteActor
-import scala.actors.remote.Node
-import scala.actors.Actor
 
-import scala.util.parsing.json._
+import org.squeryl._
+import org.squeryl.dsl._
+import org.squeryl.PrimitiveTypeMode._
+import com.squeryl.jdip.schemas.Jdip
+import com.squeryl.jdip.tables.Players
+import com.squeryl.jdip.tables.Empires
+import com.squeryl.jdip.adapters.PostgreSqlAdapter
+import play.mvc.Controller
+
+import play.db.DB
 
 object Application extends Controller {
   
-    def index = Template
+    def index = views.Application.html.index()
 
     def players = {
-      DB.getConnection
+      val session = Session.create(DB.getConnection, new PostgreSqlAdapter)
+      using(session) {
+        val players = Jdip.players
+        val playersListItem = players map ((u: Players) => <li>{u.id}</li>)
+        <html>
+          <body>
+            <ul>
+              {playersListItem}
+            </ul>
+          </body>
+        </html>
+      }
+    }
+    
+    def games = {
+      val session = Session.create(DB.getConnection, new PostgreSqlAdapter)
+      using(session) {
+        val games = Jdip.games
+        views.Application.html.games(games)
+      }
+    }
+  
+    def empires  = {
+      val session = Session.create(DB.getConnection, new PostgreSqlAdapter)
+      using(session) {
+        val empires: Iterable[Empires] = Jdip.empires map ((u: Empires) => u)
+        views.Application.html.empires(empires)
+      }
     }
   
     /*def login_credentials(username : String, password : String ) = {

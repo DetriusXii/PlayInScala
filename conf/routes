@@ -4,6 +4,9 @@
 
 # Home page
 GET     /                                       Application.index
+GET     /players                                Application.players
+GET     /empires                                Application.empires
+GET     /games                                  Application.games
 
 # Post
 POST    /login_credentials                      Application.login_credentials
