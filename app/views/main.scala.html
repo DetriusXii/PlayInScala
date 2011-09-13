@@ -1,0 +1,25 @@
+@(title: String)(content: => Html)
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>@title</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" type="text/css" media="screen" href="/public/stylesheets/reset.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/public/stylesheets/main.css" />
+        <link rel="shortcut icon" type="image/png" href="/public/images/favicon.png'" />
+        <script src="/public/javascripts/jquery-1.5.1.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/public/javascripts/jquery.tmpl.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/public/javascripts/main.js" type="text/javascript" charset="utf-8"></script>
+    </head>
+    <body>
+        <div class="header">
+            <ul>
+                <li href="/">Home</li>
+                <li href="/empires">Empires</li>
+                <li href="/games">Games</li>
+            </ul>
+        </div>
+        @content
+        <div class="footer">@title</div>
+    </body>
+</html>

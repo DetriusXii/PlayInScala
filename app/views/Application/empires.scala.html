@@ -1,0 +1,20 @@
+@(empires: Iterable[com.squeryl.jdip.tables.Empires])
+@main(title = "Empires") {
+    <div class="body">
+        <div>
+            <ul>
+
+                    @empires.map { empire =>
+                        <li>
+                            <div class="panel">
+                                Empire name: @empire.id <br />
+                                Description: @empire.empireDescriptionString <br />
+                                Starting fleet units: @empire.startingFleetUnits
+                                Starting army units: @empire.startingArmyUnits
+                            </div>
+                        </li>
+                    }
+            </ul>
+        </div>
+    </div>
+}

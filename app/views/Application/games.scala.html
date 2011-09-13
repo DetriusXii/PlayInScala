@@ -1,0 +1,15 @@
+@(games: Iterable[com.squeryl.jdip.tables.Games])
+@main(title = "Games") {
+<div class="body">
+    <ul>
+        @games.map { game =>
+        <li>
+            <div class="gamePanel panel">
+                Game name: <span class="id">@game.id</span> Game state: @game.gameState<br />
+                Year: @game.gameYear Season: @game.season Phase: @game.phase
+            </div>
+        </li>
+        }
+    </ul>
+</div>
+}
