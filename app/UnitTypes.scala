@@ -12,7 +12,7 @@ import play.templates._
 object UnitTypes extends Controller {
   val armySymbol = 
     <symbol id="Army" viewBox="0 0 23 15" overflow="visible">
-            <g> <!--transform="translate(-11.5,-10)"-->
+            <g>
               <rect x="2" y="2" width="23" height="13" rx="4" stroke-width="1" class="symShadow" />
               <rect x="0" y="0" width="23" height="13" rx="4" class="symBorder" />
               <g class="symSilhouette">
@@ -28,7 +28,7 @@ object UnitTypes extends Controller {
     </symbol>
 
   val fleetSymbol = <symbol id="Fleet" viewBox="0 0 23 15" overflow="visible">
-			<g transform="translate(-11.5,-10)">
+			<g>
                           <rect x="2" y="2" width="23" height="13" rx="4" 
                                 stroke-width="1" class="symShadow" />
                           <rect x="0" y="0" width="23" height="13" rx="4" class="symBorder" />
