@@ -7,12 +7,13 @@ GET     /                                       Application.index
 GET     /players                                Application.players
 GET     /empires                                Application.empires
 GET     /games                                  Application.games
+GET     /login                                  Authentication.login
+GET     /logout                                 Authentication.logout
+GET     /movement                               Application.movement
+GET     /army                                   UnitTypes.armyType
 
 # Post
-POST    /login_credentials                      Application.login_credentials
-POST    /emailTester                            Application.emailTester
-
-GET     /redirected_page                        Application.redirected_page
+POST    /authenticate                           Authentication.authenticate
 
 # Map static resources from the /app/public folder to the /public path
 GET     /public/                                staticDir:public

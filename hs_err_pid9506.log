@@ -1,0 +1,554 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x00007fe45cb0e694, pid=9506, tid=140618676291328
+#
+# JRE version: 7.0-b147
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (21.0-b17 mixed mode linux-amd64 compressed oops)
+# Problematic frame:
+# V  [libjvm.so+0x63e694]  PhaseIdealLoop::build_loop_late_post(Node*)+0x154
+#
+# Failed to write core dump. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.sun.com/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00007fe450125800):  JavaThread "C2 CompilerThread0" daemon [_thread_in_native, id=9516, stack(0x00007fe4562fc000,0x00007fe4563fd000)]
+
+siginfo:si_signo=SIGSEGV: si_errno=0, si_code=1 (SEGV_MAPERR), si_addr=0x0000000000000008
+
+Registers:
+RAX=0x0000000000000000, RBX=0x00007fe4563f9a50, RCX=0x0000000000000000, RDX=0x00000000000013dd
+RSP=0x00007fe4563f82c0, RBP=0x00007fe4563f82f0, RSI=0x0000000000000000, RDI=0x00007fe4515dce10
+R8 =0x0000000000000000, R9 =0x0000000000000038, R10=0x00007fe45207eff8, R11=0x00007fe45d1f908e
+R12=0x00007fe450f6e2a0, R13=0x00007fe451856f00, R14=0x00007fe45104b010, R15=0x00007fe4563f9a70
+RIP=0x00007fe45cb0e694, EFLAGS=0x0000000000010202, CSGSFS=0x0000000000000033, ERR=0x0000000000000004
+  TRAPNO=0x000000000000000e
+
+Top of Stack: (sp=0x00007fe4563f82c0)
+0x00007fe4563f82c0:   00007fe4563f82f0 00007fe4563f8570
+0x00007fe4563f82d0:   00007fe45104b010 00007fe4563f85b0
+0x00007fe4563f82e0:   0000000000000002 00000000000001a0
+0x00007fe4563f82f0:   00007fe4563f8350 00007fe45cb0ebfc
+0x00007fe4563f8300:   00007fe400000001 00007fe450f75190
+0x00007fe4563f8310:   00007fe4563f8590 00007fe4563f9a50
+0x00007fe4563f8320:   00007fe4563fa3f0 0000000000000001
+0x00007fe4563f8330:   00007fe450f4e4f0 00007fe4563f9a50
+0x00007fe4563f8340:   00007fe45d12dd38 00007fe4563f8590
+0x00007fe4563f8350:   00007fe4563f8600 00007fe45cb15cb9
+0x00007fe4563f8360:   00007fe451016c70 00007fe4563f85b0
+0x00007fe4563f8370:   00007fe4563f8570 01007fe451127fd0
+0x00007fe4563f8380:   00007fe4563f9a70 000000075cce7c7d
+0x00007fe4563f8390:   00007fe450dd7890 00007fe450dd78e0
+0x00007fe4563f83a0:   00007fe450ddf878 00007fe450125300
+0x00007fe4563f83b0:   00007fe450125300 00007fe400000004
+0x00007fe4563f83c0:   00007fe452eab870 00007fe400000000
+0x00007fe4563f83d0:   00007fe450c86970 00007fe4563f9040
+0x00007fe4563f83e0:   0000000151203ad8 00007fe4511251a0
+0x00007fe4563f83f0:   00007fe4563f8560 00007fe45cb85f69
+0x00007fe4563f8400:   00007fe4563f8560 00007fe45c7f5d15
+0x00007fe4563f8410:   00007fe450f4e4f0 00007fe4511809a0
+0x00007fe4563f8420:   00007fe4563f8430 00007fe45cce7c7d
+0x00007fe4563f8430:   01007fe4563f8490 00007fe4563f9040
+0x00007fe4563f8440:   01007fe450c32558 0000000000000002
+0x00007fe4563f8450:   00007fe451016c70 00007fe451016c70
+0x00007fe4563f8460:   0000000650cdb398 0000000000000000
+0x00007fe4563f8470:   00007fe451016c70 0000000000010040
+0x00007fe4563f8480:   00007fe45d12dd38 0000000000000000
+0x00007fe4563f8490:   00007fe4563f84c0 00007fe45cce95b1
+0x00007fe4563f84a0:   0000000000000000 00007fe450000020
+0x00007fe4563f84b0:   00007fe4563f8520 0000000000010010 
+
+Instructions: (pc=0x00007fe45cb0e694)
+0x00007fe45cb0e674:   00 8b 70 28 49 89 c4 0f 1f 44 00 00 89 f0 48 8d
+0x00007fe45cb0e684:   3c c5 00 00 00 00 48 03 bb e0 09 00 00 48 8b 0f
+0x00007fe45cb0e694:   48 8b 41 08 48 83 38 00 75 2b 8b 73 28 0f 1f 80
+0x00007fe45cb0e6a4:   00 00 00 00 8b 41 28 31 c9 39 f0 73 0e 89 c2 48 
+
+Register to memory mapping:
+
+RAX=0x0000000000000000 is an unknown value
+RBX=0x00007fe4563f9a50 is pointing into the stack for thread: 0x00007fe450125800
+RCX=0x0000000000000000 is an unknown value
+RDX=0x00000000000013dd is an unknown value
+RSP=0x00007fe4563f82c0 is pointing into the stack for thread: 0x00007fe450125800
+RBP=0x00007fe4563f82f0 is pointing into the stack for thread: 0x00007fe450125800
+RSI=0x0000000000000000 is an unknown value
+RDI=0x00007fe4515dce10 is an unknown value
+R8 =0x0000000000000000 is an unknown value
+R9 =0x0000000000000038 is an unknown value
+R10=0x00007fe45207eff8 is an unknown value
+R11=0x00007fe45d1f908e: <offset 0x8508e> in /lib/x86_64-linux-gnu/libc.so.6 at 0x00007fe45d174000
+R12=0x00007fe450f6e2a0 is an unknown value
+R13=0x00007fe451856f00 is an unknown value
+R14=0x00007fe45104b010 is an unknown value
+R15=0x00007fe4563f9a70 is pointing into the stack for thread: 0x00007fe450125800
+
+
+Stack: [0x00007fe4562fc000,0x00007fe4563fd000],  sp=0x00007fe4563f82c0,  free space=1008k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [libjvm.so+0x63e694]  PhaseIdealLoop::build_loop_late_post(Node*)+0x154
+V  [libjvm.so+0x63ebfc]  PhaseIdealLoop::build_loop_late(VectorSet&, Node_List&, Node_Stack&)+0x13c
+V  [libjvm.so+0x645cb9]  PhaseIdealLoop::build_and_optimize(bool)+0x789
+V  [libjvm.so+0x39ca28]  Compile::Optimize()+0xaf8
+V  [libjvm.so+0x39d96c]  Compile::Compile(ciEnv*, C2Compiler*, ciMethod*, int, bool, bool)+0xdac
+V  [libjvm.so+0x312042]  C2Compiler::compile_method(ciEnv*, ciMethod*, int)+0x142
+V  [libjvm.so+0x3a2cad]  CompileBroker::invoke_compiler_on_method(CompileTask*)+0x2ed
+V  [libjvm.so+0x3a35dd]  CompileBroker::compiler_thread_loop()+0x43d
+V  [libjvm.so+0x80d79a]  JavaThread::run()+0x17a
+V  [libjvm.so+0x6f84b0]  java_start(Thread*)+0x100
+
+
+Current CompileTask:
+C2:18282501 2693             jregex.Pretokenizer::next (1064 bytes)
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x0000000001c44000 JavaThread "net.sf.ehcache.CacheManager@406d6f33" daemon [_thread_blocked, id=12197, stack(0x00007fe45530a000,0x00007fe45540b000)]
+  0x0000000001e76800 JavaThread "New I/O server worker #1-3" [_thread_in_native, id=12182, stack(0x00007fe454afc000,0x00007fe454bfd000)]
+  0x0000000001538800 JavaThread "New I/O server worker #1-2" [_thread_in_native, id=12181, stack(0x00007fe455510000,0x00007fe455611000)]
+  0x0000000001537800 JavaThread "New I/O server worker #1-1" [_thread_in_native, id=12180, stack(0x00007fe455611000,0x00007fe455712000)]
+  0x000000000174a800 JavaThread "New I/O server worker #1-4" [_thread_in_native, id=12179, stack(0x00007fe454bfd000,0x00007fe454cfe000)]
+  0x00007fe45062d000 JavaThread "com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread-#2" daemon [_thread_blocked, id=9563, stack(0x00007fe454cfe000,0x00007fe454dff000)]
+  0x00007fe450550800 JavaThread "com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread-#1" daemon [_thread_blocked, id=9562, stack(0x00007fe454dff000,0x00007fe454f00000)]
+  0x00007fe45054f800 JavaThread "com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread-#0" daemon [_thread_blocked, id=9561, stack(0x00007fe454f00000,0x00007fe455001000)]
+  0x00007fe450554800 JavaThread "Timer-0" daemon [_thread_blocked, id=9560, stack(0x00007fe455001000,0x00007fe455102000)]
+  0x0000000000d15000 JavaThread "play-thread-1" [_thread_blocked, id=9557, stack(0x00007fe45540f000,0x00007fe455510000)]
+  0x0000000000ca9800 JavaThread "DestroyJavaVM" [_thread_blocked, id=9507, stack(0x00007fe45dc41000,0x00007fe45dd42000)]
+  0x00000000010d8000 JavaThread "New I/O server boss #1 ([id: 0x180b2131, /0:0:0:0:0:0:0:0:9000])" [_thread_in_native, id=9523, stack(0x00007fe455712000,0x00007fe455813000)]
+  0x00007fe45012a800 JavaThread "Service Thread" daemon [_thread_blocked, id=9518, stack(0x00007fe4560fa000,0x00007fe4561fb000)]
+  0x00007fe450128000 JavaThread "C2 CompilerThread1" daemon [_thread_blocked, id=9517, stack(0x00007fe4561fb000,0x00007fe4562fc000)]
+=>0x00007fe450125800 JavaThread "C2 CompilerThread0" daemon [_thread_in_native, id=9516, stack(0x00007fe4562fc000,0x00007fe4563fd000)]
+  0x00007fe450123800 JavaThread "JDWP Event Helper Thread" daemon [_thread_blocked, id=9515, stack(0x00007fe4563fd000,0x00007fe4564fe000)]
+  0x00007fe450120000 JavaThread "JDWP Transport Listener: dt_socket" daemon [_thread_in_native, id=9514, stack(0x00007fe4564fe000,0x00007fe4565ff000)]
+  0x00007fe4500ec000 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=9513, stack(0x00007fe456803000,0x00007fe456904000)]
+  0x00007fe4500a3000 JavaThread "Finalizer" daemon [_thread_blocked, id=9512, stack(0x00007fe456904000,0x00007fe456a05000)]
+  0x00007fe4500a1000 JavaThread "Reference Handler" daemon [_thread_blocked, id=9511, stack(0x00007fe456a05000,0x00007fe456b06000)]
+
+Other Threads:
+  0x00007fe450099800 VMThread [stack: 0x00007fe456b06000,0x00007fe456c07000] [id=9510]
+  0x00007fe45012d800 WatcherThread [stack: 0x00007fe455ff9000,0x00007fe4560fa000] [id=9519]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap
+ PSYoungGen      total 150016K, used 120935K [0x00000000f5560000, 0x0000000100000000, 0x0000000100000000)
+  eden space 124544K, 86% used [0x00000000f5560000,0x00000000fbe030d0,0x00000000fcf00000)
+  from space 25472K, 54% used [0x00000000fe720000,0x00000000ff496b38,0x0000000100000000)
+  to   space 24704K, 0% used [0x00000000fcf00000,0x00000000fcf00000,0x00000000fe720000)
+ PSOldGen        total 349568K, used 53968K [0x00000000e0000000, 0x00000000f5560000, 0x00000000f5560000)
+  object space 349568K, 15% used [0x00000000e0000000,0x00000000e34b4350,0x00000000f5560000)
+ PSPermGen       total 262144K, used 67423K [0x00000000d0000000, 0x00000000e0000000, 0x00000000e0000000)
+  object space 262144K, 25% used [0x00000000d0000000,0x00000000d41d7da8,0x00000000e0000000)
+
+Code Cache  [0x00007fe4575e7000, 0x00007fe457ec7000, 0x00007fe45a5e7000)
+ total_blobs=3107 nmethods=2465 adapters=600 free_code_cache=40228Kb largest_free_block=41090752
+
+Dynamic libraries:
+00400000-00401000 r-xp 00000000 08:11 5246122                            /home/detriusxiiuser/glassfish3/jdk7/bin/java
+00600000-00601000 rw-p 00000000 08:11 5246122                            /home/detriusxiiuser/glassfish3/jdk7/bin/java
+00c99000-03ffa000 rw-p 00000000 00:00 0                                  [heap]
+d0000000-100000000 rw-p 00000000 00:00 0 
+7fe450000000-7fe45349b000 rw-p 00000000 00:00 0 
+7fe45349b000-7fe454000000 ---p 00000000 00:00 0 
+7fe454ad9000-7fe454add000 r--s 00037000 08:11 5245933                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/ext/sunpkcs11.jar
+7fe454add000-7fe454ae1000 r--s 0002d000 08:11 5245936                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/ext/sunjce_provider.jar
+7fe454ae1000-7fe454ae3000 r--s 00001000 08:11 5245938                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/ext/dnsns.jar
+7fe454ae3000-7fe454ae4000 r--s 00003000 08:11 5245934                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/ext/sunec.jar
+7fe454ae4000-7fe454ae6000 r--s 0000f000 08:11 5245939                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/ext/zipfs.jar
+7fe454ae6000-7fe454aea000 r--s 000f6000 08:11 5245937                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/ext/localedata.jar
+7fe454aea000-7fe454af5000 r--s 00370000 08:11 5245943                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/charsets.jar
+7fe454af5000-7fe454af8000 r--s 00018000 08:11 5245942                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/jce.jar
+7fe454af8000-7fe454afc000 r--s 0001e000 08:11 3674062                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/dlib/compiler-interface-bin-0.9.5.jar
+7fe454afc000-7fe454aff000 ---p 00000000 00:00 0 
+7fe454aff000-7fe454bfd000 rw-p 00000000 00:00 0 
+7fe454bfd000-7fe454c00000 ---p 00000000 00:00 0 
+7fe454c00000-7fe454cfe000 rw-p 00000000 00:00 0 
+7fe454cfe000-7fe454d01000 ---p 00000000 00:00 0 
+7fe454d01000-7fe454dff000 rw-p 00000000 00:00 0 
+7fe454dff000-7fe454e02000 ---p 00000000 00:00 0 
+7fe454e02000-7fe454f00000 rw-p 00000000 00:00 0 
+7fe454f00000-7fe454f03000 ---p 00000000 00:00 0 
+7fe454f03000-7fe455001000 rw-p 00000000 00:00 0 
+7fe455001000-7fe455004000 ---p 00000000 00:00 0 
+7fe455004000-7fe455102000 rw-p 00000000 00:00 0 
+7fe455102000-7fe45510a000 r-xp 00000000 08:11 5246005                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libmanagement.so
+7fe45510a000-7fe455309000 ---p 00008000 08:11 5246005                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libmanagement.so
+7fe455309000-7fe45530a000 rw-p 00007000 08:11 5246005                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libmanagement.so
+7fe45530a000-7fe45530d000 ---p 00000000 00:00 0 
+7fe45530d000-7fe45540b000 rw-p 00000000 00:00 0 
+7fe45540b000-7fe45540f000 r--s 00088000 08:11 5246095                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/jsse.jar
+7fe45540f000-7fe455412000 ---p 00000000 00:00 0 
+7fe455412000-7fe455510000 rw-p 00000000 00:00 0 
+7fe455510000-7fe455513000 ---p 00000000 00:00 0 
+7fe455513000-7fe455611000 rw-p 00000000 00:00 0 
+7fe455611000-7fe455614000 ---p 00000000 00:00 0 
+7fe455614000-7fe455712000 rw-p 00000000 00:00 0 
+7fe455712000-7fe455715000 ---p 00000000 00:00 0 
+7fe455715000-7fe455813000 rw-p 00000000 00:00 0 
+7fe455813000-7fe45581c000 r--s 00254000 08:11 5245947                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/resources.jar
+7fe45581c000-7fe455831000 r-xp 00000000 08:11 5246022                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libnet.so
+7fe455831000-7fe455a31000 ---p 00015000 08:11 5246022                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libnet.so
+7fe455a31000-7fe455a32000 rw-p 00015000 08:11 5246022                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libnet.so
+7fe455a32000-7fe455a42000 r-xp 00000000 08:11 5246013                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libnio.so
+7fe455a42000-7fe455c42000 ---p 00010000 08:11 5246013                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libnio.so
+7fe455c42000-7fe455c43000 rw-p 00010000 08:11 5246013                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libnio.so
+7fe455c43000-7fe455c45000 r--s 00001000 08:11 2759829                    /home/detriusxiiuser/play-1.2.3/framework/lib/jsr107cache-1.0.jar
+7fe455c45000-7fe455c46000 r--s 00002000 08:11 2759843                    /home/detriusxiiuser/play-1.2.3/framework/lib/slf4j-log4j12-1.6.1.jar
+7fe455c46000-7fe455c4d000 r--s 0006a000 08:11 2759834                    /home/detriusxiiuser/play-1.2.3/framework/lib/mail-1.4.3.jar
+7fe455c4d000-7fe455c50000 r--s 00022000 08:11 2759819                    /home/detriusxiiuser/play-1.2.3/framework/lib/jamon-2.7.jar
+7fe455c50000-7fe455c79000 r--s 00403000 08:11 2759838                    /home/detriusxiiuser/play-1.2.3/framework/lib/org.eclipse.jdt.core-3.6.0.jar
+7fe455c79000-7fe455c84000 r--s 00124000 08:11 2759809                    /home/detriusxiiuser/play-1.2.3/framework/lib/h2-1.3.149.jar
+7fe455c84000-7fe455cd8000 r--s 00516000 08:11 2759807                    /home/detriusxiiuser/play-1.2.3/framework/lib/groovy-all-1.7.7.jar
+7fe455cd8000-7fe455cfd000 r--s 00172000 08:11 2759791                    /home/detriusxiiuser/play-1.2.3/framework/lib/bcprov-jdk15-1.45.jar
+7fe455cfd000-7fe455cff000 r--s 00008000 08:11 2759841                    /home/detriusxiiuser/play-1.2.3/framework/lib/signpost-core-1.2.jar
+7fe455cff000-7fe455d0e000 r--s 00074000 08:11 2759827                    /home/detriusxiiuser/play-1.2.3/framework/lib/joda-time-1.6.jar
+7fe455d0e000-7fe455d0f000 r--s 00000000 08:11 2759821                    /home/detriusxiiuser/play-1.2.3/framework/lib/javax.inject-1.0.jar
+7fe455d0f000-7fe455d11000 r--s 0000d000 08:11 2759798                    /home/detriusxiiuser/play-1.2.3/framework/lib/commons-fileupload-1.2.2.jar
+7fe455d11000-7fe455d14000 r--s 0000f000 08:11 2759806                    /home/detriusxiiuser/play-1.2.3/framework/lib/geronimo-servlet_2.5_spec-1.2.jar
+7fe455d14000-7fe455d1a000 r--s 00034000 08:11 2759831                    /home/detriusxiiuser/play-1.2.3/framework/lib/junit-4.8.1.jar
+7fe455d1a000-7fe455d25000 r--s 0005a000 08:11 2759845                    /home/detriusxiiuser/play-1.2.3/framework/lib/xstream-1.3.jar
+7fe455d25000-7fe455d2a000 r--s 0002e000 08:11 2759789                    /home/detriusxiiuser/play-1.2.3/framework/lib/asm-all-3.3.1.jar
+7fe455d2a000-7fe455d2d000 r--s 0000f000 08:11 2759811                    /home/detriusxiiuser/play-1.2.3/framework/lib/hibernate-commons-annotations-3.2.0.Final.jar
+7fe455d2d000-7fe455d5f000 r--s 002c7000 08:11 2759813                    /home/detriusxiiuser/play-1.2.3/framework/lib/hibernate-core-3.6.1.Final.jar
+7fe455d5f000-7fe455d61000 r--s 0000e000 08:11 2759800                    /home/detriusxiiuser/play-1.2.3/framework/lib/commons-javaflow-1066591.jar
+7fe455d61000-7fe455d70000 r--s 000b2000 08:11 2759837                    /home/detriusxiiuser/play-1.2.3/framework/lib/netty-3.2.4.Final.jar
+7fe455d70000-7fe455d75000 r--s 00034000 08:11 2759794                    /home/detriusxiiuser/play-1.2.3/framework/lib/commons-beanutils-1.8.3.jar
+7fe455d75000-7fe455d7b000 r--s 00038000 08:11 2759844                    /home/detriusxiiuser/play-1.2.3/framework/lib/snakeyaml-1.7.jar
+7fe455d7b000-7fe455d7f000 r--s 00027000 08:11 2759808                    /home/detriusxiiuser/play-1.2.3/framework/lib/gson-1.7.1.jar
+7fe455d7f000-7fe455d86000 r--s 00059000 08:11 2759833                    /home/detriusxiiuser/play-1.2.3/framework/lib/log4j-1.2.15.jar
+7fe455d86000-7fe455d88000 r--s 00015000 08:11 2759828                    /home/detriusxiiuser/play-1.2.3/framework/lib/jregex-1.2_01.jar
+7fe455d88000-7fe455d8d000 r--s 00041000 08:11 2759801                    /home/detriusxiiuser/play-1.2.3/framework/lib/commons-lang-2.6.jar
+7fe455d8d000-7fe455d8e000 r--s 00007000 08:11 2759797                    /home/detriusxiiuser/play-1.2.3/framework/lib/commons-email-1.2.jar
+7fe455d8e000-7fe455d94000 r--s 00049000 08:11 2759793                    /home/detriusxiiuser/play-1.2.3/framework/lib/cglib-nodep-2.2.jar
+7fe455d94000-7fe455d9a000 r--s 00049000 08:11 2759790                    /home/detriusxiiuser/play-1.2.3/framework/lib/async-http-client-1.6.3.jar
+7fe455d9a000-7fe455da5000 r--s 0008b000 08:11 2759792                    /home/detriusxiiuser/play-1.2.3/framework/lib/c3p0-0.9.1.2.jar
+7fe455da5000-7fe455db3000 r--s 0007f000 08:11 2759796                    /home/detriusxiiuser/play-1.2.3/framework/lib/commons-collections-3.2.1.jar
+7fe455db3000-7fe455db5000 r--s 0000b000 08:11 2759825                    /home/detriusxiiuser/play-1.2.3/framework/lib/jj-textile.jar
+7fe455db5000-7fe455dbc000 r--s 00038000 08:11 2759826                    /home/detriusxiiuser/play-1.2.3/framework/lib/jj-wikitext.jar
+7fe455dbc000-7fe455dc4000 r--s 0008a000 08:11 2759820                    /home/detriusxiiuser/play-1.2.3/framework/lib/javassist-3.9.0.GA.jar
+7fe455dc4000-7fe455dc6000 r--s 00005000 08:11 2759842                    /home/detriusxiiuser/play-1.2.3/framework/lib/slf4j-api-1.6.1.jar
+7fe455dc6000-7fe455dcd000 r--s 00049000 08:11 2759839                    /home/detriusxiiuser/play-1.2.3/framework/lib/oval-1.50.jar
+7fe455dcd000-7fe455dd2000 r--s 00014000 08:11 2759817                    /home/detriusxiiuser/play-1.2.3/framework/lib/hibernate-jpa-2.0-api-1.0.0.Final.jar
+7fe455dd2000-7fe455ddb000 r--s 0005d000 08:11 2759815                    /home/detriusxiiuser/play-1.2.3/framework/lib/hibernate-entitymanager-3.6.0.Final.jar
+7fe455ddb000-7fe455dde000 r--s 00011000 08:11 2759805                    /home/detriusxiiuser/play-1.2.3/framework/lib/ezmorph-1.0.3.jar
+7fe455dde000-7fe455de4000 r--s 00067000 08:11 2759788                    /home/detriusxiiuser/play-1.2.3/framework/lib/antlr-2.7.6.jar
+7fe455de4000-7fe455de6000 r--s 00015000 08:11 2759824                    /home/detriusxiiuser/play-1.2.3/framework/lib/jj-simplecaptcha.jar
+7fe455de6000-7fe455de8000 r--s 0000d000 08:11 2759795                    /home/detriusxiiuser/play-1.2.3/framework/lib/commons-codec-1.4.jar
+7fe455de8000-7fe455dee000 r--s 00040000 08:11 2759835                    /home/detriusxiiuser/play-1.2.3/framework/lib/memcached-2.6.jar
+7fe455dee000-7fe455df0000 r--s 0000d000 08:11 2759802                    /home/detriusxiiuser/play-1.2.3/framework/lib/commons-logging-1.1.1.jar
+7fe455df0000-7fe455dff000 r--s 000d9000 08:11 2759818                    /home/detriusxiiuser/play-1.2.3/framework/lib/ivy-2.2.0.jar
+7fe455dff000-7fe455e01000 r--s 0000c000 08:11 2759787                    /home/detriusxiiuser/play-1.2.3/framework/lib/activation-1.1.1.jar
+7fe455e01000-7fe455e0b000 r--s 0006f000 08:11 2759804                    /home/detriusxiiuser/play-1.2.3/framework/lib/ehcache-core-2.0.0.jar
+7fe455e0b000-7fe455e0e000 r--s 00024000 08:11 2759799                    /home/detriusxiiuser/play-1.2.3/framework/lib/commons-io-2.0.1.jar
+7fe455e0e000-7fe455e14000 r--s 00032000 08:11 2759822                    /home/detriusxiiuser/play-1.2.3/framework/lib/jaxen-1.1.jar
+7fe455e14000-7fe455e16000 r--s 00002000 08:11 2759830                    /home/detriusxiiuser/play-1.2.3/framework/lib/jta-1.1.jar
+7fe455e16000-7fe455e1c000 r--s 0007e000 08:11 2759840                    /home/detriusxiiuser/play-1.2.3/framework/lib/postgresql-9.0.jar
+7fe455e1c000-7fe455e21000 r--s 00020000 08:11 2759823                    /home/detriusxiiuser/play-1.2.3/framework/lib/jj-imaging.jar
+7fe455e21000-7fe455e28000 r--s 000b7000 08:11 2759836                    /home/detriusxiiuser/play-1.2.3/framework/lib/mysql-connector-java-5.1.13.jar
+7fe455e28000-7fe455e2d000 r--s 00048000 08:11 2759803                    /home/detriusxiiuser/play-1.2.3/framework/lib/dom4j-1.6.1.jar
+7fe455e2d000-7fe455e2e000 r--s 00001000 08:11 4986498                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/launcher-interface-0.9.5.jar
+7fe455e2e000-7fe455e30000 r--s 0000d000 08:11 4986508                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/play-scala-compiler.jar
+7fe455e30000-7fe455e4e000 r--s 00196000 08:11 4986522                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/scalatest-1.2-for-scala-2.8.0.RC7-SNAPSHOT.jar
+7fe455e4e000-7fe455e51000 r--s 0000f000 08:11 4986526                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/testing_2.8.1-0.9.5.jar
+7fe455e51000-7fe455e52000 r--s 00002000 08:11 4986489                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/control_2.8.1-0.9.5.jar
+7fe455e52000-7fe455e56000 r--s 00028000 08:11 4986484                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/collections_2.8.1-0.9.5.jar
+7fe455e56000-7fe455ef1000 r--s 007f7000 08:11 4986520                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/scala-compiler.jar
+7fe455ef1000-7fe455ef8000 r--s 00044000 08:11 4986480                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/api_2.8.1-0.9.5.jar
+7fe455ef8000-7fe455efb000 r--s 0001b000 08:11 4986523                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/task-system_2.8.1-0.9.5.jar
+7fe455efb000-7fe455efd000 r--s 00019000 08:11 4986481                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/cache_2.8.1-0.9.5.jar
+7fe455efd000-7fe455f03000 r--s 00044000 08:11 4986497                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/launcher-0.9.5.jar
+7fe455f03000-7fe455f06000 r--s 00019000 08:11 4986507                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/persist_2.8.1-0.9.5.jar
+7fe455f06000-7fe455f09000 r--s 00012000 08:11 4986514                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/run_2.8.1-0.9.5.jar
+7fe455f09000-7fe455f0f000 r--s 0003e000 08:11 4986494                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/io_2.8.1-0.9.5.jar
+7fe455f0f000-7fe455f14000 r--s 0002f000 08:11 4986487                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/configgy-2.0.2-nologgy.jar
+7fe455f14000-7fe455f18000 r--s 00020000 08:11 4986491                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/incremental-compiler_2.8.1-0.9.5.jar
+7fe455f18000-7fe455f19000 r--s 00003000 08:11 4986516                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/sbt_2.8.1-0.9.5.jar
+7fe455f19000-7fe455f1b000 r--s 00012000 08:11 4986482                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/classfile_2.8.1-0.9.5.jar
+7fe455f1b000-7fe455f20000 r--s 00035000 08:11 4986478                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/actions_2.8.1-0.9.5.jar
+7fe455f20000-7fe455f24000 r--s 00021000 08:11 4986515                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/sbinary_2.8.0-0.3.1.jar
+7fe455f24000-7fe455f83000 r--s 005d3000 08:11 4986521                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/scala-library.jar
+7fe455f83000-7fe455f96000 r--s 000d6000 08:11 4986509                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/play-scala.jar
+7fe455f96000-7fe455f98000 r--s 00009000 08:11 4986527                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/tracking_2.8.1-0.9.5.jar
+7fe455f98000-7fe455fa0000 r--s 0005e000 08:11 4986496                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/ivy_2.8.1-0.9.5.jar
+7fe455fa0000-7fe455fa6000 r--s 0003f000 08:11 4986486                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/completion_2.8.1-0.9.5.jar
+7fe455fa6000-7fe455faa000 r--s 00018000 08:11 4986510                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/process_2.8.1-0.9.5.jar
+7fe455faa000-7fe455fb9000 r--s 000d9000 08:11 4986495                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/ivy-2.2.0.jar
+7fe455fb9000-7fe455fc6000 r--s 000c2000 08:11 4986479                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/akka-actor-1.0.jar
+7fe455fc6000-7fe455fde000 r--s 0012c000 08:11 4986506                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/main_2.8.1-0.9.5.jar
+7fe455fde000-7fe455ff9000 r--s 003e9000 08:11 2760759                    /home/detriusxiiuser/Documents/PlayInScala/lib/Squeryl.jar
+7fe455ff9000-7fe455ffa000 ---p 00000000 00:00 0 
+7fe455ffa000-7fe4560fa000 rw-p 00000000 00:00 0 
+7fe4560fa000-7fe4560fd000 ---p 00000000 00:00 0 
+7fe4560fd000-7fe4561fb000 rw-p 00000000 00:00 0 
+7fe4561fb000-7fe4561fe000 ---p 00000000 00:00 0 
+7fe4561fe000-7fe4562fc000 rw-p 00000000 00:00 0 
+7fe4562fc000-7fe4562ff000 ---p 00000000 00:00 0 
+7fe4562ff000-7fe4563fd000 rw-p 00000000 00:00 0 
+7fe4563fd000-7fe456400000 ---p 00000000 00:00 0 
+7fe456400000-7fe4564fe000 rw-p 00000000 00:00 0 
+7fe4564fe000-7fe456501000 ---p 00000000 00:00 0 
+7fe456501000-7fe4565ff000 rw-p 00000000 00:00 0 
+7fe4565ff000-7fe456603000 r-xp 00000000 08:11 5246017                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libdt_socket.so
+7fe456603000-7fe456802000 ---p 00004000 08:11 5246017                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libdt_socket.so
+7fe456802000-7fe456803000 rw-p 00003000 08:11 5246017                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libdt_socket.so
+7fe456803000-7fe456806000 ---p 00000000 00:00 0 
+7fe456806000-7fe456904000 rw-p 00000000 00:00 0 
+7fe456904000-7fe456907000 ---p 00000000 00:00 0 
+7fe456907000-7fe456a05000 rw-p 00000000 00:00 0 
+7fe456a05000-7fe456a08000 ---p 00000000 00:00 0 
+7fe456a08000-7fe456b06000 rw-p 00000000 00:00 0 
+7fe456b06000-7fe456b07000 ---p 00000000 00:00 0 
+7fe456b07000-7fe456f7a000 rw-p 00000000 00:00 0 
+7fe456f7a000-7fe457139000 r--s 039fa000 08:11 5245971                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/rt.jar
+7fe457139000-7fe45713a000 ---p 00000000 00:00 0 
+7fe45713a000-7fe45723a000 rw-p 00000000 00:00 0 
+7fe45723a000-7fe45723b000 ---p 00000000 00:00 0 
+7fe45723b000-7fe4574e6000 rw-p 00000000 00:00 0 
+7fe4574e6000-7fe4575e7000 rw-p 00000000 00:00 0 
+7fe4575e7000-7fe457ec7000 rwxp 00000000 00:00 0 
+7fe457ec7000-7fe45a5e7000 rw-p 00000000 00:00 0 
+7fe45a5e7000-7fe45a601000 r-xp 00000000 08:11 5246045                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libzip.so
+7fe45a601000-7fe45a801000 ---p 0001a000 08:11 5246045                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libzip.so
+7fe45a801000-7fe45a802000 rw-p 0001a000 08:11 5246045                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libzip.so
+7fe45a802000-7fe45a80e000 r-xp 00000000 08:11 4462843                    /lib/x86_64-linux-gnu/libnss_files-2.13.so
+7fe45a80e000-7fe45aa0d000 ---p 0000c000 08:11 4462843                    /lib/x86_64-linux-gnu/libnss_files-2.13.so
+7fe45aa0d000-7fe45aa0e000 r--p 0000b000 08:11 4462843                    /lib/x86_64-linux-gnu/libnss_files-2.13.so
+7fe45aa0e000-7fe45aa0f000 rw-p 0000c000 08:11 4462843                    /lib/x86_64-linux-gnu/libnss_files-2.13.so
+7fe45aa0f000-7fe45aa19000 r-xp 00000000 08:11 4462851                    /lib/x86_64-linux-gnu/libnss_nis-2.13.so
+7fe45aa19000-7fe45ac19000 ---p 0000a000 08:11 4462851                    /lib/x86_64-linux-gnu/libnss_nis-2.13.so
+7fe45ac19000-7fe45ac1a000 r--p 0000a000 08:11 4462851                    /lib/x86_64-linux-gnu/libnss_nis-2.13.so
+7fe45ac1a000-7fe45ac1b000 rw-p 0000b000 08:11 4462851                    /lib/x86_64-linux-gnu/libnss_nis-2.13.so
+7fe45ac1b000-7fe45ac32000 r-xp 00000000 08:11 4462838                    /lib/x86_64-linux-gnu/libnsl-2.13.so
+7fe45ac32000-7fe45ae31000 ---p 00017000 08:11 4462838                    /lib/x86_64-linux-gnu/libnsl-2.13.so
+7fe45ae31000-7fe45ae32000 r--p 00016000 08:11 4462838                    /lib/x86_64-linux-gnu/libnsl-2.13.so
+7fe45ae32000-7fe45ae33000 rw-p 00017000 08:11 4462838                    /lib/x86_64-linux-gnu/libnsl-2.13.so
+7fe45ae33000-7fe45ae35000 rw-p 00000000 00:00 0 
+7fe45ae35000-7fe45ae3d000 r-xp 00000000 08:11 4462835                    /lib/x86_64-linux-gnu/libnss_compat-2.13.so
+7fe45ae3d000-7fe45b03c000 ---p 00008000 08:11 4462835                    /lib/x86_64-linux-gnu/libnss_compat-2.13.so
+7fe45b03c000-7fe45b03d000 r--p 00007000 08:11 4462835                    /lib/x86_64-linux-gnu/libnss_compat-2.13.so
+7fe45b03d000-7fe45b03e000 rw-p 00008000 08:11 4462835                    /lib/x86_64-linux-gnu/libnss_compat-2.13.so
+7fe45b03e000-7fe45b5c2000 r--p 00000000 08:11 655503                     /usr/lib/locale/locale-archive
+7fe45b5c2000-7fe45b5c5000 r-xp 00000000 08:11 5246018                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libnpt.so
+7fe45b5c5000-7fe45b7c4000 ---p 00003000 08:11 5246018                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libnpt.so
+7fe45b7c4000-7fe45b7c5000 rw-p 00002000 08:11 5246018                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libnpt.so
+7fe45b7c5000-7fe45b7cf000 r-xp 00000000 08:11 5246009                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libinstrument.so
+7fe45b7cf000-7fe45b9ce000 ---p 0000a000 08:11 5246009                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libinstrument.so
+7fe45b9ce000-7fe45b9cf000 rw-p 00009000 08:11 5246009                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libinstrument.so
+7fe45b9cf000-7fe45ba08000 r-xp 00000000 08:11 5246040                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libjdwp.so
+7fe45ba08000-7fe45bc07000 ---p 00039000 08:11 5246040                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libjdwp.so
+7fe45bc07000-7fe45bc09000 rw-p 00038000 08:11 5246040                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libjdwp.so
+7fe45bc09000-7fe45bc32000 r-xp 00000000 08:11 5246036                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libjava.so
+7fe45bc32000-7fe45be32000 ---p 00029000 08:11 5246036                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libjava.so
+7fe45be32000-7fe45be34000 rw-p 00029000 08:11 5246036                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libjava.so
+7fe45be34000-7fe45be43000 r-xp 00000000 08:11 5246019                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libverify.so
+7fe45be43000-7fe45c042000 ---p 0000f000 08:11 5246019                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libverify.so
+7fe45c042000-7fe45c044000 rw-p 0000e000 08:11 5246019                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/libverify.so
+7fe45c044000-7fe45c04b000 r-xp 00000000 08:11 4456685                    /lib/x86_64-linux-gnu/librt-2.13.so
+7fe45c04b000-7fe45c24a000 ---p 00007000 08:11 4456685                    /lib/x86_64-linux-gnu/librt-2.13.so
+7fe45c24a000-7fe45c24b000 r--p 00006000 08:11 4456685                    /lib/x86_64-linux-gnu/librt-2.13.so
+7fe45c24b000-7fe45c24c000 rw-p 00007000 08:11 4456685                    /lib/x86_64-linux-gnu/librt-2.13.so
+7fe45c24c000-7fe45c2cf000 r-xp 00000000 08:11 4463573                    /lib/x86_64-linux-gnu/libm-2.13.so
+7fe45c2cf000-7fe45c4ce000 ---p 00083000 08:11 4463573                    /lib/x86_64-linux-gnu/libm-2.13.so
+7fe45c4ce000-7fe45c4cf000 r--p 00082000 08:11 4463573                    /lib/x86_64-linux-gnu/libm-2.13.so
+7fe45c4cf000-7fe45c4d0000 rw-p 00083000 08:11 4463573                    /lib/x86_64-linux-gnu/libm-2.13.so
+7fe45c4d0000-7fe45cea0000 r-xp 00000000 08:11 5246031                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/server/libjvm.so
+7fe45cea0000-7fe45d0a0000 ---p 009d0000 08:11 5246031                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/server/libjvm.so
+7fe45d0a0000-7fe45d13b000 rw-p 009d0000 08:11 5246031                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/server/libjvm.so
+7fe45d13b000-7fe45d174000 rw-p 00000000 00:00 0 
+7fe45d174000-7fe45d309000 r-xp 00000000 08:11 4462840                    /lib/x86_64-linux-gnu/libc-2.13.so
+7fe45d309000-7fe45d508000 ---p 00195000 08:11 4462840                    /lib/x86_64-linux-gnu/libc-2.13.so
+7fe45d508000-7fe45d50c000 r--p 00194000 08:11 4462840                    /lib/x86_64-linux-gnu/libc-2.13.so
+7fe45d50c000-7fe45d50d000 rw-p 00198000 08:11 4462840                    /lib/x86_64-linux-gnu/libc-2.13.so
+7fe45d50d000-7fe45d513000 rw-p 00000000 00:00 0 
+7fe45d513000-7fe45d515000 r-xp 00000000 08:11 4462841                    /lib/x86_64-linux-gnu/libdl-2.13.so
+7fe45d515000-7fe45d715000 ---p 00002000 08:11 4462841                    /lib/x86_64-linux-gnu/libdl-2.13.so
+7fe45d715000-7fe45d716000 r--p 00002000 08:11 4462841                    /lib/x86_64-linux-gnu/libdl-2.13.so
+7fe45d716000-7fe45d717000 rw-p 00003000 08:11 4462841                    /lib/x86_64-linux-gnu/libdl-2.13.so
+7fe45d717000-7fe45d72d000 r-xp 00000000 08:11 5246001                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/jli/libjli.so
+7fe45d72d000-7fe45d92c000 ---p 00016000 08:11 5246001                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/jli/libjli.so
+7fe45d92c000-7fe45d92d000 rw-p 00015000 08:11 5246001                    /home/detriusxiiuser/glassfish3/jdk7/jre/lib/amd64/jli/libjli.so
+7fe45d92d000-7fe45d945000 r-xp 00000000 08:11 4462848                    /lib/x86_64-linux-gnu/libpthread-2.13.so
+7fe45d945000-7fe45db44000 ---p 00018000 08:11 4462848                    /lib/x86_64-linux-gnu/libpthread-2.13.so
+7fe45db44000-7fe45db45000 r--p 00017000 08:11 4462848                    /lib/x86_64-linux-gnu/libpthread-2.13.so
+7fe45db45000-7fe45db46000 rw-p 00018000 08:11 4462848                    /lib/x86_64-linux-gnu/libpthread-2.13.so
+7fe45db46000-7fe45db4a000 rw-p 00000000 00:00 0 
+7fe45db4a000-7fe45db6b000 r-xp 00000000 08:11 4462847                    /lib/x86_64-linux-gnu/ld-2.13.so
+7fe45db6b000-7fe45db6d000 r--s 00010000 08:11 4986483                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/classpath_2.8.1-0.9.5.jar
+7fe45db6d000-7fe45db6e000 r--s 00003000 08:11 4986528                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/uuid-3.2.jar
+7fe45db6e000-7fe45db71000 r--s 00015000 08:11 4986524                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/tasks_2.8.1-0.9.5.jar
+7fe45db71000-7fe45db74000 r--s 00019000 08:11 4986485                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/compile_2.8.1-0.9.5.jar
+7fe45db74000-7fe45db77000 r--s 0000e000 08:11 4986499                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/logging_2.8.1-0.9.5.jar
+7fe45db77000-7fe45db79000 r--s 00000000 08:11 4986525                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/test-interface-0.5.jar
+7fe45db79000-7fe45db7b000 r--s 00007000 08:11 4986492                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/interface-0.9.5.jar
+7fe45db7b000-7fe45db81000 r--s 0007e000 08:11 2760758                    /home/detriusxiiuser/Documents/PlayInScala/lib/postgresql-8.4-702.jdbc4.jar
+7fe45db81000-7fe45dba5000 rw-p 00000000 00:00 0 
+7fe45dba5000-7fe45dc41000 rw-p 00000000 00:00 0 
+7fe45dc41000-7fe45dc44000 ---p 00000000 00:00 0 
+7fe45dc44000-7fe45dd46000 rw-p 00000000 00:00 0 
+7fe45dd46000-7fe45dd48000 r--s 00004000 08:11 4986490                    /home/detriusxiiuser/play-1.2.3/modules/scala-0.9.1/lib/discovery_2.8.1-0.9.5.jar
+7fe45dd48000-7fe45dd4a000 r--s 00022000 08:11 2756450                    /home/detriusxiiuser/Documents/PlayInScala/lib/SquerylJdip.jar
+7fe45dd4a000-7fe45dd51000 r--s 00040000 08:11 2760757                    /home/detriusxiiuser/Documents/PlayInScala/lib/cglib-2.2.2.jar
+7fe45dd51000-7fe45dd52000 r--s 0000a000 08:11 2760190                    /home/detriusxiiuser/Documents/PlayInScala/lib/asm-3.3.1.jar
+7fe45dd52000-7fe45dd53000 rw-p 00000000 00:00 0 
+7fe45dd53000-7fe45dd5e000 r--s 000b8000 08:11 2759849                    /home/detriusxiiuser/play-1.2.3/framework/play-1.2.3.jar
+7fe45dd5e000-7fe45dd66000 rw-s 00000000 08:11 2622175                    /tmp/hsperfdata_detriusxiiuser/9506
+7fe45dd66000-7fe45dd67000 rw-p 00000000 00:00 0 
+7fe45dd67000-7fe45dd68000 r--p 00000000 00:00 0 
+7fe45dd68000-7fe45dd6a000 rw-p 00000000 00:00 0 
+7fe45dd6a000-7fe45dd6b000 r--p 00020000 08:11 4462847                    /lib/x86_64-linux-gnu/ld-2.13.so
+7fe45dd6b000-7fe45dd6d000 rw-p 00021000 08:11 4462847                    /lib/x86_64-linux-gnu/ld-2.13.so
+7fffa9130000-7fffa9153000 rw-p 00000000 00:00 0                          [stack]
+7fffa9170000-7fffa9171000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+
+VM Arguments:
+jvm_args: -javaagent:/home/detriusxiiuser/play-1.2.3/framework/play-1.2.3.jar -Xms512m -Xmx512m -XX:PermSize=256m -XX:MaxPermSize=256m -Dfile.encoding=utf-8 -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n -Dplay.debug=yes -Dapplication.path=/home/detriusxiiuser/Documents/PlayInScala -Dplay.id= 
+java_command: play.server.Server 
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=/home/detriusxiiuser/glassfish3/jdk7
+PATH=/home/detriusxiiuser/glassfish3/jdk7/bin:/home/detriusxiiuser/play-1.2.3:/home/detriusxiiuser/scala2.8.2/bin:/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games
+USERNAME=detriusxiiuser
+SHELL=/bin/bash
+DISPLAY=:0
+
+Signal Handlers:
+SIGSEGV: [libjvm.so+0x84be70], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGBUS: [libjvm.so+0x84be70], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGFPE: [libjvm.so+0x6f3820], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGPIPE: [libjvm.so+0x6f3820], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGXFSZ: [libjvm.so+0x6f3820], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGILL: [libjvm.so+0x6f3820], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGUSR1: SIG_DFL, sa_mask[0]=0x00000000, sa_flags=0x00000000
+SIGUSR2: [libjvm.so+0x6f3190], sa_mask[0]=0x00000000, sa_flags=0x10000004
+SIGHUP: [libjvm.so+0x6f5650], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGINT: [libjvm.so+0x6f5650], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGTERM: [libjvm.so+0x6f5650], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGQUIT: [libjvm.so+0x6f5650], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+
+
+---------------  S Y S T E M  ---------------
+
+OS:wheezy/sid
+
+uname:Linux 3.0.0-16-generic #28-Ubuntu SMP Fri Jan 27 17:44:39 UTC 2012 x86_64
+libc:glibc 2.13 NPTL 2.13 
+rlimit: STACK 8192k, CORE 0k, NPROC 63886, NOFILE 4096, AS infinity
+load average:0.26 0.14 0.14
+
+/proc/meminfo:
+MemTotal:        8195312 kB
+MemFree:         4381036 kB
+Buffers:           63124 kB
+Cached:           467384 kB
+SwapCached:        68292 kB
+Active:          2660764 kB
+Inactive:         844504 kB
+Active(anon):    2522284 kB
+Inactive(anon):   469460 kB
+Active(file):     138480 kB
+Inactive(file):   375044 kB
+Unevictable:          52 kB
+Mlocked:              52 kB
+SwapTotal:       6384636 kB
+SwapFree:        6173760 kB
+Dirty:               548 kB
+Writeback:             0 kB
+AnonPages:       2928008 kB
+Mapped:           161232 kB
+Shmem:             16780 kB
+Slab:              93424 kB
+SReclaimable:      65572 kB
+SUnreclaim:        27852 kB
+KernelStack:        3768 kB
+PageTables:        42028 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    10482292 kB
+Committed_AS:    6135400 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:      353780 kB
+VmallocChunk:   34359371772 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:         0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:      702016 kB
+DirectMap2M:     7686144 kB
+
+
+CPU:total 2 (2 cores per cpu, 1 threads per core) family 6 model 15 stepping 6, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3
+
+/proc/cpuinfo:
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU          6400  @ 2.13GHz
+stepping	: 6
+cpu MHz		: 2128.000
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts rep_good nopl aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm dts tpr_shadow
+bogomips	: 4269.51
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU          6400  @ 2.13GHz
+stepping	: 6
+cpu MHz		: 2128.000
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 1
+cpu cores	: 2
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts rep_good nopl aperfmperf pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm dts tpr_shadow
+bogomips	: 4270.18
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+
+
+Memory: 4k page, physical 8195312k(4381036k free), swap 6384636k(6173760k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (21.0-b17) for linux-amd64 JRE (1.7.0-b147), built on Jun 27 2011 01:30:59 by "java_re" with gcc 4.3.0 20080428 (Red Hat 4.3.0-8)
+
+time: Sat Mar  3 18:28:43 2012
+elapsed time: 18282 seconds
+

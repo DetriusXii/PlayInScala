@@ -8,12 +8,48 @@ import com.squeryl.jdip.schemas.Jdip
 import com.squeryl.jdip.tables.Players
 import com.squeryl.jdip.tables.Empires
 import com.squeryl.jdip.adapters.PostgreSqlAdapter
-import play.mvc.Controller
+import play.mvc._
+import scala.xml._
+import play.templates._
 
 import play.db.DB
 
-object Application extends Controller {
-  
+trait Secure {
+  self: Controller =>
+  @Before 
+  def checkSecurity = {
+    session("username") match {
+      case Some(x: String) => Continue
+      case None => Action(Authentication.login)
+    }
+  }
+}
+
+object HeaderTitles {
+  private def createURLRoutes: List[Tuple2[String, String]] = {
+
+      val INDEX_TITLE = "Home"
+      val INDEX = "Application.index"
+      val PLAYERS_TITLE = "Players"
+      val PLAYERS = "Application.players"
+      val GAMES_TITLE = "Games"
+      val GAMES = "Application.games"
+      val EMPIRES_TITLE = "Empires"
+      val EMPIRES = "Application.empires"
+      val LOGOUT_TITLE = "Logout"
+      val LOGOUT = "Authentication.logout"
+    
+      val TITLE_LIST = 
+        INDEX_TITLE :: PLAYERS_TITLE :: GAMES_TITLE :: EMPIRES_TITLE :: LOGOUT_TITLE :: Nil
+      val URL_ROUTES_TO = INDEX :: PLAYERS :: GAMES :: EMPIRES :: LOGOUT :: Nil
+      
+      return TITLE_LIST zip (URL_ROUTES_TO map ((u: String) => Router.reverse(u).url))
+    }
+    
+    val headerTitlesAndURLs: List[Tuple2[String, String]] = createURLRoutes
+}
+
+object Application extends Controller with Secure{
     def index = views.Application.html.index()
 
     def players = {
@@ -22,6 +58,7 @@ object Application extends Controller {
         val players = Jdip.players
         val playersListItem = players map ((u: Players) => <li>{u.id}</li>)
         <html>
+          <title>Players</title>
           <body>
             <ul>
               {playersListItem}
@@ -47,65 +84,7 @@ object Application extends Controller {
       }
     }
   
-    /*def login_credentials(username : String, password : String ) = {
-      Redirect("/redirected_page?username=" + username) 
+    def movement = {
+      views.Application.html.movement()
     }
-
-    def emailTester(emailAddress : String = "", testMessage : String = "") {
-      val x = emailAddress match {
-        case "" => "No email address entered"
-        case x : String => {
-            "We sent you an email to the following address: " + emailAddress
-        }
-      }
-
-      val simpleEmail : SimpleEmail = new SimpleEmail
-      simpleEmail.setFrom("ajelovic@idnoodle.com")
-      simpleEmail.addTo("ajelovic@yahoo.com")
-      simpleEmail.setSubject("Welcome to the Diplomacy website")
-      simpleEmail.setMsg("Here is your test Message " + testMessage)
-      Mail.send(simpleEmail)
-
-      x
-    }
-
-    def redirected_page(username : String = "") = {
-      val serverActor = RemoteActor.select(Node("localhost", 5401), Symbol("myname"))
-      val unitCommandList = (serverActor !? Some((username, "getMovements"))).asInstanceOf[List[Map[String, String]]]
-
-      val formattedUnitCommandList = unitCommandList map ((u) => {
-        val Some(unitType) = u.get("unitType")
-        val Some(provinceName) = u.get("provinceName")
-        val Some(orderType) = u.get("orderType")
-        val Some(srcName) = u.get("srcName")
-        val Some(dstName) = u.get("dstName")
-        String.format("{unitType: '%s', provinceName: '%s', orderType: '%s', srcName: '%s', dstName: '%s'}",
-                      unitType,
-                      provinceName,
-                      orderType,
-                      srcName,
-                      dstName);
-      })
-
-      val unitList = unitCommandList.foldLeft(Nil : List[Map[String,String]])((u,v) => {
-          val Some(unitType) = v.get("unitType")
-          val Some(provinceName) = v.get("provinceName")
-          val x = Map("unitType" -> unitType, "provinceName" -> provinceName)
-          if (u.contains(x))
-            u
-          else
-            x :: u
-      })
-
-      val formattedUnitList = unitList map (u => {
-        val Some(unitType) = u.get("unitType")
-        val Some(provinceName) = u.get("provinceName")
-        String.format("{unitType: '%s', provinceName: '%s'}", unitType, provinceName)
-      })
-
-      val unitCommands = String.format("[%s]", formattedUnitCommandList.mkString(","))
-      val units = String.format("[%s]", formattedUnitList.mkString(","))
-      Template(("unitCommands", unitCommands), ("units", units))
-    }*/
-    
 }

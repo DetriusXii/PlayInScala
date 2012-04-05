@@ -1,6 +1,9 @@
 @(title: String)(content: => Html)
+@import controllers.HeaderTitles
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:svg="http://www.w3.org/2000/svg" 
+      xmlns:xlink="http://www.w3.org/1999/xlink">
     <head>
         <title>@title</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -14,12 +17,17 @@
     <body>
         <div class="header">
             <ul>
-                <li href="/">Home</li>
-                <li href="/empires">Empires</li>
-                <li href="/games">Games</li>
+                @for(p <- HeaderTitles.headerTitlesAndURLs) {
+                    <li href="@p._2">@p._1</li>
+                }
             </ul>
         </div>
-        @content
-        <div class="footer">@title</div>
+        <div class="wrap">
+            <div class="wrapContent">
+                @content
+            </div>
+            <div class="padding" />
+        </div>
+        <footer>@title</footer>
     </body>
 </html>
