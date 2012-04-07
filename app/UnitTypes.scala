@@ -10,6 +10,9 @@ import scala.xml._
 import play.templates._
 
 object UnitTypes extends Controller {
+  val USERNAME: String = "username"
+  val NOT_LOGGED_IN_MESSAGE: String = "The request could not be completed as the user is not logged in"
+  
   val armySymbol = 
     <symbol id="Army" viewBox="0 0 23 15" overflow="visible">
             <g>
@@ -44,7 +47,21 @@ object UnitTypes extends Controller {
 			</g>	
                     </symbol>
   
+  private def getPlayerFillColour(): String = {
+	val playerName = session(USERNAME) match {
+		case Some(x: String) => x
+		case _ => throw NotLoggedInException(NOT_LOGGED_IN_MESSAGE)
+	}
+	
+	val dbSession = Session.create(DB.getConnection, new PostgreSqlAdapter)
+	using(dbSession) {
+		playerName 
+	}
+  }
+  
   def getSVGTemplate(x: Elem): Html = {
+	
+  
     val id = x.attribute("id") match {
       case Some(x) => x.toString
       case _ => throw new Exception("ID attribute not found")
@@ -63,6 +80,6 @@ object UnitTypes extends Controller {
     </svg>.toString)
   } 
   
-  val armyType = getSVGTemplate(armySymbol)
-  val fleetType = getSVGTemplate(fleetSymbol)
+  def armyType = getSVGTemplate(armySymbol)
+  def fleetType = getSVGTemplate(fleetSymbol)
 }
