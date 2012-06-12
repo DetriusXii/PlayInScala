@@ -1,6 +1,6 @@
 package controllers
 
-
+// Checking this
 import org.squeryl._
 import org.squeryl.dsl._
 import org.squeryl.PrimitiveTypeMode._
