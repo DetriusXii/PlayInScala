@@ -1,4 +1,3 @@
-nbproject
-lib
-tmp
-conf/application.conf
+*
+!app
+!conf/routes
