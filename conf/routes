@@ -8,9 +8,12 @@ GET     /players                                Application.players
 GET     /empires                                Application.empires
 GET     /games                                  Application.games
 GET     /login                                  Authentication.login
+GET     /no_user_login                          Authentication.noUserLogin
+GET     /incorrect_password_login               Authentication.incorrectPasswordLogin
 GET     /logout                                 Authentication.logout
 GET     /movement                               Application.movement
-GET     /army                                   UnitTypes.armyType
+GET     /gameScreen                             Application.gameScreen
+GET     /gameScreen/{gameName}                  Application.gameScreen({gameName})
 
 # Post
 POST    /authenticate                           Authentication.authenticate

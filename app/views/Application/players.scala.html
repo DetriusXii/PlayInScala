@@ -1,0 +1,11 @@
+@(title: String, players: Iterable[com.squeryl.jdip.tables.Player])
+@main(title) {
+<ul class="players">
+    @players.map {(p: com.squeryl.jdip.tables.Player) => 
+    <li><b>@p.id</b><br />
+        Wins: @p.wins<br />
+        Losses: @p.losses<br />
+    </li>}
+</ul>
+
+}

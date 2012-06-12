@@ -1,0 +1,33 @@
+/* 
+    Document   : players
+    Created on : 4-Jun-2012, 8:26:34 PM
+    Author     : detriusxiiuser
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+ul.players {
+    width: 80%;
+    margin-left: 10%;
+    
+}
+
+ul.players li {
+    background-color: #7070ef;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    padding: 10px;
+}
+
+ul.players li b {
+    color: #0f0191;
+    font-size: x-large;
+    font-weight: bolder;
+    
+}
+

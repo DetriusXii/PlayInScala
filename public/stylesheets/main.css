@@ -38,6 +38,12 @@ footer {
     background-color: #1212ef;
 }
 
+ul.playerList {
+    margin-top: 2%;
+    margin-bottom: 2%;
+    margin-left: 12%;
+    margin-right: 12%;
+}
 
 .header {
     width: 100%;

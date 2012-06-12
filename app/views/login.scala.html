@@ -1,4 +1,4 @@
-@(authenticate: String)
+@(authenticate: String, errorMessage: String = "")
 <!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -11,5 +11,8 @@
             <label>Password:</label><input type="password" name="password" /><br />
             <input type="submit" value="Submit" />
         </form>
+        <p>
+            @errorMessage
+        </p>
     </body>
 </html>
