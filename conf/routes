@@ -5,23 +5,19 @@
 # ~~~~
 
 # Home page
-GET     /                                       Application.index
-GET     /players                                Application.players
-GET     /empires                                Application.empires
-GET     /games                                  Application.games
-GET     /login                                  Authentication.login
-GET     /no_user_login                          Authentication.noUserLogin
-GET     /incorrect_password_login               Authentication.incorrectPasswordLogin
-GET     /logout                                 Authentication.logout
-GET     /movement                               Application.movement
-GET     /gameScreen                             Application.gameScreen
-GET     /gameScreen/{gameName}                  Application.gameScreen({gameName})
+GET     /                                       controllers.Application.index
+GET     /players                                controllers.Application.players
+GET     /games                                  controllers.Application.games
+GET     /login                                  controllers.Authentication.login
+GET     /noUserLogin              	            controllers.Authentication.noUserLogin(username)
+GET     /noPasswordLogin		                controllers.Authentication.noPasswordLogin(username)
+GET		/noUserEnteredLogin						controllers.Authentication.noUserEnteredLogin
+GET     /logout                                 controllers.Authentication.logout
+GET     /gameScreen/:gameName                 	controllers.Application.gameScreen(gameName)
 
 # Post
-POST    /authenticate                           Authentication.authenticate
+POST    /authenticate                           controllers.Authentication.authenticate
 
 # Map static resources from the /app/public folder to the /public path
-GET     /public/                                staticDir:public
+GET     /public/*file                           controllers.Assets.at(path="/public", file)
 
-# Catch all
-*       /{controller}/{action}                  {controller}.{action}

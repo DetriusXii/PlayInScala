@@ -5,53 +5,78 @@
 package controllers
 
 
-import play.mvc._
 import scala.xml._
-import play.mvc.results.ScalaAction
-import play.templates._
+import org.squeryl.{Session => DBSession, _}
 import com.squeryl.jdip.schemas.Jdip
 import com.squeryl.jdip.tables.Player
 import com.squeryl.jdip.adapters.RevisedPostgreSqlAdapter
-import org.squeryl._
 import org.squeryl.PrimitiveTypeMode._
-import play.db._
+import play.api.mvc._
+import play.api.templates._
+import play.api.db.DB
+import play.core.Router.StaticPart
 
-object Authentication extends ScalaController {
-  val USERNAME = "username"
-  val AUTHENTICATION_MSG_KEY = "authenticationMsg"
-  val AUTHENTICATE_NAME = "Authentication.authenticate"
+object Authentication extends Controller {
+  import play.api.Play._
+  
   val NO_PASSWORD_MSG = "%s has entered an incorrect password"
   val NO_USER_MSG = "No user was found with the username %s"
-  
-  def login = views.html.login(Router.reverse(AUTHENTICATE_NAME).url)
-  def noUserLogin(username: String) = 
-    views.html.login(Router.reverse(AUTHENTICATE_NAME).url, NO_USER_MSG format username)
-  
-  def noPasswordLogin(username: String) = 
-    views.html.login(Router.reverse(AUTHENTICATE_NAME).url, NO_PASSWORD_MSG format username)
+  val PLEASE_ENTER_USERNAME = "Please enter a username"
+  val AUTHENTICATE_URL = controllers.routes.Authentication.authenticate.url
+  val PASSWORD = "password"
     
-  def authenticate(username: String = "", password: String = ""): ScalaAction = {
-    if (username.isEmpty) {
-      return Action(Authentication.login)
-    }
-    
-    val dbSession = Session.create(DB.getConnection, new RevisedPostgreSqlAdapter)
-    using(dbSession) {
-      val queriedPlayer = Jdip.players.lookup(username)
-      queriedPlayer match {
-        case Some(p: Player) => if (password.equals(p.password)) {
-          session += USERNAME -> username
-          Action(Application.index)
-        } else {
-          Action(Authentication.noPasswordLogin(username))
-        }
-        case None => Action(Authentication.noUserLogin(username))
-      }
-    }
+  def login = Action {
+	  Ok(views.html.login(AUTHENTICATE_URL, Security.username, PASSWORD))
   }
   
-  def logout = {
-    session.remove(USERNAME)
-    Action(Authentication.login)
+  def noUserLogin(username: String) = Action {
+    Ok(views.html.login(AUTHENTICATE_URL, Security.username, PASSWORD, NO_USER_MSG format username))
+  }
+  
+  def noPasswordLogin(username: String) = Action {
+    Ok(views.html.login(AUTHENTICATE_URL, 
+        Security.username, PASSWORD, NO_PASSWORD_MSG format username))
+  }
+  
+  def noUserEnteredLogin = Action {
+    Ok(views.html.login(AUTHENTICATE_URL, Security.username, PASSWORD, PLEASE_ENTER_USERNAME))
+  }
+    
+  def authenticate: Action[AnyContent] =
+    Action { implicit request => {
+    	val (username, password) = request.body.asFormUrlEncoded match {
+    	  case Some(x: Map[_, Seq[String]]) => {
+    	    val username = x.getOrElse(Security.username, Nil).flatten.mkString("")
+    	    val password = x.getOrElse(PASSWORD, Nil).flatten.mkString("")
+    	    (username, password)
+    	  }
+    	  case None => ("", "")
+    	}
+	    if (username.isEmpty) {
+	      Redirect(controllers.routes.Authentication.noUserEnteredLogin)
+	    } else {
+	    
+		    DB.withConnection((conn: java.sql.Connection) => {
+		      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+		      using(dbSession) {
+		        val queriedPlayer = Jdip.players.lookup(username)
+		        queriedPlayer match {
+			        case Some(p: Player) => if (password.equals(p.password)) {
+			          Redirect(controllers.routes.Application.index).withSession(session + (Security.username -> username))
+			        } else {
+			          Redirect(controllers.routes.Authentication.noPasswordLogin(username))
+			        }
+			        case None => Redirect(controllers.routes.Authentication.noUserLogin(username))
+		        }
+		      }
+		    })
+	    }
+	  }
+  }
+  
+  def logout = Action {implicit request => {
+	  session - (Security.username)
+	  Redirect(controllers.routes.Authentication.login)
+  	}
   }
 }
