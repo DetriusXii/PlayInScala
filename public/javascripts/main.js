@@ -4,7 +4,7 @@
  */
 
 $(document).ready(function() {
-   $(".header ul li").hover(function() {
+   $("header ul li").hover(function() {
        $(this).addClass("selected");
    }, function () {
        $(this).removeClass("selected clicked");
@@ -30,5 +30,23 @@ $(document).ready(function() {
       $(this).removeClass("clicked");
       $(this).addClass("selected");
    });
+   
+
+   var footerFunction = function() {
+   		   var footerHeight = $("footer").height();
+		   var headerHeight = $(".header").height();
+		   var contentHeight = $(".wrap").height();
+		   var totalHeight = headerHeight + contentHeight;
+		   var windowHeight = $(window).height();
+		   
+		   
+		   if (contentHeight - footerHeight < windowHeight) {
+		   		$("footer").offset({top: windowHeight - footerHeight, left: 0})
+		   }
+   }
+   
+   
+   $(window).load(footerFunction).resize(footerFunction);
+   
 });
 

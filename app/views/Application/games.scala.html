@@ -1,13 +1,13 @@
-@(gameScreenURL: String, games: Iterable[com.squeryl.jdip.tables.Game])
+@(gameScreenURL: String, gameTuples: Iterable[Tuple2[com.squeryl.jdip.tables.Game, com.squeryl.jdip.tables.GameTime]])
 @main(title = "Games") {
 <div class="body">
     <ul>
-        @games.map {game =>
+        @gameTuples.map {gameTuple =>
         <li>
-            <a href="@gameScreenURL/@game.id">
+            <a href="@gameScreenURL@gameTuple._1.id">
                 <div class="gamePanel panel">
-                    Game name: <span class="id">@game.id</span> Game state: @game.gameState<br />
-                    Year: game.gameYear Season: game.season Phase: game.phase
+                    Game name: <span class="id">@gameTuple._1.id</span> Game state: @gameTuple._1.gameState<br />
+                    Year: @gameTuple._2.gameYear Season: @gameTuple._2.gameSeason Phase: @gameTuple._2.gamePhase
                 </div>
             </a>
         </li>

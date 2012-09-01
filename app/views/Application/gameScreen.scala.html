@@ -1,4 +1,4 @@
-
+@(diplomacyUnits: Iterable[com.squeryl.jdip.tables.DiplomacyUnit])
 <table>
 	<thead>
 		<tr>
@@ -9,6 +9,13 @@
 			<td>Source Location</td>
 		</tr>
 	</thead>
-	<tr>
-	</tr>
+	@diplomacyUnits.map {diplomacyUnit =>
+		<tr>
+			<td>@diplomacyUnit.unitType</td>
+			<td>@diplomacyUnit.unitLocation</td>
+			<td>Action</td>
+			<td>Target Location</td>
+			<td>Source Location</td>
+		</tr>
+	}
 </table>

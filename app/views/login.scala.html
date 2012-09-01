@@ -4,9 +4,33 @@
     <head>
         <title>Login screen</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <style>
+        	form {
+        		position: absolute;
+        		width: 20%;
+        		left: 40%;
+        		top: 40%;
+        		background: #70e3fc;
+        		border-radius: 5px;
+        		padding: 10px;
+        	}
+        	
+        	body {
+        		background-image: -webkit-linear-gradient(left, #3d3d3d 0%, #70B4EF 100%)
+        	}
+        	
+        	
+        	div.loginContainer {
+        		position: relative
+        	}
+
+	
+        </style>
     </head>
     <body>
-        <form method="post" style="position: relative; width: 10%; left: 40%" action="@authenticate">
+        <form method="post" action="@authenticate">
+        	<div class="loginContainer">
+        	Login<br />
             <label>Username:</label><input type="text" name="@username" /><br />
             <label>Password:</label><input type="password" name="@password" /><br />
             <input type="submit" value="Submit" />

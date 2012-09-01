@@ -16,18 +16,15 @@
         <script src="/public/javascripts/main.js" type="text/javascript" charset="utf-8"></script>
     </head>
     <body>
-        <div class="header">
+        <header>
             <ul>
                 @for(p <- HeaderTitles.headerTitlesAndURLs) {
                     <li href="@p._2">@p._1</li>
                 }
             </ul>
-        </div>
+        </header>
         <div class="wrap">
-            <div class="wrapContent">
                 @content
-            </div>
-            <div class="padding" />
         </div>
         <footer>@title</footer>
     </body>

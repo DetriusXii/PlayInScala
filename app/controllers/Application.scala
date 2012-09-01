@@ -12,6 +12,7 @@ import play.api.mvc._
 import play.api.templates._
 import play.api.db.DB
 import scala.xml._
+import scalaz._
 
 class ApplicationAction[A](action: Action[A]) extends Action[A] {
   def apply(request: Request[A]): Result = action.apply(request)
@@ -52,41 +53,72 @@ object Application extends Controller {
 	          where(g.id in from(gamePlayersForUser)((gpu: GamePlayer) => select(gpu.gameName)))
 	          select(g))
 	          
+	        
+	        val gameTimesForUser = gamesForUser map ((g: Game) =>
+	          Jdip.gameTimes.lookup(g.gameTime)
+	        )
+	        
+	        val gamesWithGameTimes = (gamesForUser zip gameTimesForUser) filter( _._2.isDefined) map(u =>
+	        	(u._1, u._2.get)
+	        )
+	          
 	        val gameScreenURL = controllers.routes.Application.gameScreen("").url
 	          
-	        Ok(views.html.Application.games(gameScreenURL, gamesForUser))
+	        Ok(views.html.Application.games(gameScreenURL, gamesWithGameTimes))
         }
       })
     })
     
     def gameScreen(gameName: String = "") = new ApplicationAction(Action { implicit request =>
-      val username: String = session.get(Security.username) match {
-        case Some(x: String) => x
-        case _ => throw new Exception("No username in session")
-      }
+      import Scalaz._
+      
+      val usernameValidation: Validation[Exception, String] = 
+        session.get(Security.username).toSuccess(new Exception("No username in session"))
       
       DB.withConnection((conn: java.sql.Connection) => {
         val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
         using(dbSession) {
-          val game: Game = Jdip.games.lookup(gameName) match {
-            case Some(g: Game) => g
-            case _ => throw new Exception("No game found with game name %s" format gameName)
+          
+          def getGamePlayer(game: Game, player: Player): Validation[Exception, GamePlayer] = 
+            from(Jdip.gamePlayers)((gp: GamePlayer) =>
+            	where(gp.gameName === game.id and gp.playerName === player.id)
+            	select(gp)
+            ).firstOption.toSuccess(new Exception(
+                "No gamePlayer found with game name %s and player name %s" format (game.id, player.id)    
+            ))
+            
+          def getGamePlayerEmpire(gamePlayer: GamePlayer): Validation[Exception, GamePlayerEmpire] =
+            from(Jdip.gamePlayerEmpires)((gpe: GamePlayerEmpire) => 
+            	where(gpe.gamePlayerKey === gamePlayer.id)
+            	select(gpe)
+            ).firstOption.toSuccess(new Exception(
+                "No GamePlayerEmpire found with GamePlayer ID %d" format gamePlayer.id
+            ))
+            
+          def getDiplomacyUnits(gamePlayerEmpire: GamePlayerEmpire): Iterable[DiplomacyUnit] =
+            from(Jdip.diplomacyUnits)((dpu: DiplomacyUnit) =>
+              where(dpu.owner === gamePlayerEmpire.id)
+              select(dpu)
+            )
+            
+          val diplomacyUnitsValidation = for ( 
+              username <- usernameValidation;
+              game <- Jdip.games.lookup(gameName).
+        		  toSuccess(new Exception("No game found with game name %s" format gameName));
+        		player <- Jdip.players.lookup(username).
+        			toSuccess(new Exception("No player found with player name %s" format username));
+        		gamePlayer <- getGamePlayer(game, player);
+        		gamePlayerEmpire <- getGamePlayerEmpire(gamePlayer)
+        		
+        		) yield (
+        			getDiplomacyUnits(gamePlayerEmpire)
+        		)
+          
+          
+          diplomacyUnitsValidation match {
+            case Success(x: Iterable[DiplomacyUnit]) => Ok(views.html.Application.gameScreen(x))
+            case Failure(e: Exception) => Ok(e.getMessage)
           }
-          
-          val player: Player = Jdip.players.lookup(username) match {
-            case Some(p: Player) => p
-            case _ => throw new Exception("No player found with player name %s" format username)
-          }
-          
-          val gamePlayer: GamePlayer = from(Jdip.gamePlayers)((gp: GamePlayer) => {
-            where(gp.gameName === game.id and gp.playerName === player.id) select(gp)
-          }).first
-          
-          val gamePlayerEmpire: GamePlayerEmpire = from(Jdip.gamePlayerEmpires)((gpe: GamePlayerEmpire) => {
-            where(gpe.gamePlayerKey === gamePlayer.id) select(gpe)
-          }).first
-          
-          Ok("Hi")
         }
       })
     })
