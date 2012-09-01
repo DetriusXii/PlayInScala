@@ -1,4 +1,6 @@
-@(diplomacyUnits: Iterable[com.squeryl.jdip.tables.DiplomacyUnit])
+@(diplomacyUnits: Iterable[com.squeryl.jdip.tables.DiplomacyUnit], 
+	fleetActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType], 
+	armyActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType])
 <table>
 	<thead>
 		<tr>
@@ -13,7 +15,18 @@
 		<tr>
 			<td>@diplomacyUnit.unitType</td>
 			<td>@diplomacyUnit.unitLocation</td>
-			<td>Action</td>
+			<td><select>
+				@defining(diplomacyUnit.unitType) { unitType =>
+					@unitType match { 
+						case com.squeryl.jdip.tables.UnitType.ARMY => { 
+							@armyActions.map { armyAction => <option>@armyAction.orderType</option>}
+						} 
+						case com.squeryl.jdip.tables.UnitType.FLEET => {
+							@fleetActions.map {fleetAction => <option>@fleetAction.orderType</option>}
+						}
+					}
+				}
+				</select></td>
 			<td>Target Location</td>
 			<td>Source Location</td>
 		</tr>

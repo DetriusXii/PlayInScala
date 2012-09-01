@@ -115,8 +115,15 @@ object Application extends Controller {
         		)
           
           
+          
           diplomacyUnitsValidation match {
-            case Success(x: Iterable[DiplomacyUnit]) => Ok(views.html.Application.gameScreen(x))
+            case Success(x: Iterable[_]) => {
+              val actions = from(Jdip.orderTypeUnitTypes)((otut: OrderTypeUnitType) => 
+            		  select(otut))
+              val armyActions = actions.filter((otut: OrderTypeUnitType) => otut.unitType.equals(UnitType.ARMY))
+              val fleetActions = actions.filter((otut: OrderTypeUnitType) => otut.unitType.equals(UnitType.FLEET))
+              Ok(views.html.Application.gameScreen(x, fleetActions, armyActions))
+            }
             case Failure(e: Exception) => Ok(e.getMessage)
           }
         }
