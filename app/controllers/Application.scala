@@ -119,7 +119,8 @@ object Application extends Controller {
           diplomacyUnitsValidation match {
             case Success(x: Iterable[_]) => {
               val actions = from(Jdip.orderTypeUnitTypes)((otut: OrderTypeUnitType) => 
-            		  select(otut))
+            	where(otut.orderType in from(Jdip.orderTypes)((ot: OrderType) => where(ot.phase === Phase.MOVEMENT) select(ot.id)))	  
+                select(otut))
               val armyActions = actions.filter((otut: OrderTypeUnitType) => otut.unitType.equals(UnitType.ARMY))
               val fleetActions = actions.filter((otut: OrderTypeUnitType) => otut.unitType.equals(UnitType.FLEET))
               Ok(views.html.Application.gameScreen(x, fleetActions, armyActions))
