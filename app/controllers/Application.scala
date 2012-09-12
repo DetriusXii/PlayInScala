@@ -131,4 +131,23 @@ object Application extends Controller {
       })
     })
 	
+	
+	def getMoveLocations(gamePlayerEmpire: Int, unitNumber: Int): Action[A] = 
+	  new ApplicationAction(Action {implicit request => {
+	    import Scalaz._
+	    
+	    val usernameValidation: Validation[Exception, String] = 
+	      session.get(Security.username).toSuccess(new Exception("No username in session"))
+	    
+	    usernameValidation.flatMap((username: String) => {
+	      DB.withConnection((connection: java.sql.Connection) => {
+			val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+			using(dbSession) {
+				
+			}
+		  }
+	    })
+	    
+	      
+	  }})
 }
