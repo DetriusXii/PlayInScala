@@ -1,6 +1,21 @@
 @(diplomacyUnits: Iterable[com.squeryl.jdip.tables.DiplomacyUnit], 
 	fleetActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType], 
 	armyActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType])
+import com.squeryl.jdip.tables.OrderType
+import com.squeryl.jdip.tables.UnitType
+
+	<span id="orders" visibility="collapse">
+		@diplomacyUnits.map { diplomacyUnit => 
+			<span id="@diplomacyUnit.unitLocation">
+							<span class="@OrderType.MOVE"></span>
+							<span class="@OrderType.SUPPORT_MOVE"></span>
+							<span class="@OrderType.SUPPORT_HOLD"></span>
+							@if(diplomacyUnit.unitType.equals(UnitType.FLEET)) {
+								<span class="@OrderType.CONVOY"></span>
+							}
+			</span>
+		}
+	</span>	
 <table>
 	<thead>
 		<tr>

@@ -132,22 +132,36 @@ object Application extends Controller {
     })
 	
 	
-	def getMoveLocations(gamePlayerEmpire: Int, unitNumber: Int): Action[A] = 
+	def getMoveLocations(gamePlayerEmpireID: Int, unitNumber: Int) = 
 	  new ApplicationAction(Action {implicit request => {
 	    import Scalaz._
 	    
 	    val usernameValidation: Validation[Exception, String] = 
 	      session.get(Security.username).toSuccess(new Exception("No username in session"))
 	    
-	    usernameValidation.flatMap((username: String) => {
+
+	    val adjacentLocations = usernameValidation.flatMap((username: String) => {
 	      DB.withConnection((connection: java.sql.Connection) => {
-			val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-			using(dbSession) {
-				
-			}
-		  }
+			    val dbSession = DBSession.create(connection, new RevisedPostgreSqlAdapter)
+			    using(dbSession) {
+            val diplomacyUnitValidation = 
+              Jdip.diplomacyUnits.find(dpu => 
+                dpu.owner.equals(gamePlayerEmpireID) && dpu.unitNumber.equals(unitNumber)).
+                  toSuccess(new Exception("Could not find the unit with unit number: %d" format unitNumber))
+
+          
+            def getAdjacencies(locationID: Int) = Success(Jdip.adjacencies.filter(adj =>
+              adj.srcLocation.equals(locationID)))
+
+            diplomacyUnitValidation.map(getAdjecencies(_))
+            
+			    }
+		    })
 	    })
 	    
-	      
+	    adjacentLocations match {
+        case Success(x: Iterable[_]) => Ok("Success")
+        case Failure(e: Exception) => PreconditionFailed(e.getMessage)
+      } 
 	  }})
 }
