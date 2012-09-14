@@ -19,7 +19,7 @@ class ApplicationAction[A](action: Action[A]) extends Action[A] {
   def parser: BodyParser[A] = action.parser
 }
 
-object Application extends Controller {
+object Application extends Controller with OptionTs {
 	import play.api.Play._
   
     def index = new ApplicationAction(Action {
@@ -68,7 +68,9 @@ object Application extends Controller {
         }
       })
     })
-    
+
+    implicit def toOptionTFromOption[A](option: Option[A]): OptionT[List, A] = optionT[List](option :: Nil)
+
     def gameScreen(gameName: String = "") = new ApplicationAction(Action { implicit request =>
       import Scalaz._
       
@@ -117,13 +119,21 @@ object Application extends Controller {
           
           
           diplomacyUnitsValidation match {
-            case Success(x: Iterable[_]) => {
+            case Success(diplomacyUnits: Iterable[_]) => {
               val actions = from(Jdip.orderTypeUnitTypes)((otut: OrderTypeUnitType) => 
-            	where(otut.orderType in from(Jdip.orderTypes)((ot: OrderType) => where(ot.phase === Phase.MOVEMENT) select(ot.id)))	  
+            	  where(otut.orderType in from(Jdip.orderTypes)((ot: OrderType) => 
+                  where(ot.phase === Phase.MOVEMENT) select(ot.id)))	  
                 select(otut))
-              val armyActions = actions.filter((otut: OrderTypeUnitType) => otut.unitType.equals(UnitType.ARMY))
-              val fleetActions = actions.filter((otut: OrderTypeUnitType) => otut.unitType.equals(UnitType.FLEET))
-              Ok(views.html.Application.gameScreen(x, fleetActions, armyActions))
+              val armyActions = actions.filter((otut: OrderTypeUnitType) => 
+                otut.unitType.equals(UnitType.ARMY))
+              val fleetActions = actions.filter((otut: OrderTypeUnitType) => 
+                otut.unitType.equals(UnitType.FLEET))
+
+              
+
+              Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits), 
+                  fleetActions, 
+                  armyActions))
             }
             case Failure(e: Exception) => Ok(e.getMessage)
           }
@@ -131,37 +141,45 @@ object Application extends Controller {
       })
     })
 	
-	
-	def getMoveLocations(gamePlayerEmpireID: Int, unitNumber: Int) = 
-	  new ApplicationAction(Action {implicit request => {
-	    import Scalaz._
-	    
-	    val usernameValidation: Validation[Exception, String] = 
-	      session.get(Security.username).toSuccess(new Exception("No username in session"))
-	    
-
-	    val adjacentLocations = usernameValidation.flatMap((username: String) => {
-	      DB.withConnection((connection: java.sql.Connection) => {
-			    val dbSession = DBSession.create(connection, new RevisedPostgreSqlAdapter)
-			    using(dbSession) {
-            val diplomacyUnitValidation = 
-              Jdip.diplomacyUnits.find(dpu => 
-                dpu.owner.equals(gamePlayerEmpireID) && dpu.unitNumber.equals(unitNumber)).
-                  toSuccess(new Exception("Could not find the unit with unit number: %d" format unitNumber))
-
-          
-            def getAdjacencies(locationID: Int) = Success(Jdip.adjacencies.filter(adj =>
-              adj.srcLocation.equals(locationID)))
-
-            diplomacyUnitValidation.map(getAdjecencies(_))
+	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 
+    Iterable[Tuple2[String, String]] =
+    diplomacyUnits.map((dpu: DiplomacyUnit) => {
+       Jdip.locations.lookup(dpu.unitLocation).map(_ match {
+            case Location(prov, Coast.NO_COAST) => prov
+            case Location(prov, Coast.ALL_COAST) => prov
+            case Location(prov, coast) => "%s-%s" format (prov, coast)
+          }).map((dpu.unitType, _))       
+    }).flatten
             
-			    }
-		    })
-	    })
+      
+  private def getMoveLocations(gamePlayerEmpireID: Int, 
+                               unitNumber: Int): Iterable[Location] = {
+	    import Scalaz._
+
+      val adjacentLocations: Validation[Exception, Iterable[_]] = 
+	        DB.withConnection((connection: java.sql.Connection) => {
+			      val dbSession = DBSession.create(connection, new RevisedPostgreSqlAdapter)
+			      using(dbSession) {
+              val diplomacyUnitValidation: Validation[Exception, DiplomacyUnit] = 
+                Jdip.diplomacyUnits.find(dpu => 
+                  dpu.owner.equals(gamePlayerEmpireID) && dpu.unitNumber.equals(unitNumber)).
+                    toSuccess(new Exception("Could not find the unit with unit number: %d" format unitNumber))
+
+              def getMoves(srcLocationID: Int) = from(Jdip.locations)(loc =>
+                where(loc.id in from(Jdip.adjacencies)(adj => 
+                  where(adj.srcLocation === srcLocationID) select(adj))
+                ) select(loc))
+
+              diplomacyUnitValidation.map((u: DiplomacyUnit) => getMoves(u.unitLocation).map(_))
+            
+			      }
+		      })
 	    
 	    adjacentLocations match {
-        case Success(x: Iterable[_]) => Ok("Success")
-        case Failure(e: Exception) => PreconditionFailed(e.getMessage)
-      } 
-	  }})
+        case Success(x: Iterable[_]) => x
+        case Failure(e: Exception) => Nil
+        case _ => Nil
+      }
+    }
+	  
 }

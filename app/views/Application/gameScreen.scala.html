@@ -1,16 +1,16 @@
-@(diplomacyUnits: Iterable[com.squeryl.jdip.tables.DiplomacyUnit], 
+@(diplomacyUnits: Iterable[Tuple2[String, String]], 
 	fleetActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType], 
 	armyActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType])
-import com.squeryl.jdip.tables.OrderType
-import com.squeryl.jdip.tables.UnitType
+@import com.squeryl.jdip.tables.OrderType
+@import com.squeryl.jdip.tables.UnitType
 
 	<span id="orders" visibility="collapse">
 		@diplomacyUnits.map { diplomacyUnit => 
-			<span id="@diplomacyUnit.unitLocation">
+			<span id="@diplomacyUnit._2">
 							<span class="@OrderType.MOVE"></span>
 							<span class="@OrderType.SUPPORT_MOVE"></span>
 							<span class="@OrderType.SUPPORT_HOLD"></span>
-							@if(diplomacyUnit.unitType.equals(UnitType.FLEET)) {
+							@if(diplomacyUnit._1.equals(UnitType.FLEET)) {
 								<span class="@OrderType.CONVOY"></span>
 							}
 			</span>
@@ -28,10 +28,10 @@ import com.squeryl.jdip.tables.UnitType
 	</thead>
 	@diplomacyUnits.map {diplomacyUnit =>
 		<tr>
-			<td>@diplomacyUnit.unitType</td>
-			<td>@diplomacyUnit.unitLocation</td>
+			<td>@diplomacyUnit._1</td>
+			<td>@diplomacyUnit._2</td>
 			<td><select>
-				@defining(diplomacyUnit.unitType) { unitType =>
+				@defining(diplomacyUnit._1) { unitType =>
 					@unitType match { 
 						case com.squeryl.jdip.tables.UnitType.ARMY => { 
 							@armyActions.map { armyAction => <option>@armyAction.orderType</option>}
