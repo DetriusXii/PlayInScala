@@ -1,10 +1,24 @@
-@(diplomacyUnits: Iterable[Tuple2[String, String]], 
+@(diplomacyUnits: Iterable[Tuple2[String, String]],
+  moveOrdersMap: Iterable[Tuple2[String, Iterable[String]]], 
 	fleetActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType], 
 	armyActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType])
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
 
-	<span id="orders" visibility="collapse">
+<span id="orders" visibility="collapse">
+	<span class="moveOrders">
+		@moveOrdersMap.map { moveOrder =>
+		<select class="@moveOrder._1">
+			@defining(moveOrder._2) { moveDestinations =>
+				@moveDestionation.map { moveDestination =>
+				<option class="@moveDestin">
+
+					</option>
+				}
+			}
+			</select>
+		}
+	</span>	
 		@diplomacyUnits.map { diplomacyUnit => 
 			<span id="@diplomacyUnit._2">
 							<span class="@OrderType.MOVE"></span>

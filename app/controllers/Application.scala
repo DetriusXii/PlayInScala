@@ -102,19 +102,22 @@ object Application extends Controller with OptionTs {
               where(dpu.owner === gamePlayerEmpire.id)
               select(dpu)
             )
+
+          
+          def getMoves(srcLocationID: Int) = from(Jdip.locations)(loc =>
+              where(loc.id in from(Jdip.adjacencies)(adj =>
+                where(adj.srcLocation === srcLocationID) select(adj.dstLocation)))
+              select(loc)).map(getFormattedLocationName(_))
             
           val diplomacyUnitsValidation = for ( 
-              username <- usernameValidation;
-              game <- Jdip.games.lookup(gameName).
-        		  toSuccess(new Exception("No game found with game name %s" format gameName));
-        		player <- Jdip.players.lookup(username).
-        			toSuccess(new Exception("No player found with player name %s" format username));
-        		gamePlayer <- getGamePlayer(game, player);
-        		gamePlayerEmpire <- getGamePlayerEmpire(gamePlayer)
-        		
-        		) yield (
-        			getDiplomacyUnits(gamePlayerEmpire)
-        		)
+                username <- usernameValidation;
+                game <- Jdip.games.lookup(gameName).
+        		      toSuccess(new Exception("No game found with game name %s" format gameName));
+                player <- Jdip.players.lookup(username).
+        		      toSuccess(new Exception("No player found with player name %s" format username));
+                gamePlayer <- getGamePlayer(game, player);
+        	      gamePlayerEmpire <- getGamePlayerEmpire(gamePlayer)
+              ) yield ( getDiplomacyUnits(gamePlayerEmpire) )
           
           
           
@@ -128,10 +131,14 @@ object Application extends Controller with OptionTs {
                 otut.unitType.equals(UnitType.ARMY))
               val fleetActions = actions.filter((otut: OrderTypeUnitType) => 
                 otut.unitType.equals(UnitType.FLEET))
-
               
+              val moveOrdersMap = diplomacyUnits.map(dpu => {
+                val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
+                srcLocationOption.map((getFormattedLocationName(location), getMoves(dpu.unitLocation)))
+              })
 
-              Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits), 
+              Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
+                  moveOrdersMap,
                   fleetActions, 
                   armyActions))
             }
@@ -141,45 +148,18 @@ object Application extends Controller with OptionTs {
       })
     })
 	
+  private def getFormattedLocationName(location: Location): Option[String] = location match {
+    case Location(prov, Coast.NO_COAST) => prov
+    case Location(prov, Coast.ALL_COAST) => prov
+    case Location(prov, coast) => "%s-%s" format (prov, coast)
+  }
+
 	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 
     Iterable[Tuple2[String, String]] =
     diplomacyUnits.map((dpu: DiplomacyUnit) => {
-       Jdip.locations.lookup(dpu.unitLocation).map(_ match {
-            case Location(prov, Coast.NO_COAST) => prov
-            case Location(prov, Coast.ALL_COAST) => prov
-            case Location(prov, coast) => "%s-%s" format (prov, coast)
-          }).map((dpu.unitType, _))       
+       Jdip.locations.lookup(dpu.unitLocation).map(getFormattedLocationName(_)).map((dpu.unitType, _))       
     }).flatten
             
       
-  private def getMoveLocations(gamePlayerEmpireID: Int, 
-                               unitNumber: Int): Iterable[Location] = {
-	    import Scalaz._
-
-      val adjacentLocations: Validation[Exception, Iterable[_]] = 
-	        DB.withConnection((connection: java.sql.Connection) => {
-			      val dbSession = DBSession.create(connection, new RevisedPostgreSqlAdapter)
-			      using(dbSession) {
-              val diplomacyUnitValidation: Validation[Exception, DiplomacyUnit] = 
-                Jdip.diplomacyUnits.find(dpu => 
-                  dpu.owner.equals(gamePlayerEmpireID) && dpu.unitNumber.equals(unitNumber)).
-                    toSuccess(new Exception("Could not find the unit with unit number: %d" format unitNumber))
-
-              def getMoves(srcLocationID: Int) = from(Jdip.locations)(loc =>
-                where(loc.id in from(Jdip.adjacencies)(adj => 
-                  where(adj.srcLocation === srcLocationID) select(adj))
-                ) select(loc))
-
-              diplomacyUnitValidation.map((u: DiplomacyUnit) => getMoves(u.unitLocation).map(_))
-            
-			      }
-		      })
-	    
-	    adjacentLocations match {
-        case Success(x: Iterable[_]) => x
-        case Failure(e: Exception) => Nil
-        case _ => Nil
-      }
-    }
 	  
 }
