@@ -1,4 +1,6 @@
-*
-!app
-!conf/routes
-!public
+lib/
+logs/
+project/
+target/
+test/
+conf/application.conf
