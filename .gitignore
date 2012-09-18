@@ -4,3 +4,6 @@ project/
 target/
 test/
 conf/application.conf
+.classpath/
+.project/
+.settings/
