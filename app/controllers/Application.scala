@@ -102,9 +102,8 @@ object Application extends Controller with OptionTs {
               where(dpu.owner === gamePlayerEmpire.id)
               select(dpu)
             )
-
           
-          def getMoves(srcLocationID: Int) = from(Jdip.locations)(loc =>
+          def getMoves(srcLocationID: Int) = from(Jdip.locations)(loc => 
               where(loc.id in from(Jdip.adjacencies)(adj =>
                 where(adj.srcLocation === srcLocationID) select(adj.dstLocation)))
               select(loc)).map(getFormattedLocationName(_))
@@ -134,8 +133,10 @@ object Application extends Controller with OptionTs {
               
               val moveOrdersMap = diplomacyUnits.map(dpu => {
                 val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
-                srcLocationOption.map((getFormattedLocationName(location), getMoves(dpu.unitLocation)))
-              })
+                srcLocationOption.map(loc => (getFormattedLocationName(loc), getMoves(dpu.unitLocation)))
+              }).flatten
+
+              println(moveOrdersMap);
 
               Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
                   moveOrdersMap,
@@ -148,7 +149,7 @@ object Application extends Controller with OptionTs {
       })
     })
 	
-  private def getFormattedLocationName(location: Location): Option[String] = location match {
+  private def getFormattedLocationName(location: Location): String = location match {
     case Location(prov, Coast.NO_COAST) => prov
     case Location(prov, Coast.ALL_COAST) => prov
     case Location(prov, coast) => "%s-%s" format (prov, coast)

@@ -5,29 +5,19 @@
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
 
-<span id="orders" visibility="collapse">
+<span id="orders" visibility="collapse" display="none">
 	<span class="moveOrders">
 		@moveOrdersMap.map { moveOrder =>
-		<select class="@moveOrder._1">
+			<ul class="@moveOrder._1">
 			@defining(moveOrder._2) { moveDestinations =>
-				@moveDestionation.map { moveDestination =>
-				<option>@moveDestination</option>
+				@moveDestinations.map { moveDestination =>
+				<li>@moveDestination</li>
 				}
 			}
-			</select>
-		}
-	</span>	
-		@diplomacyUnits.map { diplomacyUnit => 
-			<span id="@diplomacyUnit._2">
-							<span class="@OrderType.MOVE"></span>
-							<span class="@OrderType.SUPPORT_MOVE"></span>
-							<span class="@OrderType.SUPPORT_HOLD"></span>
-							@if(diplomacyUnit._1.equals(UnitType.FLEET)) {
-								<span class="@OrderType.CONVOY"></span>
-							}
-			</span>
-		}
-	</span>	
+			</ul>
+			}
+	</span>
+</span>
 <table>
 	<thead>
 		<tr>

@@ -7,3 +7,4 @@ conf/application.conf
 .classpath
 .project
 .settings/
+*~
