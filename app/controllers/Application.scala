@@ -118,7 +118,12 @@ object Application extends Controller with OptionTs {
         	      gamePlayerEmpire <- getGamePlayerEmpire(gamePlayer)
               ) yield ( getDiplomacyUnits(gamePlayerEmpire) )
           
-          
+          def getSupportHolds(srcLocationID: Int) = from(Jdip.locations)(loc =>
+            where(loc.id in from(Jdip.adjacencies, Jdip.diplomacyUnits)((adj,dpu) =>
+              where(adj.srcLocation === srcLocationID and dpu.unitLocation === adj.dstLocation)
+              select(adj.dstLocation)))
+              select(loc)
+            ).map(getFormattedLocationName(_))
           
           diplomacyUnitsValidation match {
             case Success(diplomacyUnits: Iterable[_]) => {
@@ -136,10 +141,17 @@ object Application extends Controller with OptionTs {
                 srcLocationOption.map(loc => (getFormattedLocationName(loc), getMoves(dpu.unitLocation)))
               }).flatten
 
-              println(moveOrdersMap);
+              val supportHoldsMap = diplomacyUnits.map(dpu => {
+                val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
+                srcLocationOption.map(loc => 
+                  (getFormattedLocationName(loc), getSupportHolds(dpu.unitLocation)))
+              }).flatten
+
+              println(supportHoldsMap);
 
               Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
                   moveOrdersMap,
+                  supportHoldsMap,
                   fleetActions, 
                   armyActions))
             }

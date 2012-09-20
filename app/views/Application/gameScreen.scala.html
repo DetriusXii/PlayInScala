@@ -1,12 +1,16 @@
 @(diplomacyUnits: Iterable[Tuple2[String, String]],
-  moveOrdersMap: Iterable[Tuple2[String, Iterable[String]]], 
+	moveOrdersMap: Iterable[Tuple2[String, Iterable[String]]],
+	supportHoldsMap: Iterable[Tuple2[String, Iterable[String]]],
 	fleetActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType], 
 	armyActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType])
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
-
-<span id="orders" visibility="collapse" display="none">
-	<span class="moveOrders">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:svg="http://www.w3.org/2000/svg" 
+      xmlns:xlink="http://www.w3.org/1999/xlink">
+<div id="orders" style="visibility: hidden; display: none;">
+	<div class="moveOrders">
 		@moveOrdersMap.map { moveOrder =>
 			<ul class="@moveOrder._1">
 			@defining(moveOrder._2) { moveDestinations =>
@@ -16,8 +20,19 @@
 			}
 			</ul>
 			}
-	</span>
-</span>
+	</div>
+	<div class="supportHoldOrders">
+		@supportHoldsMap.map { supportHold =>
+			<ul class="@supportHold._1">
+			@defining(supportHold._2) { supportDestinations =>
+				@supportDestinations.map { supportDestination =>
+				<li>@supportDestination</li>
+				}
+			}
+			</ul>
+		}
+	</div>
+</div>
 <table>
 	<thead>
 		<tr>
@@ -49,3 +64,4 @@
 		</tr>
 	}
 </table>
+</html>
