@@ -102,11 +102,6 @@ object Application extends Controller with OptionTs {
               where(dpu.owner === gamePlayerEmpire.id)
               select(dpu)
             )
-          
-          def getMoves(srcLocationID: Int) = from(Jdip.locations)(loc => 
-              where(loc.id in from(Jdip.adjacencies)(adj =>
-                where(adj.srcLocation === srcLocationID) select(adj.dstLocation)))
-              select(loc)).map(getFormattedLocationName(_))
             
           val diplomacyUnitsValidation = for ( 
                 username <- usernameValidation;
@@ -117,13 +112,7 @@ object Application extends Controller with OptionTs {
                 gamePlayer <- getGamePlayer(game, player);
         	      gamePlayerEmpire <- getGamePlayerEmpire(gamePlayer)
               ) yield ( getDiplomacyUnits(gamePlayerEmpire) )
-          
-          def getSupportHolds(srcLocationID: Int) = from(Jdip.locations)(loc =>
-            where(loc.id in from(Jdip.adjacencies, Jdip.diplomacyUnits)((adj,dpu) =>
-              where(adj.srcLocation === srcLocationID and dpu.unitLocation === adj.dstLocation)
-              select(adj.dstLocation)))
-              select(loc)
-            ).map(getFormattedLocationName(_))
+         
           
           diplomacyUnitsValidation match {
             case Success(diplomacyUnits: Iterable[_]) => {
@@ -138,14 +127,22 @@ object Application extends Controller with OptionTs {
               
               val moveOrdersMap = diplomacyUnits.map(dpu => {
                 val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
-                srcLocationOption.map(loc => (getFormattedLocationName(loc), getMoves(dpu.unitLocation)))
+                srcLocationOption.map(loc => (getFormattedLocationName(loc), 
+                    getMoves(dpu.unitLocation).map(getFormattedLocationNames(_))))
               }).flatten
 
               val supportHoldsMap = diplomacyUnits.map(dpu => {
                 val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
                 srcLocationOption.map(loc => 
-                  (getFormattedLocationName(loc), getSupportHolds(dpu.unitLocation)))
+                  (getFormattedLocationName(loc), getSupportHolds(dpu.unitLocation).map(getFormattedLocationNames(_))))
               }).flatten
+              
+              val supportMovesMap = diplomacyUnits.map(dpu => {
+                val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
+                srcLocationOption.map(loc =>
+                	(getFormattedLocationName(loc), getSupportMoves(dpu.unitLocation).map(u => getFormatted))
+                )
+              })
 
               println(supportHoldsMap);
 
@@ -161,11 +158,7 @@ object Application extends Controller with OptionTs {
       })
     })
 	
-  private def getFormattedLocationName(location: Location): String = location match {
-    case Location(prov, Coast.NO_COAST) => prov
-    case Location(prov, Coast.ALL_COAST) => prov
-    case Location(prov, coast) => "%s-%s" format (prov, coast)
-  }
+  
 
 	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 
     Iterable[Tuple2[String, String]] =
