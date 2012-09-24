@@ -4,25 +4,28 @@ import org.squeryl._
 import org.squeryl.PrimitiveTypeMode._
 import com.squeryl.jdip.schemas._
 import com.squeryl.jdip.tables._
+import scalaz.States
 
-object CommonQueries {
-	private def getFormattedLocationName(location: Location): String = location match {
+object CommonQueries extends States {
+	private def getFormattedLocationName(location: Location): String = 
+    location match {
     	case Location(prov, Coast.NO_COAST) => prov
     	case Location(prov, Coast.ALL_COAST) => prov
     	case Location(prov, coast) => "%s-%s" format (prov, coast)
-	}
+	  }
   
 	def getMoves(srcLocationID: Int): Iterable[Location] = from(Jdip.locations)(loc => 
               where(loc.id in from(Jdip.adjacencies)(adj =>
                 where(adj.srcLocation === srcLocationID) select(adj.dstLocation)))
               select(loc))
     
-    def getMoves(srcDiplomacyUnit: DiplomacyUnit): Iterable[Location] = getMoves(srcDiplomacyUnit.unitLocation)
+  def getMoves(srcDiplomacyUnit: DiplomacyUnit): Iterable[Location] = 
+    getMoves(srcDiplomacyUnit.unitLocation)
     
-    def getFormattedMoves(srcLocationID: Int): Iterable[String] = 
-      getMoves(srcLocationID).map(getFormattedLocationName(_))
+  def getFormattedMoves(srcLocationID: Int): Iterable[String] = 
+    getMoves(srcLocationID).map(getFormattedLocationName(_))
       
-    def getMovesOrdersMap(diplomacyUnits: Iterable[DiplomacyUnit]) = 
+  def getMovesOrdersMap(diplomacyUnits: Iterable[DiplomacyUnit]) = 
       diplomacyUnits.map(dpu => {
                 val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
                 srcLocationOption.map(loc => (getFormattedLocationName(loc), 
@@ -53,11 +56,12 @@ object CommonQueries {
 	 def getFormattedSupportHolds(srcLocationID: Int): Iterable[String] =
 	   getSupportHolds(srcLocationID).map(getFormattedLocationName(_))
 	  
-	 def getSupportHoldsMap(diplomacyUnits: Iterable[DiplomacyUnit]) =
-	   diplomacyUnits.map(dpu => {
-                val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
-                srcLocationOption.map(loc => 
-                  (getFormattedLocationName(loc), getSupportHolds(dpu.unitLocation).map(getFormattedLocationName(_))))
+  def getSupportHoldsMap(diplomacyUnits: Iterable[DiplomacyUnit]) =
+	  diplomacyUnits.map(dpu => {
+      val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
+        srcLocationOption.map(loc => 
+          (getFormattedLocationName(loc), 
+            getSupportHolds(dpu.unitLocation).map(getFormattedLocationName(_))))
        }).flatten
 	
 	 def getSupportMoves(srcLocationID: Int): Iterable[(Location, Iterable[Location])] = {
@@ -89,8 +93,10 @@ object CommonQueries {
 	 def getSupportMoves(srcDiplomacyUnit: DiplomacyUnit): Iterable[(Location, Iterable[Location])] =
 	   getSupportMoves(srcDiplomacyUnit.unitLocation)
 	 
-	 def getFormattedSupportMoves(srcLocationID: Int): Iterable[(String, Iterable[String])] =
-	   getSupportMoves(srcLocationID).map(u => (getFormattedLocationName(u._1), u._2.map(getFormattedLocationName(_))))
+   
+  def getFormattedSupportMoves(srcLocationID: Int): Iterable[(String, Iterable[String])] =
+	  getSupportMoves(srcLocationID).map(u => 
+      (getFormattedLocationName(u._1), u._2.map(getFormattedLocationName(_))))
 
 	 def getMovesByConvoy(srcDiplomacyUnit: DiplomacyUnit): Iterable[(Location, Iterable[Location]) = {
 	   (srcDiplomacyUnit.unitType match {
@@ -107,7 +113,20 @@ object CommonQueries {
 	     
 	     coastsOnProvinceOption.map((dpu, _))
 	   }).flatMap((u: Tuple2[DiplomacyUnit, Iterable[Location]]) => {
-	     
+       val diplomacyUnit = u._1
+       val coastLocations = u._2
+       
+       val locationsWithVisitedMarker = 
+         Jdip.locations.map(state[Boolean, Location]((s: Boolean) => (false, _)))
+       
+       def traverseAdjacencies(loc : Location) = {
+         locationsWithVisitedMarker.find(_.id == loc.id).map(
+         
+         val adjacenciesForLocation = Jdip.adjacencies.filter(_.srcLocation == loc.id)
+        
+         val nextAdjacencies
+       }
+
 	   })
 	 }
 }
