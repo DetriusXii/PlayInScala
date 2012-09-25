@@ -107,6 +107,10 @@ object CommonQueries {
 	     
 	     coastsOnProvinceOption.map((dpu, _))
 	   }).flatMap((u: Tuple2[DiplomacyUnit, Iterable[Location]]) => {
+	     val dpu = u._1
+	     val coastLocations = u._2
+	     
+	     val nodes = Jdip.adjacencies.map()
 	     
 	   })
 	 }
