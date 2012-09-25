@@ -115,16 +115,22 @@ object CommonQueries extends States {
 	   }).flatMap((u: Tuple2[DiplomacyUnit, Iterable[Location]]) => {
        val diplomacyUnit = u._1
        val coastLocations = u._2
-       
+       type ForallCommonQueries[A] = Forall[({type Q[S] = ST[S, A]})#Q]
+       val trueSTRef = new STRef[CommonQueries, Boolean](true)
+
        val locationsWithVisitedMarker = 
-         Jdip.locations.map(state[Boolean, Location]((s: Boolean) => (false, _)))
+         Jdip.locations.map((new STRef[CommonQueries, Boolean](false), _))
        
        def traverseAdjacencies(loc : Location) = {
-         locationsWithVisitedMarker.find(_.id == loc.id).map(
+         locationsWithVisitedMarker.find(_._2.id == loc.id).map(u => {
+           runST(new ForallCommonQueries[Unit] { def apply[CommonQueries] = u._1 swap trueSTRef })
+         })
          
          val adjacenciesForLocation = Jdip.adjacencies.filter(_.srcLocation == loc.id)
-        
-         val nextAdjacencies
+         val nextLocations = Jdip.locations.filter(loc => 
+            adjacenciesForLocation.exists(_.dstLocation
+
+         val nextLocation = 
        }
 
 	   })
