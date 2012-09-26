@@ -98,6 +98,47 @@ object CommonQueries extends States {
 	  getSupportMoves(srcLocationID).map(u => 
       (getFormattedLocationName(u._1), u._2.map(getFormattedLocationName(_))))
 
+  
+   def traverseAdjacencies(loc : Location, 
+                           convoyableLocations: Iterable[Location]): Iterable[Location] = {
+     locationsWithVisitedMarker.find(_._2.id == loc.id).map(u => {
+       runST(new ForallCommonQueries[Unit] { def apply[CommonQueries] = u._1 swap trueSTRef })
+     })
+
+     val newConvoyableLocations = Jdip.locations.find(_ match {
+         case Location(`loc.province`, Coast.NO_COAST) => true
+         case _ => false
+     }) match {
+        case Some(newLoc: Location) => newLoc :: convoyableLocations
+        case None => convoyableLocations
+     }
+     
+     val adjacenciesForLocation = Jdip.adjacencies.filter(_.srcLocation == loc.id)
+     val nextUnvisitedLocations = Jdip.locations.filter(loc => 
+        adjacenciesForLocation.exists(_.dstLocation == loc.id)).
+      filter(loc => {
+        val visitedMarkerOption = locationsWithVisitedMarker.find(_._2.id == loc.id)
+        val visitedOption = visitedMarkerOption.map({
+          val visitedMarkerSTRef = _._1
+          runST(new ForallCommonQueries[Boolean] { def apply[CommonQueries] = visitedMarkerSTRef.read })
+        })
+
+        visitedOption match {
+          case Some(false) => true
+          case _ => false
+        }
+    })
+
+     val nextLocationsWithFleetUnits = nextUnvisitedLocations.filter(loc =>
+       Jdip.diplomacyUnits.exists(_ match {
+           case DiplomacyUnit(UnitType.FLEET, _, `loc.id`, _, _) => true
+           case _ => false
+       })) 
+
+     nextLocationsWithFleetUnits.foldLeft(newConvoyableLocations)((u, v) => 
+       traverseAdjacencies(v, u))
+   }
+
 	 def getMovesByConvoy(srcDiplomacyUnit: DiplomacyUnit): Iterable[(Location, Iterable[Location]) = {
 	   (srcDiplomacyUnit.unitType match {
 	     case UnitType.ARMY => Some(srcDiplomacyUnit)
@@ -118,21 +159,12 @@ object CommonQueries extends States {
        type ForallCommonQueries[A] = Forall[({type Q[S] = ST[S, A]})#Q]
        val trueSTRef = new STRef[CommonQueries, Boolean](true)
 
-       val locationsWithVisitedMarker = 
+       val locationsWithVisitedMarker: Iterable[Tuple2[STRef[CommonQueries, Boolean], Location]] = 
          Jdip.locations.map((new STRef[CommonQueries, Boolean](false), _))
        
-       def traverseAdjacencies(loc : Location) = {
-         locationsWithVisitedMarker.find(_._2.id == loc.id).map(u => {
-           runST(new ForallCommonQueries[Unit] { def apply[CommonQueries] = u._1 swap trueSTRef })
-         })
-         
-         val adjacenciesForLocation = Jdip.adjacencies.filter(_.srcLocation == loc.id)
-         val nextLocations = Jdip.locations.filter(loc => 
-            adjacenciesForLocation.exists(_.dstLocation
+       init[Iterable[Tuple2[STRef[CommonQueries, Boolean], Location]]]
 
-         val nextLocation = 
-       }
-
+       traverseAdjacencies(
 	   })
 	 }
 }
