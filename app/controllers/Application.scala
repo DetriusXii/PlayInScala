@@ -125,24 +125,9 @@ object Application extends Controller with OptionTs {
               val fleetActions = actions.filter((otut: OrderTypeUnitType) => 
                 otut.unitType.equals(UnitType.FLEET))
               
-              val moveOrdersMap = diplomacyUnits.map(dpu => {
-                val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
-                srcLocationOption.map(loc => (getFormattedLocationName(loc), 
-                    getMoves(dpu.unitLocation).map(getFormattedLocationNames(_))))
-              }).flatten
-
-              val supportHoldsMap = diplomacyUnits.map(dpu => {
-                val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
-                srcLocationOption.map(loc => 
-                  (getFormattedLocationName(loc), getSupportHolds(dpu.unitLocation).map(getFormattedLocationNames(_))))
-              }).flatten
-              
-              val supportMovesMap = diplomacyUnits.map(dpu => {
-                val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
-                srcLocationOption.map(loc =>
-                	(getFormattedLocationName(loc), getSupportMoves(dpu.unitLocation).map(u => getFormatted))
-                )
-              })
+              val moveOrdersMap = CommonQueries.getMoveOrdersMap(diplomacyUnits)
+              val supportHoldsMap = CommonQueries.getSupportHoldsMap(diplomacyUnits)
+              val supportMovesMap = CommonQueries.getSupportMovesMap(diplomacyUnits)              
 
               println(supportHoldsMap);
 
@@ -162,9 +147,13 @@ object Application extends Controller with OptionTs {
 
 	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 
     Iterable[Tuple2[String, String]] =
-    diplomacyUnits.map((dpu: DiplomacyUnit) => {
-       Jdip.locations.lookup(dpu.unitLocation).map(getFormattedLocationName(_)).map((dpu.unitType, _))       
-    }).flatten
+    diplomacyUnits.map((dpu: DiplomacyUnit) =>
+      Jdip.
+        locations.
+        lookup(dpu.unitLocation).
+        map(CommonQueries.getFormattedLocationName(_)).
+        map((dpu.unitType, _))       
+    ).flatten
             
       
 	  
