@@ -4,7 +4,7 @@ import org.squeryl._
 import org.squeryl.PrimitiveTypeMode._
 import com.squeryl.jdip.schemas._
 import com.squeryl.jdip.tables._
-import scalaz.States
+import scalaz._
 import scalaz.effects._
 
 object CommonQueries extends States {
@@ -105,11 +105,14 @@ object CommonQueries extends States {
             (getFormattedLocationName(srcLocation), getFormattedSupportMoves(srcLocation.id)))
       }).flatten
   
-  private type LocationWithMarkerNodeList = Iterable[Tuple2[STRef[Int, Boolean], Location]]
+  private trait VisitedQuery
+  private type LocationWithMarkerNodeList = Iterable[Tuple2[VisitedMarker, Location]]
+  private type VisitedMarker = STRef[VisitedQuery, Boolean]
+  private type ForallCommonQueries[A] = Forall[({type Q[S] = ST[S, A]})#Q]
 
   def traverseAdjacencies(loc : Location, 
-                          convoyableLocations: Iterable[Location],
-                          nodeList: LocationWithMarkerNodeList): Iterable[Location] = {
+                          convoyableLocations: List[Location],
+                          nodeList: LocationWithMarkerNodeList): List[Location] = {
     val updatedNodeList = markLocationAsVisited(loc, nodeList)
 
     val newConvoyableLocations = Jdip.locations.find(_ match {
@@ -132,14 +135,15 @@ object CommonQueries extends States {
       })) 
 
     nextLocationsWithFleetUnits.foldLeft(newConvoyableLocations)((u, v) => 
-      traverseAdjacencies(v, u))
+      traverseAdjacencies(v, u, updatedNodeList))
   }
 
-  def isLocationVisited(loc: Location, nodeList: LocationWithMarkerNodeList): Boolean = {
+  private def isLocationVisited(loc: Location, nodeList: LocationWithMarkerNodeList): Boolean = {
     val visitedMarkerOption = nodeList.find(_._2.id == loc.id)
-    val visitedOption = visitedMarkerOption.map({
-      val visitedMarkerSTRef = _._1
-      runST(new ForallCommonQueries[Boolean] { def apply[Int] = visitedMarkerSTRef.read })
+    val visitedOption = visitedMarkerOption.map(u => {
+      val visitedMarkerSTRef = u._1
+      runST(new ForallCommonQueries[Boolean] { 
+          def apply[VisitedQuery] = visitedMarkerSTRef.read.asInstanceOf[ST[VisitedQuery, Boolean]] })
     })
 
     visitedOption match {
@@ -148,39 +152,51 @@ object CommonQueries extends States {
     }
   }
 
-   def markLocationAsVisited(loc: Location, 
-     nodeList: LocationWithMarkerNodeList): LocationWithMarkerNodeList = {
-     val trueSTRef = new STRef[CommonQueries, Boolean](true)
-        state.find(_._2.id == loc.id).map(u => {
-          runST(new ForallCommonQueries[Unit] { def apply[Int] = u._1 swap trueSTRef })
-        })
-      state
+  private def markLocationAsVisited(loc: Location, 
+                            nodeList: LocationWithMarkerNodeList): LocationWithMarkerNodeList = {
+    val trueSTRef = new VisitedMarker(true)
+    nodeList.find(_._2.id == loc.id).map(u => {
+      runST(new ForallCommonQueries[Unit] { 
+          def apply[VisitedQuery] = (u._1 swap trueSTRef).asInstanceOf[ST[VisitedQuery, Unit]] })
+    })
+    nodeList
   }
 
-	 def getMovesByConvoy(srcDiplomacyUnit: DiplomacyUnit): Iterable[Location] = {
-	   (srcDiplomacyUnit.unitType match {
-	     case UnitType.ARMY => Some(srcDiplomacyUnit)
-	     case UnitType.FLEET => None
-	   }).flatMap(dpu => {
-	     val unitLocationOption: Option[Location] = Jdip.locations.lookup(dpu.unitLocation)
+	def getMovesByConvoy(srcDiplomacyUnit: DiplomacyUnit): Iterable[Location] = {
+	  (srcDiplomacyUnit.unitType match {
+	    case UnitType.ARMY => Some(srcDiplomacyUnit)
+	    case UnitType.FLEET => None
+	  }).flatMap(dpu => {
+	    val unitLocationOption: Option[Location] = Jdip.locations.lookup(dpu.unitLocation)
 	     
-	     val coastsOnProvinceOption: Option[Iterable[Location]] = unitLocationOption.map(_ match {
-	       case Location(province, Coast.NO_COAST) => Jdip.locations.filter(_ match {
-	         case Location(`province`, coast) => !coast.equals(Coast.NO_COAST)
-	       })
-	     })
+	    val coastsOnProvinceOption: Option[Iterable[Location]] = unitLocationOption.map(_ match {
+	      case Location(province, Coast.NO_COAST) => Jdip.locations.filter(_ match {
+	        case Location(`province`, coast) => !coast.equals(Coast.NO_COAST)
+	      })
+	    })
 	     
-	     coastsOnProvinceOption.map((dpu, _))
-	   }).flatMap((u: Tuple2[DiplomacyUnit, Iterable[Location]]) => {
-       val diplomacyUnit = u._1
-       val coastLocations = u._2
-       type ForallCommonQueries[A] = Forall[({type Q[S] = ST[S, A]})#Q]
+      coastsOnProvinceOption.map((dpu, _))
+    }).flatMap((u: Tuple2[DiplomacyUnit, Iterable[Location]]) => {
+      val diplomacyUnit = u._1
+      val coastLocations = u._2
 
-       val locationsWithVisitedMarker: Iterable[Tuple2[STRef[CommonQueries, Boolean], Location]] = 
-         Jdip.locations.map((new STRef[CommonQueries, Boolean](false), _))
-       
+      val locationsWithVisitedMarker: LocationWithMarkerNodeList = 
+        Jdip.locations.map((new VisitedMarker(false), _))
 
-       coastLocations.foldLeft(Nil)((u, v) => traverseAdjacencies(v, u, locationsWithVisitedMarker))
-	   })
-	 }
+      Some(coastLocations.foldLeft(Nil: List[Location])((u, v) => 
+         traverseAdjacencies(v, u, locationsWithVisitedMarker)))
+    }) match {
+      case Some(x: Iterable[Location]) => x
+      case None => Nil
+    }
+  }
+
+  def getMovesByConvoyMap(diplomacyUnits: Iterable[DiplomacyUnit]): Iterable[(String, Iterable[String])] = {
+    diplomacyUnits.map(dpu => {
+      val dpuLocationOption = Jdip.locations.lookup(dpu.unitLocation)
+      dpuLocationOption.map(loc => {
+        (getFormattedLocationName(loc), getMovesByConvoy(dpu).map(getFormattedLocationName(_)))
+      })
+    }).flatten
+  }
 }

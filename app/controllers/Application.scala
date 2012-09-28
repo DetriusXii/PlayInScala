@@ -127,9 +127,11 @@ object Application extends Controller with OptionTs {
               
               val moveOrdersMap = CommonQueries.getMoveOrdersMap(diplomacyUnits)
               val supportHoldsMap = CommonQueries.getSupportHoldsMap(diplomacyUnits)
-              val supportMovesMap = CommonQueries.getSupportMovesMap(diplomacyUnits)              
+              val supportMovesMap = CommonQueries.getSupportMovesMap(diplomacyUnits)
+              val movesByConvoyMap = CommonQueries.getMovesByConvoyMap(diplomacyUnits)
 
-              println(supportHoldsMap);
+              println(movesByConvoyMap);
+              
 
               Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
                   moveOrdersMap,
