@@ -110,32 +110,59 @@ object CommonQueries extends States {
   private type VisitedMarker = STRef[VisitedQuery, Boolean]
   private type ForallCommonQueries[A] = Forall[({type Q[S] = ST[S, A]})#Q]
 
-  def traverseAdjacencies(loc : Location, 
+  def traverseAdjacencies(loc : Location,
+		  				  originLocation: Location,
                           convoyableLocations: List[Location],
                           nodeList: LocationWithMarkerNodeList): List[Location] = {
     val updatedNodeList = markLocationAsVisited(loc, nodeList)
 
     val newConvoyableLocations = Jdip.locations.find(_ match {
-      case Location(loc.province, Coast.NO_COAST) => true
+      case Location(loc.province, Coast.NO_COAST) if !loc.province.equals(originLocation.province) => true
       case _ => false
     }) match {
       case Some(newLoc: Location) => newLoc :: convoyableLocations
       case None => convoyableLocations
     }
-     
-    val adjacenciesForLocation = Jdip.adjacencies.filter(_.srcLocation == loc.id)
-    val nextUnvisitedLocations = Jdip.locations.filter(loc => 
-      adjacenciesForLocation.exists(_.dstLocation == loc.id)).
-      filter(loc => isLocationVisited(loc, updatedNodeList))
-
-    val nextLocationsWithFleetUnits = nextUnvisitedLocations.filter(loc =>
-      Jdip.diplomacyUnits.exists(_ match {
-        case DiplomacyUnit(UnitType.FLEET, _, loc.id, _, _) => true
-        case _ => false
-      })) 
-
-    nextLocationsWithFleetUnits.foldLeft(newConvoyableLocations)((u, v) => 
-      traverseAdjacencies(v, u, updatedNodeList))
+    
+    val isLocationOnLand = Jdip.locations.exists(_ match {
+      case Location(loc.province, Coast.NO_COAST) => true
+      case _ => false
+    })
+    
+    if (!isLocationOnLand) {
+      val adjacenciesForLocation = Jdip.adjacencies.filter(_.srcLocation == loc.id)
+      val nextUnvisitedLocations = Jdip.locations.filter(loc => 
+	  	adjacenciesForLocation.exists(_.dstLocation == loc.id)).
+	  	filter(loc => isLocationVisited(loc, updatedNodeList))
+	  
+	  val nextLocationsWithFleetUnits = nextUnvisitedLocations.filter(loc =>
+	      Jdip.diplomacyUnits.exists(_ match {
+	        case DiplomacyUnit(UnitType.FLEET, _, loc.id, _, _) => true
+	        case _ => false
+	      }))
+	  val nextLocationsWithFleetUnitsAndOpenSeas = nextLocationsWithFleetUnits.filter(_ match {
+	      case Location(province, _) => Jdip.locations.exists(_ match {
+	        case Location(`province`, Coast.NO_COAST) => false
+	        case _ => true
+	      })
+	  })
+	  
+	  val nextLocationsWithLand = nextUnvisitedLocations.filter(_ match {
+	    case Location(province, _) => Jdip.locations.exists(_ match {
+	      case Location(`province`, Coast.NO_COAST) => true
+	      case _ => false
+	    })
+	  })
+	  
+	  val nextLocationsEitherOpenSeaFleetOrLand = 
+	    nextLocationsWithLand ++ nextLocationsWithFleetUnitsAndOpenSeas
+	  
+	  nextLocationsEitherOpenSeaFleetOrLand.foldLeft(newConvoyableLocations)((u, v) => 
+      	traverseAdjacencies(v, originLocation, u, updatedNodeList))
+    } else {
+      newConvoyableLocations
+    }
+    
   }
 
   private def isLocationVisited(loc: Location, nodeList: LocationWithMarkerNodeList): Boolean = {
@@ -172,19 +199,23 @@ object CommonQueries extends States {
 	    val coastsOnProvinceOption: Option[Iterable[Location]] = unitLocationOption.map(_ match {
 	      case Location(province, Coast.NO_COAST) => Jdip.locations.filter(_ match {
 	        case Location(`province`, coast) => !coast.equals(Coast.NO_COAST)
+	        case Location(_, _) => false
 	      })
 	    })
-	     
-      coastsOnProvinceOption.map((dpu, _))
-    }).flatMap((u: Tuple2[DiplomacyUnit, Iterable[Location]]) => {
+	  
+	  unitLocationOption.flatMap(loc => 
+	  	coastsOnProvinceOption.map((dpu, _, loc))
+	  )
+    }).flatMap((u: Tuple3[DiplomacyUnit, Iterable[Location], Location]) => {
       val diplomacyUnit = u._1
       val coastLocations = u._2
+      val originLocation = u._3
 
       val locationsWithVisitedMarker: LocationWithMarkerNodeList = 
         Jdip.locations.map((new VisitedMarker(false), _))
 
       Some(coastLocations.foldLeft(Nil: List[Location])((u, v) => 
-         traverseAdjacencies(v, u, locationsWithVisitedMarker)))
+         traverseAdjacencies(v, originLocation, u, locationsWithVisitedMarker)))
     }) match {
       case Some(x: Iterable[Location]) => x
       case None => Nil

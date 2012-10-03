@@ -145,7 +145,9 @@ object Application extends Controller with OptionTs {
       })
     })
 	
-  
+	def getEdgmapSVG(): Elem = {
+	  XML.load()
+	}
 
 	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 
     Iterable[Tuple2[String, String]] =
