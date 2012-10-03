@@ -145,8 +145,12 @@ object Application extends Controller with OptionTs {
       })
     })
 	
-	def getEdgmapSVG(): Elem = {
-	  XML.load()
+
+
+
+  def getSVGMap = Action { implicit request =>
+    val svgMap = JdipSVGRenderer.getRendere 
+	  Ok(svgMap)
 	}
 
 	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 

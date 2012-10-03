@@ -9,11 +9,12 @@ GET     /                                       controllers.Application.index
 GET     /players                                controllers.Application.players
 GET     /games                                  controllers.Application.games
 GET     /login                                  controllers.Authentication.login
-GET     /noUserLogin              	            controllers.Authentication.noUserLogin(username)
-GET     /noPasswordLogin		                controllers.Authentication.noPasswordLogin(username)
-GET		/noUserEnteredLogin						controllers.Authentication.noUserEnteredLogin
+GET     /noUserLogin              	        controllers.Authentication.noUserLogin(username)
+GET     /noPasswordLogin		        controllers.Authentication.noPasswordLogin(username)
+GET	/noUserEnteredLogin			controllers.Authentication.noUserEnteredLogin
 GET     /logout                                 controllers.Authentication.logout
 GET     /gameScreen/:gameName                 	controllers.Application.gameScreen(gameName)
+GET	/mapSVG					controllers.Application.getSVGMap
 
 # Post
 POST    /authenticate                           controllers.Authentication.authenticate
