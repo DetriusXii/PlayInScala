@@ -1,7 +1,9 @@
 package controllers
 
 import javax.xml.parsers._
+import java.io._
 import org.w3c.dom._
+import javax.xml.transform._
 
 object JdipSVGRenderer {
   val SVG_FILE_PATH = "public/images/egdipmap.svg"
@@ -26,6 +28,9 @@ object JdipSVGRenderer {
     val elementOption: Option[Element] = document.getElementById(BRIEF_LABEL_LAYER_ID)
     elementOption.map(_.setAttribute(VISIBILITY_ATTRIBUTE, VISIBLE))
     
+    document
+    
+    val transformer = TransformerFactory.newInstance.newTransformer
     
   }
 

@@ -149,9 +149,9 @@ object Application extends Controller with OptionTs {
 
 
   def getSVGMap = Action { implicit request =>
-    val svgMap = JdipSVGRenderer.getRendere 
-	  Ok(svgMap)
-	}
+    val svgMap = JdipSVGRenderer.getRenderedDocument 
+	Ok(svgMap)
+  }
 
 	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 
     Iterable[Tuple2[String, String]] =
