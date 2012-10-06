@@ -31,7 +31,7 @@ object JdipSVGRenderer {
     document
     
     val transformer = TransformerFactory.newInstance.newTransformer
-    
+    transformer.
   }
 
 }
