@@ -144,8 +144,6 @@ object Application extends Controller with OptionTs {
         }
       })
     })
-	
-
 
 
   def getSVGMap = Action { implicit request =>

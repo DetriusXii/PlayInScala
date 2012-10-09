@@ -6,9 +6,31 @@ import com.squeryl.jdip.schemas._
 import com.squeryl.jdip.tables._
 import scalaz._
 import scalaz.effects._
+import play.api.db.DB
+import org.squeryl.{Session => DBSession, _}
+import org.squeryl.dsl._
+import org.squeryl.PrimitiveTypeMode._
 
 object CommonQueries extends States {
-
+  import play.api.Application._
+  
+  lazy val locations: List[Location] = DB.withConnection((conn: java.sql.Connection) => {
+    val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+    using(dbSession) {
+      Jdip.locations.toList
+    }
+  })
+  
+  def getAllLandUnits: List[DiplomacyUnit] = DB.withConnection((conn: java.sql.Connection) => {
+    val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+    using(dbSession) {
+      from(Jdip.diplomacyUnits)(dpu => {
+        where(dpu.unitType === UnitType.ARMY)
+      })
+    }
+  })
+  
+  
   def getFormattedLocationName(location: Location): String = 
     location match {
     	case Location(prov, Coast.NO_COAST) => prov
@@ -229,5 +251,25 @@ object CommonQueries extends States {
         (getFormattedLocationName(loc), getMovesByConvoy(dpu).map(getFormattedLocationName(_)))
       })
     }).flatten
+  }
+  
+  def findAllPaths(currentLocation: Location,
+		  		   originLocation: Location, 
+		  		   paths: List[List[Location]],
+		  		   presentPath: List[Location]): List[List[Location]] = {
+    
+    val isProvinceAtOrigin = currentLocation.province.equals(originLocation.province)
+    
+    locations.find(_ match {
+      case Location(currentLocation.province, Coast.NO_COAST) if !isProvinceAtOrigin => true
+      case _ => false
+    })
+  }
+  
+  def getConvoys(srcDiplomacyUnit: DiplomacyUnit): Iterable[(Location, Iterable[Location])] = {
+    val allLandUnits = getAllLandUnits
+    
+    val convoyableMovesForLandUnits = allLandUnits.map(getMovesByConvoy(_))
+    val 
   }
 }
