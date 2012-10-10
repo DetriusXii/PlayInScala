@@ -11,7 +11,7 @@ import org.squeryl.{Session => DBSession, _}
 import org.squeryl.dsl._
 import org.squeryl.PrimitiveTypeMode._
 
-object CommonQueries extends States {
+object CommonQueries extends States with  {
   import play.api.Application._
   
   lazy val locations: List[Location] = DB.withConnection((conn: java.sql.Connection) => {
@@ -21,15 +21,30 @@ object CommonQueries extends States {
     }
   })
   
+  lazy val adjacencies: List[Adjacency] = DB.withConnection((conn: java.sql.Connection) => {
+    val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+    using(dbSession) {
+      Jdip.adjacencies.toList
+    }
+  })
+  
   def getAllLandUnits: List[DiplomacyUnit] = DB.withConnection((conn: java.sql.Connection) => {
     val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
     using(dbSession) {
       from(Jdip.diplomacyUnits)(dpu => {
-        where(dpu.unitType === UnitType.ARMY)
+        where(dpu.unitType === UnitType.ARMY) select(dpu)
       })
     }
   })
   
+  def getAllFleetUnits: List[DiplomacyUnit] = DB.withConnection((conn: java.sql.Connection) => {
+    val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+    using(dbSession) {
+      from(Jdip.diplomacyUnits)(dpu => {
+        where(dpu.unitType === UnitType.FLEET) select(dpu)
+      })
+    }
+  }) 
   
   def getFormattedLocationName(location: Location): String = 
     location match {
@@ -255,19 +270,48 @@ object CommonQueries extends States {
   
   def findAllPaths(currentLocation: Location,
 		  		   originLocation: Location, 
-		  		   paths: List[List[Location]],
-		  		   presentPath: List[Location]): List[List[Location]] = {
-    
-    val isProvinceAtOrigin = currentLocation.province.equals(originLocation.province)
-    
-    locations.find(_ match {
-      case Location(currentLocation.province, Coast.NO_COAST) if !isProvinceAtOrigin => true
+		  		   allPaths: List[List[Location]],
+		  		   presentPath: List[Location],
+		  		   allFleetUnits: List[DiplomacyUnit]): List[List[Location]] = {
+ 
+    val landLocationOption = locations.find(_ match {
+      case Location(currentLocation.province, Coast.NO_COAST) => true
       case _ => false
     })
+    
+    val hasFleetUnit = allFleetUnits.find(_.unitLocation == currentLocation.id)
+    val newPresentPath = loc :: presentPath
+    
+    landLocationOption match {
+      case Some(loc: Location) => newPresentPath :: allPaths
+      case None if hasFleetUnit => {
+        val newPresentPath = currentLocation :: presentPath
+        
+        val adjacenciesForLocation = adjacencies.filter(_.srcLocation == currentLocation.id)
+        val adjacentLocations = locations.filter(loc => adjacenciesForLocation.exists(_.dstLocation == loc.id))
+        val adjacentLocationsNotOnPath = adjacentLocations.filter(loc => !newPresentPath.exists(_.id == loc.id))
+        
+        adjacentLocations.foldLeft(allPaths)((ap: List[List[Location]], loc: Location) => {
+          findAllPaths(loc, originLocation, ap, newPresentPath, allFleetUnits)
+        })
+      }
+      case None if !hasFleetUnit => allPaths
+    }
   }
   
   def getConvoys(srcDiplomacyUnit: DiplomacyUnit): Iterable[(Location, Iterable[Location])] = {
     val allLandUnits = getAllLandUnits
+    allLandUnits.map(dpu => {
+      val landUnitLocationOption = locations.find(_.id == dpu.unitLocation)
+      val seaLocationsOnProvinceOption = landUnitLocationOption.map(loc =>
+      	locations.filter(_ match {
+      	  case Location(loc.province, Coast.NO_COAST) => false
+      	  case Location(loc.province, _) => true
+      	  case _ => false
+      	})
+      )
+      
+    })
     
     val convoyableMovesForLandUnits = allLandUnits.map(getMovesByConvoy(_))
     val 
