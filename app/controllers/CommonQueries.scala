@@ -151,6 +151,12 @@ object CommonQueries extends States  {
 		  		   allFleetUnits: List[DiplomacyUnit]): List[List[Location]] = {
  
     val isCurrentLocOnOriginLoc = currentLocation.province.equals(originLocation.province)
+    val isCurrentLocOnPath = presentPath.exists(_.id == currentLocation.id)
+    val newPresentPath = if (isCurrentLocOnpath) {
+      currentLocation :: presentPath
+    } else {
+      presentPath
+    }
     
     val landLocationOption = locations.find(_ match {
       case Location(currentLocation.province, Coast.NO_COAST) if !isCurrentLocOnOriginLoc => true
@@ -161,6 +167,8 @@ object CommonQueries extends States  {
       case Some(_) => true
       case None => false
     }
+    
+    
     
     landLocationOption match {
       case Some(loc: Location) => (loc :: presentPath) :: allPaths
@@ -186,7 +194,7 @@ object CommonQueries extends States  {
     }
   }
   
-  def getConvoys(srcDiplomacyUnit: DiplomacyUnit): List[(Location, Iterable[Location])] = {
+  def getConvoys(fleetUnit: DiplomacyUnit): List[(Location, List[Location])] = {
     val allLandUnits = getAllLandUnits
     val allFleetUnits = getAllFleetUnits
     
@@ -199,20 +207,42 @@ object CommonQueries extends States  {
       	  case _ => false
       	})
       )
+      
+      
       seaLocationsOnProvinceOption.map((locs: List[Location]) => {
         locs.foldLeft(Nil: List[List[Location]])((paths: List[List[Location]], v: Location) => {
-          findAllPaths(v, v, paths, v :: Nil, allFleetUnits)
+          findAllPaths(v, v, paths, Nil, allFleetUnits)
         })
       }).flatMap((allPaths: List[List[Location]]) => landUnitLocationOption.map((_, allPaths)))
     }).flatten
     
-    landUnitPaths.filter((u: Tuple2[Location, List[List[Location]]]) => {
+    if (fleetUnit.id == 20) {
+      println(landUnitPaths)
+    }
+    
+    val landUnitPathsWithFleetUnits =
+      landUnitPaths.filter((u: Tuple2[Location, List[List[Location]]]) => {
+        val paths = u._2
+      
+    	paths.exists(_.exists(_.id == fleetUnit.unitLocation))
+      })
+    
+    landUnitPathsWithFleetUnits.map((u: Tuple2[Location, List[List[Location]]]) => {
       val landLocation = u._1
       val paths = u._2
       
-      paths.exists(path => {
-        path.exists(_.id = srcDiplomacyUnit.unitLocation)
-      })
+      val targetLocations =
+        paths.filter(_.exists(_.id == fleetUnit.unitLocation)).map(_ match {
+        	case head :: _ => head
+        })
+      (landLocation, targetLocations)
     })
+  }
+  
+  def getAllConvoys(): List[(Location, List[(Location, List[Location])])] = {
+    getAllFleetUnits.map(dpu => {
+      val unitLocationOption = locations.find(_.id == dpu.unitLocation)
+      unitLocationOption.map((_, getConvoys(dpu)))
+    }).flatten
   }
 }

@@ -147,7 +147,8 @@ object Application extends Controller with OptionTs {
 
 
   def getSVGMap = Action { implicit request =>
-    val svgMap = JdipSVGRenderer.getRenderedDocument 
+    val svgMap = JdipSVGRenderer.getRenderedDocument
+    CommonQueries.getAllConvoys()
 	Ok(svgMap)
   }
 

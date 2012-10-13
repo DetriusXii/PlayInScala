@@ -160,8 +160,6 @@ object JdipSVGRenderer {
     val fullProvinceElementList: List[Element] = 
       document.getElementsByTagName("%s:%s" format (JDIP_NAMESPACE, PROVINCE_LABEL))
     
-    println(fullProvinceElementList)
-    
     diplomacyUnits.map(dpu => {
       val locationOption = locations.find(_.id == dpu.unitLocation)
       
