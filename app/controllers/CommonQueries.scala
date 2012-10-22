@@ -27,6 +27,29 @@ object CommonQueries extends States  {
     }
   })
   
+  lazy val provinces: List[Province] = 
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        Jdip.provinces.toList
+      }
+    })
+    
+  def getAdjacentLocationsForLocation(loc: Location): List[Location] = {
+    adjacencies.filter(_.srcLocation == loc.id).map(adj => {
+      locations.find(_.id == adj.dstLocation)
+    }).flatten
+  }
+  
+  def getCoastLocationsFromLandLocation(loc: Location): List[Location] = {
+    locations.filter(_ match {
+      case Location(loc.province, Coast.NO_COAST) => false
+      case Location(loc.province, _) => true
+      case _ => false
+    })
+  }
+  
+  
   def getAllLandUnits: List[DiplomacyUnit] = DB.withConnection((conn: java.sql.Connection) => {
     val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
     using(dbSession) {
@@ -43,7 +66,17 @@ object CommonQueries extends States  {
         where(dpu.unitType === UnitType.FLEET) select(dpu)
       }).toList
     }
-  }) 
+  })
+  
+  def getDiplomacyUnit(location: Location): Option[DiplomacyUnit] =
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        from(Jdip.diplomacyUnits)(dpu => {
+          where(dpu.unitLocation === location.id) select(dpu)
+        }).toList.firstOption
+      }
+    })
   
   def getFormattedLocationName(location: Location): String = 
     location match {
@@ -142,9 +175,60 @@ object CommonQueries extends States  {
       }).flatten
   
 
+  def getMovesByConvoy(diplomacyUnit: DiplomacyUnit): List[Location] = {
+    diplomacyUnit match {
+      case DiplomacyUnit(UnitType.ARMY, _, unitLocation, _, _) => 
+        locations.filter(_.id == unitLocation).flatMap(loc => {
+          findAllPathsExternal()
+        })
+      case _ => Nil
+    }
+  }
   
+  def findAllPathsExternal(originLocation: Location, 
+      allFleetUnits: List[DiplomacyUnit]): List[List[Location]] = {
+    def findAllPaths(currentLocation: Location,
+    	allPaths: List[List[Location]],
+    	presentPath: List[Location]): List[List[Location]] = {
+      val isCurrentLocOnOriginLoc = currentLocation match {
+        case Location(originLocation.province, originLocation.coast) => true
+        case _ => false
+      }
+      val isCurrentLocOnPath = presentPath.exists(_.id == currentLocation.id)
+      val hasFleetUnit = getDiplomacyUnit(currentLocation) match {
+        case Some(DiplomacyUnit(UnitType.FLEET, _, _, _, _)) => true
+        case _ => false
+      }
+      val isCurrentLocLandLocation = currentLocation match {
+        case Location(_, Coast.NO_COAST) => true
+        case _ => false
+      }
+      
+      val isCurrentLocCoastal = currentLocation match {
+        case Location(_, Coast.NO_COAST) => false
+        case _ => true
+      }
+      
+      val isCurrentLocOnOriginProvince = currentLocation.province.equals()
+      
+      if (isCurrentLocLandLocation && isCurrentLocOnOriginLoc) {
+        val newPath = currentLocation :: presentPath
+        val coastLocations = getCoastLocationsFromLandLocation(currentLocation)
+        coastLocations.foldLeft(allPaths)((u, v) => {
+          findAllPaths(v, allPaths, newPath)
+        })
+      } else if (isCurrentLocLandLocation && !isCurrentLocOnOriginLoc) {
+        val newPath = currentLocation :: presentPath
+        newPath :: allPaths
+      } else if (!isCurrentLocLandLocation && isCurrentLocCoastal) {
+        val adjLocations = getAdjacentLocationsForLocation(currentLocation)
+        
+      }
+    }
+    
+  }
   
-  def findAllPaths(currentLocation: Location,
+  private def findAllPaths(currentLocation: Location,
 		  		   originLocation: Location, 
 		  		   allPaths: List[List[Location]],
 		  		   presentPath: List[Location],
@@ -152,7 +236,7 @@ object CommonQueries extends States  {
  
     val isCurrentLocOnOriginLoc = currentLocation.province.equals(originLocation.province)
     val isCurrentLocOnPath = presentPath.exists(_.id == currentLocation.id)
-    val newPresentPath = if (isCurrentLocOnpath) {
+    val newPresentPath = if (isCurrentLocOnPath) {
       currentLocation :: presentPath
     } else {
       presentPath

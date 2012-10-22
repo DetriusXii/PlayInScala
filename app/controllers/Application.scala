@@ -144,7 +144,14 @@ object Application extends Controller with OptionTs {
         }
       })
     })
-
+	
+	
+	def pathsPic() = {
+	  val location = Location("pic", Coast.NO_COAST)
+	  val diplomacyUnitOption = CommonQueries.getDiplomacyUnit(location)
+	  
+	  
+	}
 
   def getSVGMap = Action { implicit request =>
     val svgMap = JdipSVGRenderer.getRenderedDocument
