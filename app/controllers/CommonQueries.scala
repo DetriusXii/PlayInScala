@@ -49,6 +49,11 @@ object CommonQueries extends States  {
     })
   }
   
+  def hasLandLocation(loc: Location): Boolean =
+    locations.exists(_ match {
+      case Location(loc.province, Coast.NO_COAST) => true
+      case _ => false
+    })
   
   def getAllLandUnits: List[DiplomacyUnit] = DB.withConnection((conn: java.sql.Connection) => {
     val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
@@ -203,13 +208,10 @@ object CommonQueries extends States  {
         case Location(_, Coast.NO_COAST) => true
         case _ => false
       }
+     
       
-      val isCurrentLocCoastal = currentLocation match {
-        case Location(_, Coast.NO_COAST) => false
-        case _ => true
-      }
-      
-      val isCurrentLocOnOriginProvince = currentLocation.province.equals()
+      val isCurrentLocOnOriginProvince = 
+        currentLocation.province.equals(originLocation.province)
       
       if (isCurrentLocLandLocation && isCurrentLocOnOriginLoc) {
         val newPath = currentLocation :: presentPath
@@ -220,9 +222,19 @@ object CommonQueries extends States  {
       } else if (isCurrentLocLandLocation && !isCurrentLocOnOriginLoc) {
         val newPath = currentLocation :: presentPath
         newPath :: allPaths
-      } else if (!isCurrentLocLandLocation && isCurrentLocCoastal) {
+      } else if (!isCurrentLocLandLocation && isCurrentLocOnOriginProvince) {
         val adjLocations = getAdjacentLocationsForLocation(currentLocation)
-        
+        val oceanAdjLocations = adjLocations.filter(!hasLandLocation(_))
+        val newPath = currentLocation :: presentPath
+        oceanAdjLocations.foldLeft(allPaths)((u, v) => findAllPaths(v, u, newPath))
+      } else if (isCurrentLocOnPath) {
+        allPaths
+      } else if (!isCurrentLocOnPath && hasFleetUnit) {
+        val newPath = currentLocation :: presentPath
+        val adjLocations = getAdjacentLocationsForLocation(currentLocation)
+        adjLocations.foldLeft(allPaths)((u, v) => findAllPaths(v, u, newPath))
+      } else if (!isCurrentLocOnPath && !hasFleetUnit) {
+        allPaths
       }
     }
     
