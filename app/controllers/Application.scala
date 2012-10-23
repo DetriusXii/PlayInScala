@@ -146,17 +146,18 @@ object Application extends Controller with OptionTs {
     })
 	
 	
-	def pathsPic() = {
+	def pathsPic(): Action[AnyContent] = Action {
 	  val location = Location("pic", Coast.NO_COAST)
 	  val diplomacyUnitOption = CommonQueries.getDiplomacyUnit(location)
-	  
-	  
+	  diplomacyUnitOption.map(CommonQueries.getMovesByConvoy(_)) match {
+      case Some(x) => Ok(x.toString)
+      case None => Ok("Could not reproduce")
+    }
 	}
 
   def getSVGMap = Action { implicit request =>
     val svgMap = JdipSVGRenderer.getRenderedDocument
-    CommonQueries.getAllConvoys()
-	Ok(svgMap)
+	  Ok(svgMap)
   }
 
 	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 
