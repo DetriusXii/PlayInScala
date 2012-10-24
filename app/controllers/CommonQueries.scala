@@ -212,7 +212,7 @@ object CommonQueries extends States  {
         case _ => false
       }
      
-      
+      println(presentPath)
       val isCurrentLocOnOriginProvince = 
         currentLocation.province.equals(originLocation.province)
       
@@ -230,6 +230,16 @@ object CommonQueries extends States  {
         val oceanAdjLocations = adjLocations.filter(!hasLandLocation(_))
         val newPath = currentLocation :: presentPath
         oceanAdjLocations.foldLeft(allPaths)((u, v) => findAllPaths(v, u, newPath))
+      } else if (!isCurrentLocOnOriginProvince && hasLandLocation(currentLocation)) {
+        val newPath = currentLocation :: presentPath;
+        val landLocationOption = locations.find(_ match {
+          case Location(currentLocation.province, Coast.NO_COAST) => true
+          case _ => false
+        })
+        landLocationOption match {
+          case Some(loc) => findAllPaths(loc, allPaths, newPath)
+          case None => allPaths
+        }
       } else if (isCurrentLocOnPath) {
         allPaths
       } else if (!isCurrentLocOnPath && hasFleetUnit) {

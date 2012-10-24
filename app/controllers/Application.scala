@@ -147,12 +147,14 @@ object Application extends Controller with OptionTs {
 	
 	
 	def pathsPic(): Action[AnyContent] = Action {
-	  val location = Location("pic", Coast.NO_COAST)
-	  val diplomacyUnitOption = CommonQueries.getDiplomacyUnit(location)
+	  val diplomacyUnitOption = CommonQueries.locations.find(_ match {
+	    case Location("pic", Coast.NO_COAST) => true
+	    case _ => false
+	  }).flatMap(CommonQueries.getDiplomacyUnit(_))
 	  diplomacyUnitOption.map(CommonQueries.getMovesByConvoy(_)) match {
-      case Some(x) => Ok(x.toString)
-      case None => Ok("Could not reproduce")
-    }
+      	case Some(x) => Ok(x.toString)
+      	case None => Ok("Could not reproduce")
+	  }
 	}
 
   def getSVGMap = Action { implicit request =>
