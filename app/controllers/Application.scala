@@ -22,21 +22,13 @@ class ApplicationAction[A](action: Action[A]) extends Action[A] {
 object Application extends Controller with OptionTs {
 	import play.api.Play._
   
-    def index = new ApplicationAction(Action {
+  def index = new ApplicationAction(Action {
 	  Ok(views.html.Application.index())
 	})
 	
-
-    def players = new ApplicationAction(Action {
-      DB.withConnection((conn: java.sql.Connection) => {
-        val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-        using (dbSession) {
-          val players = Jdip.players
-          Ok(views.html.Application.players(HeaderTitles.PLAYERS_TITLE, players))
-        }
-      })
-      
-    })
+  def players = new ApplicationAction(Action {
+    Ok(views.html.Application.players(HeaderTitles.PLAYERS_TITLE, CommonQueries.getPlayers))
+  })
     
     def games = new ApplicationAction(Action { implicit request =>
       val username: String = session.get(Security.username) match {
@@ -76,7 +68,36 @@ object Application extends Controller with OptionTs {
       
       val usernameValidation: Validation[Exception, String] = 
         session.get(Security.username).toSuccess(new Exception("No username in session"))
-      
+     
+
+      def getGamePlayerEmpireValidation(gameName: String, playerName: String) =
+        CommonQueries.getGamePlayerEmpire(gameName, playerName).
+        toSuccess(
+          new Exception(
+            "No GamePlayerEmpireFound with game name %s and player name %s" format 
+            (gameName, playerName)
+          ))
+
+      val diplomacyUnitsValidation = for (
+        username <- usernameValidatin;
+        gamePlayerEmpire <- getGamePlayerEmpireValidation(gameName, username)) yield (
+        CommonQueries.getDiplomacyUnits(gamePlayerEmpire)
+      )
+
+      diplomacyUnitsValidation match {
+        case Success(diplomacyUnits: List[_]) => {
+          val movementPhaseOrderTypes = CommonQueries.orderTypes.filter(_.phase.equals(Phase.MOVEMENT))
+          val movementPhaseOrderTypeUnitTypes = CommonQueries.orderTypeUnitType.filter(otut => 
+            movementPhaseOrderTypes.exists(_.id.equals(otut.orderType)))
+          val armyOrderTypeUnitTypes = 
+            movementPhaseOrderTypeUnitTypes.filter(_.unitType.equals(UnitType.ARMY))
+          val fleetOrderTypeUnitTypes =
+            movementPhaseOrderTypeUnitTypes.filter(_.unitType.equals(UnitType.FLEET))
+
+        }
+        case Failure(e: Exception) => Ok(e.getMessage)
+      }
+
       DB.withConnection((conn: java.sql.Connection) => {
         val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
         using(dbSession) {
@@ -148,10 +169,10 @@ object Application extends Controller with OptionTs {
 	
 	def pathsPic(): Action[AnyContent] = Action {
 	  val diplomacyUnitOption = CommonQueries.locations.find(_ match {
-	    case Location("pic", Coast.NO_COAST) => true
+	    case Location("eng", Coast.ALL_COAST) => true
 	    case _ => false
 	  }).flatMap(CommonQueries.getDiplomacyUnit(_))
-	  diplomacyUnitOption.map(CommonQueries.getMovesByConvoy(_)) match {
+	  diplomacyUnitOption.map(CommonQueries.getConvoys(_)) match {
       	case Some(x) => Ok(x.toString)
       	case None => Ok("Could not reproduce")
 	  }
