@@ -29,7 +29,7 @@ object DiplomacyQueries {
     	case Location(prov, Coast.NO_COAST) => prov
     	case Location(prov, Coast.ALL_COAST) => prov
     	case Location(prov, coast) => "%s-%s" format (prov, coast)
-	  }
+  	}
   
   def getSupportHolds(srcLocationID: Int): List[Location] = {
     val locationOption = CommonQueries.locations.find(_.id == srcLocationID)
@@ -43,73 +43,62 @@ object DiplomacyQueries {
     val allUnits = CommonQueries.getAllUnits
     val provincialLocationsWithUnitPresent =
       provincialLocations.filter(loc => allUnits.exists(_.unitLocation == loc.id))
-    
-    
-    
-    val srcAdjacenciesWithUnitPresent = srcAdjacencies.filter(adj => {
-      val dstLocationOption = Jdip.locations.lookup(adj.dstLocation)
-      dstLocationOption match {
-        case Some(Location(province, _)) => dpuProvinces.exists(_ == province)
-        case None => false
-      }
-    })
-    val dstLocationsWithUnitPresent = 
-      srcAdjacenciesWithUnitPresent.map(adj => Jdip.locations.lookup(adj.dstLocation)).flatten
-    dstLocationsWithUnitPresent
+    provincialLocationsWithUnitPresent
   }
 	
-	 def getSupportHolds(srcDiplomacyUnit: DiplomacyUnit): Iterable[Location] = 
-	   getSupportHolds(srcDiplomacyUnit.unitLocation)
+  def getSupportHolds(srcDiplomacyUnit: DiplomacyUnit): List[Location] = 
+    getSupportHolds(srcDiplomacyUnit.unitLocation)
 	
-	 def getFormattedSupportHolds(srcLocationID: Int): Iterable[String] =
-	   getSupportHolds(srcLocationID).map(getFormattedLocationName(_))
+  def getFormattedSupportHolds(srcLocationID: Int): List[String] =
+    getSupportHolds(srcLocationID).map(getFormattedLocationName(_))
 	  
-  def getSupportHoldsMap(diplomacyUnits: Iterable[DiplomacyUnit]) =
+  def getSupportHoldsMap(diplomacyUnits: List[DiplomacyUnit]) =
     diplomacyUnits.map(dpu => {
-      val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
+      val srcLocationOption = CommonQueries.locations.find(_.id == dpu.unitLocation)
       srcLocationOption.map(loc => 
-        (getFormattedLocationName(loc), getSupportHolds(dpu.unitLocation).map(getFormattedLocationName(_))))
+        (getFormattedLocationName(loc), 
+         getSupportHolds(dpu.unitLocation).map(getFormattedLocationName(_))))
     }).flatten
 	
-  def getSupportMoves(srcLocationID: Int): Iterable[(Location, Iterable[Location])] = {
-	  val movesForAllOtherUnits = 
-	     Jdip.diplomacyUnits.filter(_.unitLocation != srcLocationID).map(dpu =>
-	      	(dpu, getMoves(dpu.unitLocation))
-	     )
-	  val movesForThisUnit = getMoves(srcLocationID)
-	   
-	  val movesThatMatterFromOtherUnits = movesForAllOtherUnits.map(u => {
-	    val otherUnit = u._1
-	    val movesForOtherUnit = u._2
+  def getSupportMoves(srcLocationID: Int): List[(Location, Iterable[Location])] = {
+	val allUnits = CommonQueries.getAllUnits  
+    
+    val movesForAllOtherUnits =
+      allUnits.filter(_.unitLocation != srcLocationID).map(dpu =>
+	  	(dpu, getMoves(dpu.unitLocation)))
+	  	
+	val movesForThisUnit = getMoves(srcLocationID)
+	val movesThatMatterFromOtherUnits = movesForAllOtherUnits.map(u => {
+	val otherUnit = u._1
+	val movesForOtherUnit = u._2
 	     
-	    val movesThatMatterFromOtherUnit = movesForOtherUnit.filter(_ match {
-	      case Location(dstProvinceForOtherUnit, _) => movesForThisUnit.exists(_ match {
-	        case Location(`dstProvinceForOtherUnit`, _) => true
-	        case Location(_, _) => false
-	      })
-	    })
-	     
-	    Jdip.locations.lookup(otherUnit.unitLocation).map((_, movesThatMatterFromOtherUnit))
-	  }).flatten
-	   
-    movesThatMatterFromOtherUnits.filter(_ match {
-	     case (_, movesFromOtherUnit) => !movesFromOtherUnit.isEmpty
+	val movesThatMatterFromOtherUnit = movesForOtherUnit.filter(_ match {
+	  case Location(dstProvinceForOtherUnit, _) => movesForThisUnit.exists(_ match {
+	  	case Location(`dstProvinceForOtherUnit`, _) => true
+	  	case Location(_, _) => false
 	  })
+	})
+	        
+    movesThatMatterFromOtherUnits.filter(_ match {
+      case (_, movesFromOtherUnit) => !movesFromOtherUnit.isEmpty
+	})
   }
 	 
-  def getSupportMoves(srcDiplomacyUnit: DiplomacyUnit): Iterable[(Location, Iterable[Location])] =
-	   getSupportMoves(srcDiplomacyUnit.unitLocation)
+  def getSupportMoves(
+      srcDiplomacyUnit: DiplomacyUnit): List[(Location, List[Location])] =
+	getSupportMoves(srcDiplomacyUnit.unitLocation)
    
-  def getFormattedSupportMoves(srcLocationID: Int): Iterable[(String, Iterable[String])] =
-	  getSupportMoves(srcLocationID).map(u => 
+  def getFormattedSupportMoves(srcLocationID: Int): List[(String, List[String])] =
+  	getSupportMoves(srcLocationID).map(u => 
       (getFormattedLocationName(u._1), u._2.map(getFormattedLocationName(_))))
 
-  def getSupportMovesMap(diplomacyUnits: Iterable[DiplomacyUnit]): 
-    Iterable[(String, Iterable[(String, Iterable[String])])] = 
+  def getSupportMovesMap(diplomacyUnits: List[DiplomacyUnit]): 
+    Iterable[(String, List[(String, List[String])])] = 
       diplomacyUnits.map(dpu => {
         val srcLocationOption = Jdip.locations.lookup(dpu.unitLocation)
         srcLocationOption.map((srcLocation: Location) => 
-            (getFormattedLocationName(srcLocation), getFormattedSupportMoves(srcLocation.id)))
+            (getFormattedLocationName(srcLocation), 
+                getFormattedSupportMoves(srcLocation.id)))
       }).flatten
   
 
