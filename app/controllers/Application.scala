@@ -79,7 +79,7 @@ object Application extends Controller with OptionTs {
           ))
 
       val diplomacyUnitsValidation = for (
-        username <- usernameValidatin;
+        username <- usernameValidation;
         gamePlayerEmpire <- getGamePlayerEmpireValidation(gameName, username)) yield (
         CommonQueries.getDiplomacyUnits(gamePlayerEmpire)
       )
@@ -87,7 +87,7 @@ object Application extends Controller with OptionTs {
       diplomacyUnitsValidation match {
         case Success(diplomacyUnits: List[_]) => {
           val movementPhaseOrderTypes = CommonQueries.orderTypes.filter(_.phase.equals(Phase.MOVEMENT))
-          val movementPhaseOrderTypeUnitTypes = CommonQueries.orderTypeUnitType.filter(otut => 
+          val movementPhaseOrderTypeUnitTypes = CommonQueries.orderTypeUnitTypes.filter(otut => 
             movementPhaseOrderTypes.exists(_.id.equals(otut.orderType)))
           val armyOrderTypeUnitTypes = 
             movementPhaseOrderTypeUnitTypes.filter(_.unitType.equals(UnitType.ARMY))
