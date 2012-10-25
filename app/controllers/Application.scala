@@ -20,58 +20,45 @@ class ApplicationAction[A](action: Action[A]) extends Action[A] {
 }
 
 object Application extends Controller with OptionTs {
-	import play.api.Play._
+  import play.api.Play._
   
   def index = new ApplicationAction(Action {
 	  Ok(views.html.Application.index())
-	})
+  })
 	
   def players = new ApplicationAction(Action {
-    Ok(views.html.Application.players(HeaderTitles.PLAYERS_TITLE, CommonQueries.getPlayers))
+    Ok(views.html.Application.players(HeaderTitles.PLAYERS_TITLE, DBQueries.getPlayers))
   })
     
-    def games = new ApplicationAction(Action { implicit request =>
-      val username: String = session.get(Security.username) match {
-        case Some(x: String) => x
-        case _ => throw new Exception("No username in session")
-      }
-    
-      DB.withConnection((conn: java.sql.Connection) => {
-        val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-        using (dbSession) {
-	        val gamePlayersForUser = from(Jdip.gamePlayers)((gp: GamePlayer) => 
-	          where(gp.playerName === username) select(gp))
-	        val gamesForUser = from(Jdip.games)((g: Game) => 
-	          where(g.id in from(gamePlayersForUser)((gpu: GamePlayer) => select(gpu.gameName)))
-	          select(g))
-	          
-	        
-	        val gameTimesForUser = gamesForUser map ((g: Game) =>
-	          Jdip.gameTimes.lookup(g.gameTime)
-	        )
-	        
-	        val gamesWithGameTimes = (gamesForUser zip gameTimesForUser) filter( _._2.isDefined) map(u =>
-	        	(u._1, u._2.get)
-	        )
-	          
-	        val gameScreenURL = controllers.routes.Application.gameScreen("").url
-	          
-	        Ok(views.html.Application.games(gameScreenURL, gamesWithGameTimes))
-        }
-      })
-    })
+  def games = new ApplicationAction(Action { implicit request =>
+  	val usernameOption = session.get(Security.username)
+  	usernameOption.map(username => {
+  	  val gamesForUser = DBQueries.getGamesForUser(username)
+	  val gameTimesForUser = DBQueries.getGameTimesForGames(gamesForUser.map(_.gameTime))
+		
+	  val gamesWithGameTimes = 
+	  	(gamesForUser zip gameTimesForUser)
+	  val gameScreenURL = controllers.routes.Application.gameScreen("").url
+		Ok(views.html.Application.games(gameScreenURL, gamesWithGameTimes))
+  	}) match {
+  	  case Some(x) => x
+  	  case None => PreconditionFailed("No username entered")
+  	}
+  })
+	
 
-    implicit def toOptionTFromOption[A](option: Option[A]): OptionT[List, A] = optionT[List](option :: Nil)
+  implicit def toOptionTFromOption[A](option: Option[A]): OptionT[List, A] = 
+    optionT[List](option :: Nil)
 
-    def gameScreen(gameName: String = "") = new ApplicationAction(Action { implicit request =>
+  def gameScreen(gameName: String = "") = 
+    new ApplicationAction(Action { implicit request =>
       import Scalaz._
-      
+  
       val usernameValidation: Validation[Exception, String] = 
         session.get(Security.username).toSuccess(new Exception("No username in session"))
-     
-
+      
       def getGamePlayerEmpireValidation(gameName: String, playerName: String) =
-        CommonQueries.getGamePlayerEmpire(gameName, playerName).
+        DBQueries.getGamePlayerEmpire(gameName, playerName).
         toSuccess(
           new Exception(
             "No GamePlayerEmpireFound with game name %s and player name %s" format 
@@ -81,98 +68,42 @@ object Application extends Controller with OptionTs {
       val diplomacyUnitsValidation = for (
         username <- usernameValidation;
         gamePlayerEmpire <- getGamePlayerEmpireValidation(gameName, username)) yield (
-        CommonQueries.getDiplomacyUnits(gamePlayerEmpire)
+        DBQueries.getDiplomacyUnits(gamePlayerEmpire)
       )
 
       diplomacyUnitsValidation match {
         case Success(diplomacyUnits: List[_]) => {
-          val movementPhaseOrderTypes = CommonQueries.orderTypes.filter(_.phase.equals(Phase.MOVEMENT))
-          val movementPhaseOrderTypeUnitTypes = CommonQueries.orderTypeUnitTypes.filter(otut => 
-            movementPhaseOrderTypes.exists(_.id.equals(otut.orderType)))
+          val movementPhaseOrderTypes = 
+            DBQueries.orderTypes.filter(_.phase.equals(Phase.MOVEMENT))
+          val movementPhaseOrderTypeUnitTypes = 
+            DBQueries.orderTypeUnitTypes.filter(otut => 
+              movementPhaseOrderTypes.exists(_.id.equals(otut.orderType)))
           val armyOrderTypeUnitTypes = 
             movementPhaseOrderTypeUnitTypes.filter(_.unitType.equals(UnitType.ARMY))
           val fleetOrderTypeUnitTypes =
             movementPhaseOrderTypeUnitTypes.filter(_.unitType.equals(UnitType.FLEET))
-
+          val moveOrdersMap = DiplomacyQueries.getMoveOrdersMap(diplomacyUnits)
+          val supportHoldsMap = DiplomacyQueries.getSupportHoldsMap(diplomacyUnits)
+          val supportMovesMap = DiplomacyQueries.getSupportMovesMap(diplomacyUnits)
+          
+          
+          Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
+                  moveOrdersMap,
+                  supportHoldsMap,
+                  fleetOrderTypeUnitTypes, 
+                  armyOrderTypeUnitTypes))
         }
         case Failure(e: Exception) => Ok(e.getMessage)
       }
-
-      DB.withConnection((conn: java.sql.Connection) => {
-        val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-        using(dbSession) {
-          
-          def getGamePlayer(game: Game, player: Player): Validation[Exception, GamePlayer] = 
-            from(Jdip.gamePlayers)((gp: GamePlayer) =>
-            	where(gp.gameName === game.id and gp.playerName === player.id)
-            	select(gp)
-            ).firstOption.toSuccess(new Exception(
-                "No gamePlayer found with game name %s and player name %s" format (game.id, player.id)    
-            ))
-            
-          def getGamePlayerEmpire(gamePlayer: GamePlayer): Validation[Exception, GamePlayerEmpire] =
-            from(Jdip.gamePlayerEmpires)((gpe: GamePlayerEmpire) => 
-            	where(gpe.gamePlayerKey === gamePlayer.id)
-            	select(gpe)
-            ).firstOption.toSuccess(new Exception(
-                "No GamePlayerEmpire found with GamePlayer ID %d" format gamePlayer.id
-            ))
-            
-          def getDiplomacyUnits(gamePlayerEmpire: GamePlayerEmpire): Iterable[DiplomacyUnit] =
-            from(Jdip.diplomacyUnits)((dpu: DiplomacyUnit) =>
-              where(dpu.owner === gamePlayerEmpire.id)
-              select(dpu)
-            )
-            
-          val diplomacyUnitsValidation = for ( 
-                username <- usernameValidation;
-                game <- Jdip.games.lookup(gameName).
-        		      toSuccess(new Exception("No game found with game name %s" format gameName));
-                player <- Jdip.players.lookup(username).
-        		      toSuccess(new Exception("No player found with player name %s" format username));
-                gamePlayer <- getGamePlayer(game, player);
-        	      gamePlayerEmpire <- getGamePlayerEmpire(gamePlayer)
-              ) yield ( getDiplomacyUnits(gamePlayerEmpire) )
-         
-          
-          diplomacyUnitsValidation match {
-            case Success(diplomacyUnits: Iterable[_]) => {
-              val actions = from(Jdip.orderTypeUnitTypes)((otut: OrderTypeUnitType) => 
-            	  where(otut.orderType in from(Jdip.orderTypes)((ot: OrderType) => 
-                  where(ot.phase === Phase.MOVEMENT) select(ot.id)))	  
-                select(otut))
-              val armyActions = actions.filter((otut: OrderTypeUnitType) => 
-                otut.unitType.equals(UnitType.ARMY))
-              val fleetActions = actions.filter((otut: OrderTypeUnitType) => 
-                otut.unitType.equals(UnitType.FLEET))
-              
-              val moveOrdersMap = CommonQueries.getMoveOrdersMap(diplomacyUnits)
-              val supportHoldsMap = CommonQueries.getSupportHoldsMap(diplomacyUnits)
-              val supportMovesMap = CommonQueries.getSupportMovesMap(diplomacyUnits)
-            //  val movesByConvoyMap = CommonQueries.getMovesByConvoyMap(diplomacyUnits)
-
-              //println(movesByConvoyMap);
-              
-
-              Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
-                  moveOrdersMap,
-                  supportHoldsMap,
-                  fleetActions, 
-                  armyActions))
-            }
-            case Failure(e: Exception) => Ok(e.getMessage)
-          }
-        }
-      })
     })
 	
 	
 	def pathsPic(): Action[AnyContent] = Action {
-	  val diplomacyUnitOption = CommonQueries.locations.find(_ match {
+	  val diplomacyUnitOption = DBQueries.locations.find(_ match {
 	    case Location("eng", Coast.ALL_COAST) => true
 	    case _ => false
-	  }).flatMap(CommonQueries.getDiplomacyUnit(_))
-	  diplomacyUnitOption.map(CommonQueries.getConvoys(_)) match {
+	  }).flatMap(DBQueries.getDiplomacyUnit(_))
+	  diplomacyUnitOption.map(DiplomacyQueries.getConvoys(_)) match {
       	case Some(x) => Ok(x.toString)
       	case None => Ok("Could not reproduce")
 	  }
@@ -189,7 +120,7 @@ object Application extends Controller with OptionTs {
       Jdip.
         locations.
         lookup(dpu.unitLocation).
-        map(CommonQueries.getFormattedLocationName(_)).
+        map(DiplomacyQueries.getFormattedLocationName(_)).
         map((dpu.unitType, _))       
     ).flatten
             
