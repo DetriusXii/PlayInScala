@@ -94,8 +94,8 @@ object DBQueries extends States  {
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
-        Jdip.diplomacyUnits
-      }.toList
+        Jdip.diplomacyUnits.toList
+      }
     })
   
   def getDiplomacyUnit(location: Location): Option[DiplomacyUnit] =
@@ -129,12 +129,16 @@ object DBQueries extends States  {
       }
     })
 
-  def getDiplomacyUnits(gamePlayerEmpire: GamePlayerEmpire): List[DiplomacyUnit] = {
-    from(Jdip.diplomacyUnits) {dpu =>
-      where(dpu.owner === gamePlayerEmpire.id)
-      select(dpu)
-    }.toList
-  }
+  def getDiplomacyUnits(gamePlayerEmpire: GamePlayerEmpire): List[DiplomacyUnit] =
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        from(Jdip.diplomacyUnits) {dpu =>
+	      where(dpu.owner === gamePlayerEmpire.id)
+	      select(dpu)
+	    }.toList
+      }
+    })
   
   def getGamesForUser(username: String): List[Game] =
     DB.withConnection((conn: java.sql.Connection) => {

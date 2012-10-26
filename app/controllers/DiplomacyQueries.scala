@@ -25,9 +25,9 @@ object DiplomacyQueries {
     }).flatten
     
   def getFormattedLocationName(location: Location): String = location match {
-    	case Location(prov, Coast.NO_COAST) => prov
-    	case Location(prov, Coast.ALL_COAST) => prov
-    	case Location(prov, coast) => "%s-%s" format (prov, coast)
+	case Location(prov, Coast.NO_COAST) => prov
+	case Location(prov, Coast.ALL_COAST) => prov
+	case Location(prov, coast) => "%s-%s" format (prov, coast)
   }
   
   def getSupportHolds(srcLocationID: Int): List[Location] = {

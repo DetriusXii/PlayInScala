@@ -86,7 +86,7 @@ object Application extends Controller with OptionTs {
           val supportHoldsMap = DiplomacyQueries.getSupportHoldsMap(diplomacyUnits)
           val supportMovesMap = DiplomacyQueries.getSupportMovesMap(diplomacyUnits)
           
-          
+          println(diplomacyUnits)
           Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
                   moveOrdersMap,
                   supportHoldsMap,
@@ -117,9 +117,7 @@ object Application extends Controller with OptionTs {
 	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 
     Iterable[Tuple2[String, String]] =
     diplomacyUnits.map((dpu: DiplomacyUnit) =>
-      Jdip.
-        locations.
-        lookup(dpu.unitLocation).
+      DBQueries.locations.find(_.id == dpu.unitLocation).
         map(DiplomacyQueries.getFormattedLocationName(_)).
         map((dpu.unitType, _))       
     ).flatten
