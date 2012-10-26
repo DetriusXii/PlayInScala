@@ -67,9 +67,9 @@ object Application extends Controller with OptionTs {
 
       val diplomacyUnitsValidation = for (
         username <- usernameValidation;
-        gamePlayerEmpire <- getGamePlayerEmpireValidation(gameName, username)) yield (
+        gamePlayerEmpire <- getGamePlayerEmpireValidation(gameName, username)) yield {
         DBQueries.getDiplomacyUnits(gamePlayerEmpire)
-      )
+      }
 
       diplomacyUnitsValidation match {
         case Success(diplomacyUnits: List[_]) => {
@@ -85,11 +85,12 @@ object Application extends Controller with OptionTs {
           val moveOrdersMap = DiplomacyQueries.getMoveOrdersMap(diplomacyUnits)
           val supportHoldsMap = DiplomacyQueries.getSupportHoldsMap(diplomacyUnits)
           val supportMovesMap = DiplomacyQueries.getSupportMovesMap(diplomacyUnits)
+          val convoysMap = DiplomacyQueries.getConvoysMap(diplomacyUnits)
           
-          println(diplomacyUnits)
           Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
                   moveOrdersMap,
                   supportHoldsMap,
+                  convoysMap,
                   fleetOrderTypeUnitTypes, 
                   armyOrderTypeUnitTypes))
         }

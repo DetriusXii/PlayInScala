@@ -19,9 +19,18 @@ object DiplomacyQueries {
       
   def getMoveOrdersMap(diplomacyUnits: List[DiplomacyUnit]) = 
     diplomacyUnits.map(dpu => {
+      val regularMoves = getMoves(dpu)
+      val movesByConvoy = getMovesByConvoy(dpu)
+      
+      val filteredMovesByConvoy = movesByConvoy.filter(loc => 
+      	!regularMoves.exists(_.id == loc.id)
+      )
+      val allMoves = regularMoves ++ movesByConvoy
+      val allFormattedMoves = allMoves.map(getFormattedLocationName(_))
+      
       val srcLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
       srcLocationOption.map(loc => 
-        (getFormattedLocationName(loc), getFormattedMoves(dpu.unitLocation)))
+        (getFormattedLocationName(loc), allFormattedMoves))
     }).flatten
     
   def getFormattedLocationName(location: Location): String = location match {
@@ -210,5 +219,30 @@ object DiplomacyQueries {
       }
       case _ => Nil
     }
+  }
+  
+  def getConvoysMap(diplomacyUnits: List[DiplomacyUnit]): 
+	  List[(String, List[(String, List[String])])] = {
+    val convoysForUnits = diplomacyUnits.map(dpu => {
+      val convoysForUnit = getConvoys(dpu)
+      val stringFormattedConvoys = convoysForUnit.map(u => {
+        val unitLocation = u._1
+        val movesForUnit = u._2
+        
+        val stringFormattedUnitLocation = getFormattedLocationName(unitLocation)
+        val stringFormattedMoves =
+          movesForUnit.map(getFormattedLocationName(_))
+        (stringFormattedUnitLocation, stringFormattedMoves)
+      }).filter(!_._2.isEmpty)
+      
+      
+      val unitLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
+      unitLocationOption.map(loc => {
+        val stringFormattedFleetUnitLocation = getFormattedLocationName(loc)
+        (stringFormattedFleetUnitLocation, stringFormattedConvoys)
+      })
+    })
+    
+    convoysForUnits.flatten
   }
 }

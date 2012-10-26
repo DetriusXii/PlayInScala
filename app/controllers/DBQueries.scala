@@ -75,18 +75,20 @@ object DBQueries extends States  {
   def getAllLandUnits: List[DiplomacyUnit] = DB.withConnection((conn: java.sql.Connection) => {
     val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
     using(dbSession) {
-      from(Jdip.diplomacyUnits)(dpu => {
-        where(dpu.unitType === UnitType.ARMY) select(dpu)
-      }).toList
+      from(Jdip.diplomacyUnits)(dpu => (
+        where(dpu.unitType === UnitType.ARMY) 
+        select(dpu)
+      )).toList
     }
   })
   
   def getAllFleetUnits: List[DiplomacyUnit] = DB.withConnection((conn: java.sql.Connection) => {
     val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
     using(dbSession) {
-      from(Jdip.diplomacyUnits)(dpu => {
-        where(dpu.unitType === UnitType.FLEET) select(dpu)
-      }).toList
+      from(Jdip.diplomacyUnits)(dpu => (
+        where(dpu.unitType === UnitType.FLEET) 
+        select(dpu)
+      )).toList
     }
   })
   
@@ -102,9 +104,10 @@ object DBQueries extends States  {
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
-        from(Jdip.diplomacyUnits)(dpu => {
-          where(dpu.unitLocation === location.id) select(dpu)
-        }).toList.firstOption
+        from(Jdip.diplomacyUnits)(dpu => (
+          where(dpu.unitLocation === location.id) 
+          select(dpu)
+        )).toList.firstOption
       }
     })
 
@@ -112,7 +115,7 @@ object DBQueries extends States  {
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
-        from(Jdip.players)(ply => select(ply)).toList
+        from(Jdip.players)(select(_)).toList
       }
     })
 
@@ -120,12 +123,12 @@ object DBQueries extends States  {
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
-        from(Jdip.gamePlayerEmpires) {gpe =>
-          where(gpe.gamePlayerKey in from(Jdip.gamePlayers) {gp => 
+        from(Jdip.gamePlayerEmpires) (gpe =>
+          where(gpe.gamePlayerKey in from(Jdip.gamePlayers) (gp => 
             where(gp.gameName === gameName and gp.playerName === playerName)
-            select(gp.id)})
+            select(gp.id)))
           select(gpe)
-        }.toList.firstOption
+        ).toList.firstOption
       }
     })
 
@@ -133,10 +136,10 @@ object DBQueries extends States  {
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
-        from(Jdip.diplomacyUnits) {dpu =>
+        from(Jdip.diplomacyUnits) (dpu =>
 	      where(dpu.owner === gamePlayerEmpire.id)
 	      select(dpu)
-	    }.toList
+	    ).toList
       }
     })
   
@@ -144,13 +147,13 @@ object DBQueries extends States  {
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
-        from(Jdip.games) {g =>
-          where(g.id in from(Jdip.gamePlayers) {gp => 
-          	where (gp.playerName === username)
+        from(Jdip.games) (g =>
+          where(g.id in from(Jdip.gamePlayers) (gp => 
+          	where (gp.playerName like username)
             select(gp.gameName)
-          })
+          ))
           select(g)
-        }.toList
+        ).toList
       }
     })
     

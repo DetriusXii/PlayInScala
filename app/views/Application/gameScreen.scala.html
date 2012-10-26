@@ -1,6 +1,7 @@
 @(diplomacyUnits: Iterable[Tuple2[String, String]],
 	moveOrdersMap: Iterable[Tuple2[String, Iterable[String]]],
 	supportHoldsMap: Iterable[Tuple2[String, Iterable[String]]],
+	convoysMap: List[(String, List[(String, List[String])])],
 	fleetActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType], 
 	armyActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType])
 @import com.squeryl.jdip.tables.OrderType
@@ -27,6 +28,25 @@
 			@defining(supportHold._2) { supportDestinations =>
 				@supportDestinations.map { supportDestination =>
 				<li>@supportDestination</li>
+				}
+			}
+			</ul>
+		}
+	</div>
+	<div class="convoyOrders">
+		@convoysMap.map { convoy =>
+			<ul class="@convoy._1">
+			@defining(convoy._2) { moveDestinationsForUnits =>
+				@moveDestinationsForUnits.map { moveDestinationForUnit =>
+					<li>
+						<ul class="@moveDestinationForUnit._1">
+							@defining(moveDestinationForUnit._2) { moves =>
+								@moves.map { move =>
+									<li>@move</li>
+								}
+							}
+						</ul>
+					</li>	
 				}
 			}
 			</ul>
