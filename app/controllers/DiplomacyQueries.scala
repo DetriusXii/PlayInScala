@@ -14,18 +14,23 @@ object DiplomacyQueries {
   def getMoves(srcDiplomacyUnit: DiplomacyUnit): List[Location] = 
     getMoves(srcDiplomacyUnit.unitLocation)
     
+  def getTotalMoves(srcDiplomacyUnit: DiplomacyUnit): List[Location] = {
+    val regularMoves = getMoves(srcDiplomacyUnit)
+    val movesByConvoy = getMovesByConvoy(srcDiplomacyUnit)
+    
+    val filteredMovesByConvoy = movesByConvoy.filter(loc =>
+      !regularMoves.exists(_.id == loc.id)
+    )
+    
+    regularMoves ++ filteredMovesByConvoy
+  }
+    
   def getFormattedMoves(srcLocationID: Int): List[String] = 
     getMoves(srcLocationID).map(getFormattedLocationName(_))
       
   def getMoveOrdersMap(diplomacyUnits: List[DiplomacyUnit]) = 
     diplomacyUnits.map(dpu => {
-      val regularMoves = getMoves(dpu)
-      val movesByConvoy = getMovesByConvoy(dpu)
-      
-      val filteredMovesByConvoy = movesByConvoy.filter(loc => 
-      	!regularMoves.exists(_.id == loc.id)
-      )
-      val allMoves = regularMoves ++ movesByConvoy
+      val allMoves = getTotalMoves(dpu)
       val allFormattedMoves = allMoves.map(getFormattedLocationName(_))
       
       val srcLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
@@ -68,49 +73,48 @@ object DiplomacyQueries {
          getSupportHolds(dpu.unitLocation).map(getFormattedLocationName(_))))
     }).flatten
 	
-  def getSupportMoves(srcLocationID: Int): List[(Location, List[Location])] = {
-	val allUnitLocations: List[Location] = DBQueries.getAllUnits.map(dpu => 
-	  DBQueries.locations.find(_.id == dpu.unitLocation)).flatten  
+  def getSupportMoves(diplomacyUnit: DiplomacyUnit): List[(Location, List[Location])] = {
+    val allOtherUnits = DBQueries.getAllUnits.filter(_.id != diplomacyUnit.id)
+    val movesForAllOtherUnits: List[(Location, List[Location])] = 
+      allOtherUnits.map(dpu => {
+        val otherUnitLocation = DBQueries.locations.find(_.id == dpu.unitLocation)
+        otherUnitLocation.map((_, getTotalMoves(dpu)))
+      }).flatten
     
-    val movesForAllOtherUnits: List[(Location, List[Location])] =
-      allUnitLocations.filter(_.id != srcLocationID).map(loc =>
-	  	(loc, getMoves(loc.id)))
-	  	
-	val movesForThisUnit = getMoves(srcLocationID)
-	val movesThatMatterForOtherUnits = movesForAllOtherUnits.map(u => {
-	  val otherUnitLocation: Location = u._1
-	  val movesForOtherUnit: List[Location] = u._2
-	  
-	  val movesThatMatterForOtherUnit = movesForOtherUnit.filter(_ match {
-	  	case Location(dstProvinceForOtherUnit, _) => movesForThisUnit.exists(_ match {
-	  	  case Location(`dstProvinceForOtherUnit`, _) => true
-	  	  case Location(_, _) => false
-	  	})
-	  })
-	  
-	  (otherUnitLocation, movesThatMatterForOtherUnit)
-	})
-	
-	movesThatMatterForOtherUnits.filter(_ match {
-	  case (_, movesThatMatter) => !movesThatMatter.isEmpty
-	})
-  }
-	 
-  def getSupportMoves(srcDiplomacyUnit: DiplomacyUnit): List[(Location, List[Location])] =
-	getSupportMoves(srcDiplomacyUnit.unitLocation)
-   
-  def getFormattedSupportMoves(srcLocationID: Int): List[(String, List[String])] =
-  	getSupportMoves(srcLocationID).map(u => 
-      (getFormattedLocationName(u._1), u._2.map(getFormattedLocationName(_))))
+    val regularMovesForThisUnit = getMoves(diplomacyUnit)
+    
+    val movesThatMatterForAllOtherUnits = movesForAllOtherUnits.map(u => {
+      val otherUnitLocation = u._1
+      val totalMovesForOtherUnits = u._2
+      
+      val tMovesForOtherUnitsWhereThisUnitCanReach =
+        totalMovesForOtherUnits.filter(loc => regularMovesForThisUnit.exists(_ match {
+          case Location(loc.province, _) => true
+          case _ => false
+        }))
+        
+      (otherUnitLocation, tMovesForOtherUnitsWhereThisUnitCanReach)
+    })
+    
+    val filteredMovesThatMatterForAllOtherUnits = 
+      movesThatMatterForAllOtherUnits.filter(!_._2.isEmpty)
+    filteredMovesThatMatterForAllOtherUnits
+  } 
 
   def getSupportMovesMap(diplomacyUnits: List[DiplomacyUnit]): 
-    List[(String, List[(String, List[String])])] = 
-      diplomacyUnits.map(dpu => {
-        val srcLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
-        srcLocationOption.map((srcLocation: Location) => 
-            (getFormattedLocationName(srcLocation), 
-                getFormattedSupportMoves(srcLocation.id)))
-      }).flatten
+	  List[(String, List[(String, List[String])])] = {
+    val diplomacyUnitLocations = diplomacyUnits.map(dpu =>
+      DBQueries.locations.find(_.id == dpu.unitLocation)
+    ).flatten
+    val diplomacyUnitStringLocations = 
+      diplomacyUnitLocations.map(getFormattedLocationName(_))
+    
+    diplomacyUnits.map(dpu => {
+      val unitLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
+      
+      unitLocationOption
+    })
+  }
   
 
   def getMovesByConvoy(diplomacyUnit: DiplomacyUnit): List[Location] = {
