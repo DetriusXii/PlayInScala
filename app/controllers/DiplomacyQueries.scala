@@ -103,17 +103,25 @@ object DiplomacyQueries {
 
   def getSupportMovesMap(diplomacyUnits: List[DiplomacyUnit]): 
 	  List[(String, List[(String, List[String])])] = {
-    val diplomacyUnitLocations = diplomacyUnits.map(dpu =>
-      DBQueries.locations.find(_.id == dpu.unitLocation)
-    ).flatten
-    val diplomacyUnitStringLocations = 
-      diplomacyUnitLocations.map(getFormattedLocationName(_))
     
-    diplomacyUnits.map(dpu => {
+    val allSupportMovesForUnits = diplomacyUnits.map(dpu => {
       val unitLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
       
-      unitLocationOption
+      unitLocationOption.map(loc => 
+        (loc, getSupportMoves(dpu))
+      )
     })
+    
+    val allStringFormattedSupportMovesForUnits =
+      allSupportMovesForUnits.map(u => {
+        val stringFormattedUnitLocation = getFormattedLocationName(u._1)
+        val stringFormattedOtherUnits = u._2.map(v => 
+          val stringFormattedUnitMovingLocation = getFormattedLocationName(v._1)
+          val stringFormattedMoveDestinations = v._2.map(getFormattedLocationName(_))
+          
+          
+        )
+      })
   }
   
 
