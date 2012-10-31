@@ -1,15 +1,16 @@
-@(diplomacyUnits: Iterable[Tuple2[String, String]],
-	moveOrdersMap: Iterable[Tuple2[String, Iterable[String]]],
-	supportHoldsMap: Iterable[Tuple2[String, Iterable[String]]],
+@(diplomacyUnits: List[Tuple2[String, String]],
+	moveOrdersMap: List[Tuple2[String, List[String]]],
+	supportHoldsMap: List[Tuple2[String, List[String]]],
 	convoysMap: List[(String, List[(String, List[String])])],
-	fleetActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType], 
-	armyActions: Iterable[com.squeryl.jdip.tables.OrderTypeUnitType])
+	fleetActions: List[com.squeryl.jdip.tables.OrderTypeUnitType], 
+	armyActions: List[com.squeryl.jdip.tables.OrderTypeUnitType])
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" 
       xmlns:svg="http://www.w3.org/2000/svg" 
       xmlns:xlink="http://www.w3.org/1999/xlink">
+<body>
 <div id="orders" style="visibility: hidden; display: none;">
 	<div class="moveOrders">
 		@moveOrdersMap.map { moveOrder =>
@@ -64,10 +65,10 @@
 		</tr>
 	</thead>
 	@diplomacyUnits.map {diplomacyUnit =>
-		<tr>
+		<tr id="@diplomacyUnit._2">
 			<td>@diplomacyUnit._1</td>
 			<td>@diplomacyUnit._2</td>
-			<td><select>
+			<td><select class="orderSelect">
 				@defining(diplomacyUnit._1) { unitType =>
 					@unitType match { 
 						case com.squeryl.jdip.tables.UnitType.ARMY => { 
@@ -84,4 +85,13 @@
 		</tr>
 	}
 </table>
+</body>
+<script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js" />
+<script type="text/javascript">
+	$(document).onready(function() {
+		$(".orderSelect").change(function() {
+			
+		});
+	});
+</script>
 </html>

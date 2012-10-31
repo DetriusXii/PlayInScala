@@ -115,8 +115,8 @@ object Application extends Controller with OptionTs {
 	  Ok(svgMap)
   }
 
-	private def getGameScreenData(diplomacyUnits: Iterable[DiplomacyUnit]): 
-    Iterable[Tuple2[String, String]] =
+	private def getGameScreenData(diplomacyUnits: List[DiplomacyUnit]): 
+    List[Tuple2[String, String]] =
     diplomacyUnits.map((dpu: DiplomacyUnit) =>
       DBQueries.locations.find(_.id == dpu.unitLocation).
         map(DiplomacyQueries.getFormattedLocationName(_)).

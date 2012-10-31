@@ -110,18 +110,22 @@ object DiplomacyQueries {
       unitLocationOption.map(loc => 
         (loc, getSupportMoves(dpu))
       )
-    })
+    }).flatten
     
     val allStringFormattedSupportMovesForUnits =
       allSupportMovesForUnits.map(u => {
         val stringFormattedUnitLocation = getFormattedLocationName(u._1)
-        val stringFormattedOtherUnits = u._2.map(v => 
+        val stringFormattedOtherUnits = u._2.map(v => {
           val stringFormattedUnitMovingLocation = getFormattedLocationName(v._1)
           val stringFormattedMoveDestinations = v._2.map(getFormattedLocationName(_))
           
-          
-        )
+          (stringFormattedUnitMovingLocation, stringFormattedMoveDestinations)
+        })
+        
+        (stringFormattedUnitLocation, stringFormattedOtherUnits)
       })
+  
+    allStringFormattedSupportMovesForUnits
   }
   
 
