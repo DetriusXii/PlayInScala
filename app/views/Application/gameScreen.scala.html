@@ -6,7 +6,8 @@
 	armyActions: List[com.squeryl.jdip.tables.OrderTypeUnitType])
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" 
+	"http://www.w3.org/TR/html4/strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" 
       xmlns:svg="http://www.w3.org/2000/svg" 
       xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -72,10 +73,26 @@
 				@defining(diplomacyUnit._1) { unitType =>
 					@unitType match { 
 						case com.squeryl.jdip.tables.UnitType.ARMY => { 
-							@armyActions.map { armyAction => <option>@armyAction.orderType</option>}
+							@armyActions.map { armyAction => 
+								@defining(@armyAction.orderType) { ot =>
+									@ot match {
+										case "Hold" => 
+											<option selected>@armyAction.orderType</option>
+										case _ => 
+											<option>@armyAction.orderType</option> 
+									}
+								}
+							}
 						} 
 						case com.squeryl.jdip.tables.UnitType.FLEET => {
-							@fleetActions.map {fleetAction => <option>@fleetAction.orderType</option>}
+							@fleetActions.map {fleetAction => 
+								@fleetAction.orderType match {
+									case "Hold" => 
+										<option selected>@fleetAction.orderType</option>
+									case _ => 
+										<option>@fleetAction.orderType</option>
+								}
+							}
 						}
 					}
 				}
@@ -86,11 +103,12 @@
 	}
 </table>
 </body>
-<script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js" />
+<script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js">
+</script>
 <script type="text/javascript">
-	$(document).onready(function() {
+	$(document).ready(function() {
 		$(".orderSelect").change(function() {
-			
+			alert($(this).val());
 		});
 	});
 </script>

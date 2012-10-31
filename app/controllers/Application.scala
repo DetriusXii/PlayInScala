@@ -122,7 +122,5 @@ object Application extends Controller with OptionTs {
         map(DiplomacyQueries.getFormattedLocationName(_)).
         map((dpu.unitType, _))       
     ).flatten
-            
-      
 	  
 }
