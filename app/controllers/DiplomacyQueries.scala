@@ -261,4 +261,30 @@ object DiplomacyQueries {
     
     convoysForUnits.flatten
   }
+  
+  def getArmyMovementPhaseOrderTypes(): List[scala.xml.Elem] = {
+	getMovementPhaseOrderTypesForUnitType(UnitType.ARMY)
+  }
+  
+  def getFleetMovementPhaseOrderTypes(): List[scala.xml.Elem] = {
+	getMovementPhaseOrderTypesForUnitType(UnitType.FLEET)
+  }
+
+  def getMovementPhaseOrderTypesForUnitType(unitType: String): List[scala.xml.Elem] = {
+	val orderTypes =
+	  DBQueries.orderTypes.filter(_.phase.equals(Phase.MOVEMENT))
+	val orderTypesForUnitTypes =
+      DBQueries.orderTypeUnitTypes.filter(otut =>
+      	orderTypes.exists(_.id.equals(otut.orderType))
+      ).filter(_.unitType.equals(unitType))
+  
+    orderTypesForUnitTypes.sortWith((a, b) => (a.orderType, b.orderType) match {
+      case (OrderType.HOLD, _) => true
+      case (_, OrderType.HOLD) => false
+      case _ => true
+    }).map(otut => generateOptionFromOrderType(otut.orderType))
+  }
+ 
+  def generateOptionFromOrderType(orderType: String): scala.xml.Elem =
+	<option>{orderType}</option>
 }

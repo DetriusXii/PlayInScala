@@ -13,6 +13,7 @@ import play.api.templates._
 import play.api.db.DB
 import scala.xml._
 import scalaz._
+import scala.xml.Elem
 
 class ApplicationAction[A](action: Action[A]) extends Action[A] {
   def apply(request: Request[A]): Result = action.apply(request)
@@ -73,15 +74,6 @@ object Application extends Controller with OptionTs {
 
       diplomacyUnitsValidation match {
         case Success(diplomacyUnits: List[_]) => {
-          val movementPhaseOrderTypes = 
-            DBQueries.orderTypes.filter(_.phase.equals(Phase.MOVEMENT))
-          val movementPhaseOrderTypeUnitTypes = 
-            DBQueries.orderTypeUnitTypes.filter(otut => 
-              movementPhaseOrderTypes.exists(_.id.equals(otut.orderType)))
-          val armyOrderTypeUnitTypes = 
-            movementPhaseOrderTypeUnitTypes.filter(_.unitType.equals(UnitType.ARMY))
-          val fleetOrderTypeUnitTypes =
-            movementPhaseOrderTypeUnitTypes.filter(_.unitType.equals(UnitType.FLEET))
           val moveOrdersMap = DiplomacyQueries.getMoveOrdersMap(diplomacyUnits)
           val supportHoldsMap = DiplomacyQueries.getSupportHoldsMap(diplomacyUnits)
           val supportMovesMap = DiplomacyQueries.getSupportMovesMap(diplomacyUnits)
@@ -91,13 +83,15 @@ object Application extends Controller with OptionTs {
                   moveOrdersMap,
                   supportHoldsMap,
                   convoysMap,
-                  fleetOrderTypeUnitTypes, 
-                  armyOrderTypeUnitTypes))
+                  DiplomacyQueries.getFleetMovementPhaseOrderTypes(), 
+                  DiplomacyQueries.getArmyMovementPhaseOrderTypes()))
         }
         case Failure(e: Exception) => Ok(e.getMessage)
       }
     })
 	
+	
+  
 	
 	def pathsPic(): Action[AnyContent] = Action {
 	  val diplomacyUnitOption = DBQueries.locations.find(_ match {

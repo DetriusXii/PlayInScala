@@ -2,8 +2,8 @@
 	moveOrdersMap: List[Tuple2[String, List[String]]],
 	supportHoldsMap: List[Tuple2[String, List[String]]],
 	convoysMap: List[(String, List[(String, List[String])])],
-	fleetActions: List[com.squeryl.jdip.tables.OrderTypeUnitType], 
-	armyActions: List[com.squeryl.jdip.tables.OrderTypeUnitType])
+	fleetOrders: List[scala.xml.Elem], 
+	armyOrders: List[scala.xml.Elem])
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" 
@@ -72,28 +72,8 @@
 			<td><select class="orderSelect">
 				@defining(diplomacyUnit._1) { unitType =>
 					@unitType match { 
-						case com.squeryl.jdip.tables.UnitType.ARMY => { 
-							@armyActions.map { armyAction => 
-								@defining(@armyAction.orderType) { ot =>
-									@ot match {
-										case "Hold" => 
-											<option selected>@armyAction.orderType</option>
-										case _ => 
-											<option>@armyAction.orderType</option> 
-									}
-								}
-							}
-						} 
-						case com.squeryl.jdip.tables.UnitType.FLEET => {
-							@fleetActions.map {fleetAction => 
-								@fleetAction.orderType match {
-									case "Hold" => 
-										<option selected>@fleetAction.orderType</option>
-									case _ => 
-										<option>@fleetAction.orderType</option>
-								}
-							}
-						}
+						case com.squeryl.jdip.tables.UnitType.ARMY =>  { @armyOrders }
+						case com.squeryl.jdip.tables.UnitType.FLEET => { @fleetOrders }
 					}
 				}
 				</select></td>
@@ -108,7 +88,8 @@
 <script type="text/javascript">
 	$(document).ready(function() {
 		$(".orderSelect").change(function() {
-			alert($(this).val());
+			alert(this.parentNode.parentNode.id);
+			
 		});
 	});
 </script>
