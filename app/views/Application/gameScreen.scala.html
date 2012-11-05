@@ -97,8 +97,8 @@
 					}
 				}
 				</select></td>
-			<td>Target Location</td>
-			<td>Source Location</td>
+			<td class="targetLocation"></td>
+			<td class="sourceLocation"></td>
 		</tr>
 	}
 </table>
@@ -106,9 +106,84 @@
 <script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js">
 </script>
 <script type="text/javascript">
+	function wrapTextInSelect(text) {
+		return "<select>" + text + "</select>";
+	}
+	
+	function wrapTextInOption(text) {
+		return "<option>" + text + "</option>";
+	}
+
 	$(document).ready(function() {
 		$(".orderSelect").change(function() {
-			alert(this.parentNode.parentNode.id);
+			var id = this.parentElement.parentElement.id;
+			var idSelector = "#" + id;
+			var targetLocationSelector = idSelector + " .targetLocation";
+			var sourceLocationSelector = idSelector + " .sourceLocation";
+			
+			$(targetLocationSelector).empty();
+			$(sourceLocationSelector).empty();
+			
+			var moveOrdersSelector = ".moveOrders ul." + id;
+			var supportHoldOrdersSelector = ".supportHoldOrders ul." + id;
+			var supportMoveOrdersSelector = ".supportMoveOrders ul." + id + " ul";
+			var convoyOrdersSelector = ".convoyOrders ul." + id + " ul";
+			
+			switch($(this).val()) {
+				case "Hold": {
+					break;
+				}
+				case "Move": {
+					var children = $(moveOrdersSelector).children();
+					var optionElements = children.map(function() {
+						return wrapTextInOption(this.textContent);
+					}).get().join("");
+					var selectElement = wrapTextInSelect(optionElements);
+					$(targetLocationSelector).html(selectElement);
+					break;
+				}
+				case "Support Hold": {
+					var children = $(supportHoldOrdersSelector).children();
+					var optionElements = children.map(function() {
+						return wrapTextInOption(this.textContent);
+					}).get().join("");
+					var selectElement = wrapTextInSelect(optionElements);
+					$(targetLocationSelector).html(selectElement);
+					break;
+				}
+				case "Support Move": {
+					var childLists = $(supportMoveOrdersSelector);
+					var optionElements = childLists.map(function() {
+						return wrapTextInOption(this.className);
+					}).get().join("");
+					var selectElement = wrapTextInSelect(optionElements);
+					$(sourceLocationSelector).html(selectElement);
+					$(sourceLocationSelector + " select").change(function() {
+						var value = $(this).val();
+						
+						var targetListItemsSelector =
+							".supportMoveOrders ul." + id + " ul." + value + " li";
+						var selectedItem = $(targetListItemsSelector);
+						var optionElements = $(targetListItemsSelector).map(function() {
+							return wrapTextInOption(this.textContent);
+						}).get().join("");
+						
+						var selectElement = wrapTextInSelect(optionElements);
+						$(targetLocationSelector).html(selectElement);
+					});
+					break;
+				}
+				case "Convoy": {
+					var childLists = $(convoyOrdersSelector);
+					var optionElements = childLists.map(function() {
+						return "<option>" + this.className + "</option>";
+					}).get().join("");
+					var selectElement = "<select>" + optionElements + "</selct"
+					
+					break;
+				}
+			}
+			
 			
 		});
 	});
