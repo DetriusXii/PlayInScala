@@ -1,6 +1,7 @@
 @(diplomacyUnits: List[Tuple2[String, String]],
 	moveOrdersMap: List[Tuple2[String, List[String]]],
 	supportHoldsMap: List[Tuple2[String, List[String]]],
+	supportMovesMap: List[(String, List[(String, List[String])])],
 	convoysMap: List[(String, List[(String, List[String])])],
 	fleetOrders: List[scala.xml.Elem], 
 	armyOrders: List[scala.xml.Elem])
@@ -22,7 +23,7 @@
 				}
 			}
 			</ul>
-			}
+		}
 	</div>
 	<div class="supportHoldOrders">
 		@supportHoldsMap.map { supportHold =>
@@ -30,6 +31,25 @@
 			@defining(supportHold._2) { supportDestinations =>
 				@supportDestinations.map { supportDestination =>
 				<li>@supportDestination</li>
+				}
+			}
+			</ul>
+		}
+	</div>
+	<div class="supportMoveOrders">
+		@supportMovesMap.map { supportMove =>
+			<ul class="@supportMove._1">
+			@defining(supportMove._2) { moveDestinationsForUnits =>
+				@moveDestinationsForUnits.map { moveDestinationForUnit =>
+					<li>
+						<ul class="@moveDestinationForUnit._1">
+							@defining(moveDestinationForUnit._2) { moves =>
+								@moves.map { move =>
+									<li>@move</li>
+								}
+							}
+						</ul>
+					</li>
 				}
 			}
 			</ul>

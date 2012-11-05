@@ -82,6 +82,7 @@ object Application extends Controller with OptionTs {
           Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
                   moveOrdersMap,
                   supportHoldsMap,
+                  supportMovesMap,
                   convoysMap,
                   DiplomacyQueries.getFleetMovementPhaseOrderTypes(), 
                   DiplomacyQueries.getArmyMovementPhaseOrderTypes()))
