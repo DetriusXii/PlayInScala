@@ -113,6 +113,17 @@
 	function wrapTextInOption(text) {
 		return "<option>" + text + "</option>";
 	}
+	
+	function createBasicOrder(orderSelector, targetLocationSelector) {
+		var children = $(orderSelector).children();
+		var optionElements = children.map(function() {
+			return wrapTextInOption(this.textContent);
+		}).get().join("");
+		var selectElement = wrapTextInSelect(optionElements);
+		$(targetLocationSelector).html(selectElement);
+	}
+	
+	
 
 	$(document).ready(function() {
 		$(".orderSelect").change(function() {
@@ -134,21 +145,11 @@
 					break;
 				}
 				case "Move": {
-					var children = $(moveOrdersSelector).children();
-					var optionElements = children.map(function() {
-						return wrapTextInOption(this.textContent);
-					}).get().join("");
-					var selectElement = wrapTextInSelect(optionElements);
-					$(targetLocationSelector).html(selectElement);
+					createBasicOrder(moveOrdersSelector, targetLocationSelector);
 					break;
 				}
 				case "Support Hold": {
-					var children = $(supportHoldOrdersSelector).children();
-					var optionElements = children.map(function() {
-						return wrapTextInOption(this.textContent);
-					}).get().join("");
-					var selectElement = wrapTextInSelect(optionElements);
-					$(targetLocationSelector).html(selectElement);
+					createBasicOrder(supportHoldOrdersSelector, targetLocationSelector);
 					break;
 				}
 				case "Support Move": {
@@ -171,15 +172,29 @@
 						var selectElement = wrapTextInSelect(optionElements);
 						$(targetLocationSelector).html(selectElement);
 					});
+					$(sourceLocationSelector + " select").
 					break;
 				}
 				case "Convoy": {
 					var childLists = $(convoyOrdersSelector);
 					var optionElements = childLists.map(function() {
-						return "<option>" + this.className + "</option>";
+						return wrapTextInOption(this.className);
 					}).get().join("");
-					var selectElement = "<select>" + optionElements + "</selct"
-					
+					var selectElement = wrapTextInSelect(optionElements);
+					$(sourceLocationSelector).html(selectElement);
+					$(sourceLocationSelector + " select").change(function() {
+						var value = $(this).val();
+						
+						var targetListItemsSelector =
+							".convoyOrders ul." + id + " ul." + value + " li";
+						var selectedItem = $(targetListItemsSelector);
+						var optionElements = $(targetListItemsSelector).map(function() {
+							return wrapTextInOption(this.textContent);
+						}).get().join("");
+						
+						var selectElement = wrapTextInSelect(optionElements);
+						$(targetLocationSelector).html(selectElement);
+					});
 					break;
 				}
 			}
