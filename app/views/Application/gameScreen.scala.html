@@ -172,7 +172,15 @@
 						var selectElement = wrapTextInSelect(optionElements);
 						$(targetLocationSelector).html(selectElement);
 					});
-					$(sourceLocationSelector + " select").
+					
+					var value = $(sourceLocationSelector + " select").val();
+					if (value.length > 0) {
+						var targetListItemsSelector =
+							".supportMoveOrders ul." + id + " ul." + value + " li";
+						var selectedItem = $(targetListItemsSelector);
+						var optionElements = $(targetKL)
+					}
+					
 					break;
 				}
 				case "Convoy": {
