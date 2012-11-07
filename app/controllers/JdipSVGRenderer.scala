@@ -58,53 +58,12 @@ object JdipSVGRenderer {
     ).map(_ match {
       case x: Element => x
     })
-
-  def getOwnedProvinces: List[OwnedProvince] = 
-    DB.withConnection((conn: java.sql.Connection) => {
-      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-      using(dbSession) {
-        Jdip.ownedProvinces.toList
-      }
-    })
     
   def getDiplomacyUnits: List[DiplomacyUnit] =
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
         Jdip.diplomacyUnits.toList
-      }
-    })
-    
-  def lookupGamePlayerEmpire(gamePlayerEmpireID: Int): Option[GamePlayerEmpire] =
-    DB.withConnection((conn: java.sql.Connection) => {
-      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-      using(dbSession) {
-        Jdip.gamePlayerEmpires.lookup(gamePlayerEmpireID)
-      }
-    })
-    
-  lazy val locations: List[Location] =
-    DB.withConnection((conn: java.sql.Connection) => {
-      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-      using(dbSession) {
-        Jdip.locations.toList
-      }
-    })
-    
-
-  lazy val empires: List[Empire] = 
-    DB.withConnection((conn: java.sql.Connection) => {
-      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-      using(dbSession) {
-        Jdip.empires.toList
-      }
-    })
-
-  lazy val uniqueProvinceNames: List[UniqueProvinceName] =
-    DB.withConnection((conn: java.sql.Connection) => {
-      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-      using(dbSession) {
-        Jdip.uniqueProvinceNames.toList
       }
     })
     

@@ -20,6 +20,22 @@ object DBQueries extends States  {
     }
   })
   
+  lazy val uniqueProvinceNames: List[UniqueProvinceName] =
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        Jdip.uniqueProvinceNames.toList
+      }
+    })
+    
+  lazy val empires: List[Empire] = 
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        Jdip.empires.toList
+      }
+    })
+  
   lazy val adjacencies: List[Adjacency] = DB.withConnection((conn: java.sql.Connection) => {
     val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
     using(dbSession) {
@@ -51,7 +67,26 @@ object DBQueries extends States  {
       }
     })
 
-
+  def getOwnedProvincesForGameTime(gameTime: GameTime): List[OwnedProvince] =
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        from(Jdip.ownedProvinces) (owp =>
+          where(owp.gamePlayerEmpireID === gamePlayerEmpire.id and 
+          	owp.gameTimeID === gameTime.id
+          ) select(owp)
+        ).toList
+      }
+    })
+  
+  def getGamePlayerEmpire(gamePlayerEmpireID: Int): Option[GamePlayerEmpire] =
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        Jdip.gamePlayerEmpires.lookup(gamePlayerEmpireID)
+      }
+    })
+    
   def getAdjacentLocationsForLocation(loc: Location): List[Location] = {
     adjacencies.filter(_.srcLocation == loc.id).map(adj => {
       locations.find(_.id == adj.dstLocation)
@@ -128,7 +163,7 @@ object DBQueries extends States  {
             where(gp.gameName === gameName and gp.playerName === playerName)
             select(gp.id)))
           select(gpe)
-        ).toList.firstOption
+        ).toList.headOption
       }
     })
 
