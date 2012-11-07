@@ -67,14 +67,15 @@ object DBQueries extends States  {
       }
     })
 
-  def getOwnedProvincesForGameTime(gameTime: GameTime): List[OwnedProvince] =
+  def getOwnedProvincesForGame(game: Game): List[OwnedProvince] =
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
         from(Jdip.ownedProvinces) (owp =>
-          where(owp.gamePlayerEmpireID === gamePlayerEmpire.id and 
-          	owp.gameTimeID === gameTime.id
-          ) select(owp)
+          where(owp.gamePlayerEmpireID in gamePlayerEmpireQueryForGame(game) and 
+          	owp.gameTimeID === game.gameTime
+          ) 
+          select(owp)
         ).toList
       }
     })
@@ -107,33 +108,63 @@ object DBQueries extends States  {
       case _ => false
     })
   
-  def getAllLandUnits: List[DiplomacyUnit] = DB.withConnection((conn: java.sql.Connection) => {
-    val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-    using(dbSession) {
-      from(Jdip.diplomacyUnits)(dpu => (
-        where(dpu.unitType === UnitType.ARMY) 
-        select(dpu)
-      )).toList
-    }
-  })
-  
-  def getAllFleetUnits: List[DiplomacyUnit] = DB.withConnection((conn: java.sql.Connection) => {
-    val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-    using(dbSession) {
-      from(Jdip.diplomacyUnits)(dpu => (
-        where(dpu.unitType === UnitType.FLEET) 
-        select(dpu)
-      )).toList
-    }
-  })
-  
-  def getAllUnits: List[DiplomacyUnit] = 
+  def getAllLandUnitsForGame(game: Game): List[DiplomacyUnit] = 
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
-        Jdip.diplomacyUnits.toList
+    	from(Jdip.diplomacyUnits)(dpu => (
+          where((dpu.unitType === UnitType.ARMY) and 
+              (dpu.owner in gamePlayerEmpireQueryForGame(game)) and
+              (dpu.gameTime === game.gameTime)) 
+          select(dpu)
+        )).toList
       }
     })
+  
+  def getAllFleetUnitsForGame(game: Game): List[DiplomacyUnit] = 
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        from(Jdip.diplomacyUnits)(dpu => (
+          where((dpu.unitType === UnitType.FLEET) and 
+        	(dpu.owner in gamePlayerEmpireQueryForGame(game)) and
+        	(dpu.gameTime === game.gameTime)
+        ) 
+        select(dpu)
+      )).toList
+    }
+  })
+  
+  def getDiplomacyUnitsForGameAtCurrentGameTime(game: Game): List[DiplomacyUnit] =
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        from(Jdip.diplomacyUnits)(dpu => 
+          where((dpu.owner in gamePlayerEmpireQueryForGame(game))
+          	and (dpu.gameTime === game.gameTime))
+          select(dpu)
+        ).toList
+      }
+    })
+  
+  private def gamePlayerEmpireQueryForGame(game: Game): Query[Int] =
+    from(Jdip.gamePlayerEmpires, Jdip.gamePlayers)((gpe, gp) => 
+    	where(gpe.gamePlayerKey === gp.id and gp.gameName === game.id)
+    	select(gpe.id)
+    )
+  
+  def getGamePlayerEmpiresForGame(game: Game): List[GamePlayerEmpire] =
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        from(Jdip.gamePlayerEmpires) (gpe =>
+          where(gpe.id in gamePlayerEmpireQueryForGame(game: Game))
+          select(gpe)
+        ).toList
+      }
+    })
+  
+
   
   def getDiplomacyUnit(location: Location): Option[DiplomacyUnit] =
     DB.withConnection((conn: java.sql.Connection) => {
@@ -164,17 +195,6 @@ object DBQueries extends States  {
             select(gp.id)))
           select(gpe)
         ).toList.headOption
-      }
-    })
-
-  def getDiplomacyUnits(gamePlayerEmpire: GamePlayerEmpire): List[DiplomacyUnit] =
-    DB.withConnection((conn: java.sql.Connection) => {
-      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-      using(dbSession) {
-        from(Jdip.diplomacyUnits) (dpu =>
-	      where(dpu.owner === gamePlayerEmpire.id)
-	      select(dpu)
-	    ).toList
       }
     })
   

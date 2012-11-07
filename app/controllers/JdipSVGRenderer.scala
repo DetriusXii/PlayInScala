@@ -57,23 +57,15 @@ object JdipSVGRenderer {
       u.isInstanceOf[Element]
     ).map(_ match {
       case x: Element => x
-    })
-    
-  def getDiplomacyUnits: List[DiplomacyUnit] =
-    DB.withConnection((conn: java.sql.Connection) => {
-      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-      using(dbSession) {
-        Jdip.diplomacyUnits.toList
-      }
-    })
-    
+    })   
 
-  def addProvinceColours(document: Document): Unit = {
-    getOwnedProvinces.map((owp: OwnedProvince) => {
+  def addProvinceColours(document: Document)(game: Game): Unit = {
+    DBQueries.getOwnedProvincesForGame(game).map((owp: OwnedProvince) => {
       val province = owp.province
       val gamePlayerEmpireID = owp.gamePlayerEmpireID
       
-      val uniqueProvinceNamesForProvince = uniqueProvinceNames.filter(_.provinceName.equals(province))
+      val uniqueProvinceNamesForProvince = 
+        uniqueProvinceNames.filter(_.provinceName.equals(province))
       
       val gamePlayerEmpireOption = lookupGamePlayerEmpire(gamePlayerEmpireID)
       val provinceColourOption = gamePlayerEmpireOption.map(_ match {
@@ -83,7 +75,8 @@ object JdipSVGRenderer {
       })
       
       uniqueProvinceNamesForProvince.map((upn: UniqueProvinceName) => {
-        val mapLayerElementOption: Option[Element] = document.getElementById("_%s" format upn.alternateName)
+        val mapLayerElementOption: Option[Element] = 
+          document.getElementById("_%s" format upn.alternateName)
         mapLayerElementOption.flatMap(element =>
           provinceColourOption.map(element.setAttribute(CLASS_ATTRIBUTE, _))
         )
@@ -91,14 +84,15 @@ object JdipSVGRenderer {
     })
   }
   
-  def getRenderedDocument = {
+  def getRenderedDocument(game: Game) = {
     val document = getUneditedDocument
 
-    val briefLabelLayerOption: Option[Element] = document.getElementById(BRIEF_LABEL_LAYER_ID)
+    val briefLabelLayerOption: Option[Element] = 
+      document.getElementById(BRIEF_LABEL_LAYER_ID)
     briefLabelLayerOption.map(_.setAttribute(VISIBILITY_ATTRIBUTE, VISIBLE))
    
-    addProvinceColours(document)
-    addUnitsToDocument(document)
+    addProvinceColours(document)(game)
+    addUnitsToDocument(document)(game)
 
     val transformer = TransformerFactory.newInstance.newTransformer
     val domSource = new DOMSource(document.getDocumentElement)
@@ -113,20 +107,22 @@ object JdipSVGRenderer {
     
   }
 
-  def addUnitsToDocument(document: Document): Unit = {
-    val diplomacyUnits = getDiplomacyUnits
+  def addUnitsToDocument(document: Document)(game: Game): Unit = {
+    val diplomacyUnits = DBQueries.getDiplomacyUnitsForGameAtCurrentGameTime(game)
     val unitLayer: Option[Element] = document.getElementById(UNIT_LAYER_ID)
     val fullProvinceElementList: List[Element] = 
       document.getElementsByTagName("%s:%s" format (JDIP_NAMESPACE, PROVINCE_LABEL))
     
     diplomacyUnits.map(dpu => {
-      val locationOption = locations.find(_.id == dpu.unitLocation)
+      val locationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
       
-      val gamePlayerEmpireOption = lookupGamePlayerEmpire(dpu.owner)
-      val empireOption = gamePlayerEmpireOption.flatMap(gpe => empires.find(_.id == gpe.empireName))
+      val gamePlayerEmpireOption = DBQueries.getGamePlayerEmpire(dpu.owner)
+      val empireOption = gamePlayerEmpireOption.flatMap(gpe => 
+        DBQueries.empires.find(_.id == gpe.empireName))
       
       val uniqueProvinceNamesOption = locationOption.map(_ match {
-        case Location(province, coast) => (uniqueProvinceNames.filter(_.provinceName.equals(province)), coast)
+        case Location(province, coast) => 
+          (DBQueries.uniqueProvinceNames.filter(_.provinceName.equals(province)), coast)
       }).map((u: Tuple2[List[UniqueProvinceName], String]) => {
         val coast = u._2
         val uniqueProvinceNames = u._1
@@ -138,13 +134,15 @@ object JdipSVGRenderer {
                 _.alternateName.equals(provElement.getAttribute(NAME_ATTRIBUTE))
               )
               case _ => uniqueProvinceNames.exists(upn =>
-            	("%s-%s" format (upn.alternateName, coast)).equals(provElement.getAttribute(NAME_ATTRIBUTE))
+            	("%s-%s" format (upn.alternateName, coast)).
+            		equals(provElement.getAttribute(NAME_ATTRIBUTE))
               )
             }
           })
         
         val unitElements = provinceElementList.map(element => {
-          val unitElements: List[Element] = element.getElementsByTagName("%s:%s" format (JDIP_NAMESPACE, UNIT_LABEL))
+          val unitElements: List[Element] = 
+            element.getElementsByTagName("%s:%s" format (JDIP_NAMESPACE, UNIT_LABEL))
           unitElements
         }).flatten
         
@@ -158,10 +156,12 @@ object JdipSVGRenderer {
           useElement.setAttribute(Y_ATTRIBUTE, y)
           val unitTypeOption = unitTypeRemap.get(dpu.unitType)
           unitTypeOption.map(unitType =>
-              useElement.setAttribute("%s:%s" format (XLINK_NAMESPACE, HREF_ATTRIBUTE), "#%s" format unitType))
+              useElement.setAttribute("%s:%s" format (XLINK_NAMESPACE, HREF_ATTRIBUTE), 
+                  "#%s" format unitType))
           useElement.setAttribute(HEIGHT_ATTRIBUTE, HEIGHT_VALUE)
           useElement.setAttribute(WIDTH_ATTRIBUTE, WIDTH_VALUE)
-          empireOption.map(empire => useElement.setAttribute(CLASS_ATTRIBUTE, empire.unitColour))
+          empireOption.map(empire => 
+            useElement.setAttribute(CLASS_ATTRIBUTE, empire.unitColour))
           
           unitLayer.map(_.appendChild(useElement))
         })
