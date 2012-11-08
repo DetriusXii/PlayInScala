@@ -65,19 +65,27 @@ object Application extends Controller with OptionTs {
             "No GamePlayerEmpireFound with game name %s and player name %s" format 
             (gameName, playerName)
           ))
+          
+      def getGameValidation(gameName: String) =
+        DBQueries.getGame(gameName).toSuccess(
+            new Exception("No game found with game name %s" format gameName))
 
       val diplomacyUnitsValidation = for (
         username <- usernameValidation;
-        gamePlayerEmpire <- getGamePlayerEmpireValidation(gameName, username)) yield {
-        DBQueries.getDiplomacyUnits(gamePlayerEmpire)
+        gamePlayerEmpire <- getGamePlayerEmpireValidation(gameName, username);
+        game <- getGameValidation(gameName)) yield {
+        (game, DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gamePlayerEmpire))
       }
 
       diplomacyUnitsValidation match {
-        case Success(diplomacyUnits: List[_]) => {
-          val moveOrdersMap = DiplomacyQueries.getMoveOrdersMap(diplomacyUnits)
-          val supportHoldsMap = DiplomacyQueries.getSupportHoldsMap(diplomacyUnits)
-          val supportMovesMap = DiplomacyQueries.getSupportMovesMap(diplomacyUnits)
-          val convoysMap = DiplomacyQueries.getConvoysMap(diplomacyUnits)
+        case Success((game, diplomacyUnits: List[_])) => {
+          val moveOrdersMap = 
+            DiplomacyQueries.getMoveOrdersMap(game)(diplomacyUnits)
+          val supportHoldsMap = 
+            DiplomacyQueries.getSupportHoldsMap(game)(diplomacyUnits)
+          val supportMovesMap = 
+            DiplomacyQueries.getSupportMovesMap(game)(diplomacyUnits)
+          val convoysMap = DiplomacyQueries.getConvoysMap(game)(diplomacyUnits)
           
           Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
                   moveOrdersMap,
@@ -90,25 +98,6 @@ object Application extends Controller with OptionTs {
         case Failure(e: Exception) => Ok(e.getMessage)
       }
     })
-	
-	
-  
-	
-	def pathsPic(): Action[AnyContent] = Action {
-	  val diplomacyUnitOption = DBQueries.locations.find(_ match {
-	    case Location("eng", Coast.ALL_COAST) => true
-	    case _ => false
-	  }).flatMap(DBQueries.getDiplomacyUnit(_))
-	  diplomacyUnitOption.map(DiplomacyQueries.getConvoys(_)) match {
-      	case Some(x) => Ok(x.toString)
-      	case None => Ok("Could not reproduce")
-	  }
-	}
-
-  def getSVGMap = Action { implicit request =>
-    val svgMap = JdipSVGRenderer.getRenderedDocument
-	  Ok(svgMap)
-  }
 
 	private def getGameScreenData(diplomacyUnits: List[DiplomacyUnit]): 
     List[Tuple2[String, String]] =

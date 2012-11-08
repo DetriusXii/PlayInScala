@@ -80,6 +80,16 @@ object DBQueries extends States  {
       }
     })
   
+  def getGame(gameName: String): Option[Game] = {
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        Jdip.games.lookup(gameName)
+      }
+    })
+  }
+    
+    
   def getGamePlayerEmpire(gamePlayerEmpireID: Int): Option[GamePlayerEmpire] =
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
@@ -164,25 +174,52 @@ object DBQueries extends States  {
       }
     })
   
-  def getDiplomacyUnitsForGamePlayerEmpire(gamePlayerEmpire: GamePlayerEmpire):
-	  List[GamePlayerEmpire] =
-	    DB.withConnection((conn: java.sql.Connection) => {
-	      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-	      using(dbSession) {
-	        
-	      }
-	    })
-  
-  def getDiplomacyUnit(location: Location): Option[DiplomacyUnit] =
+  def getGameForGamePlayerEmpireID(gamePlayerEmpireID: Int): Option[Game] = {
     DB.withConnection((conn: java.sql.Connection) => {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
-        from(Jdip.diplomacyUnits)(dpu => (
-          where(dpu.unitLocation === location.id) 
-          select(dpu)
-        )).toList.firstOption
+        from(Jdip.games, Jdip.gamePlayers, Jdip.gamePlayerEmpires)((g, gp, gpe) => 
+        	where((gpe.id === gamePlayerEmpireID) and
+        			(gpe.gamePlayerKey === gp.id) and
+        			(g.id === gp.gameName)
+        	)
+        	select(g)
+        ).headOption
       }
     })
+  }
+    
+  def getGameForGamePlayerEmpire(gamePlayerEmpire: GamePlayerEmpire): Option[Game] = {
+    DB.withConnection((conn: java.sql.Connection) => {
+      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+      using(dbSession) {
+        from(Jdip.games, Jdip.gamePlayers, Jdip.gamePlayerEmpires)((g, gp, gpe) => 
+        	where((gpe.id === gamePlayerEmpire.id) and
+        			(gpe.gamePlayerKey === gp.id) and
+        			(g.id === gp.gameName)
+        	)
+        	select(g)
+        ).headOption
+        
+      }
+    })
+  }
+  
+  def getDiplomacyUnitsForGamePlayerEmpire(gamePlayerEmpire: GamePlayerEmpire):
+	  List[DiplomacyUnit] =
+	    DB.withConnection((conn: java.sql.Connection) => {
+	      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+	      using(dbSession) {
+	        from(Jdip.games, Jdip.gamePlayers, Jdip.diplomacyUnits) ((g, gp, dpu) => 
+	        	where((gp.id === gamePlayerEmpire.gamePlayerKey) and
+	        		(g.id === gp.gameName) and
+	        		(dpu.owner === gamePlayerEmpire.id) and
+	        		(dpu.gameTime === g.gameTime)
+	        	)
+	        	select(dpu)
+	        ).toList
+	      }
+	    })
 
   def getPlayers: List[Player] =
     DB.withConnection((conn: java.sql.Connection) => {

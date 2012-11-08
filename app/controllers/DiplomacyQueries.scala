@@ -14,9 +14,9 @@ object DiplomacyQueries {
   def getMoves(srcDiplomacyUnit: DiplomacyUnit): List[Location] = 
     getMoves(srcDiplomacyUnit.unitLocation)
     
-  def getTotalMoves(srcDiplomacyUnit: DiplomacyUnit): List[Location] = {
+  def getTotalMoves(game: Game)(srcDiplomacyUnit: DiplomacyUnit): List[Location] = {
     val regularMoves = getMoves(srcDiplomacyUnit)
-    val movesByConvoy = getMovesByConvoy(srcDiplomacyUnit)
+    val movesByConvoy = getMovesByConvoy(game)(srcDiplomacyUnit)
     
     val filteredMovesByConvoy = movesByConvoy.filter(loc =>
       !regularMoves.exists(_.id == loc.id)
@@ -24,13 +24,10 @@ object DiplomacyQueries {
     
     regularMoves ++ filteredMovesByConvoy
   }
-    
-  def getFormattedMoves(srcLocationID: Int): List[String] = 
-    getMoves(srcLocationID).map(getFormattedLocationName(_))
       
-  def getMoveOrdersMap(diplomacyUnits: List[DiplomacyUnit]) = 
+  def getMoveOrdersMap(game: Game)(diplomacyUnits: List[DiplomacyUnit]) = 
     diplomacyUnits.map(dpu => {
-      val allMoves = getTotalMoves(dpu)
+      val allMoves = getTotalMoves(game)(dpu)
       val allFormattedMoves = allMoves.map(getFormattedLocationName(_))
       
       val srcLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
@@ -44,7 +41,7 @@ object DiplomacyQueries {
 	case Location(prov, coast) => "%s-%s" format (prov, coast)
   }
   
-  def getSupportHolds(srcLocationID: Int): List[Location] = {
+  def getSupportHolds(game: Game)(srcLocationID: Int): List[Location] = {
     val locationOption = DBQueries.locations.find(_.id == srcLocationID)
     val adjacentLocations = 
       locationOption.map(DBQueries.getAdjacentLocationsForLocation(_)).flatten
@@ -53,32 +50,36 @@ object DiplomacyQueries {
         case Location(province, _) => 
           adjacentLocations.exists(_.province.equals(province))
       })
-    val allUnits = DBQueries.getAllUnits
+    val allUnits = DBQueries.getDiplomacyUnitsForGameAtCurrentGameTime(game)
     val provincialLocationsWithUnitPresent =
       provincialLocations.filter(loc => allUnits.exists(_.unitLocation == loc.id))
     provincialLocationsWithUnitPresent
   }
 	
-  def getSupportHolds(srcDiplomacyUnit: DiplomacyUnit): List[Location] = 
-    getSupportHolds(srcDiplomacyUnit.unitLocation)
+  def getSupportHolds(game: Game, srcDiplomacyUnit: DiplomacyUnit): List[Location] = 
+    getSupportHolds(game)(srcDiplomacyUnit.unitLocation)
 	
-  def getFormattedSupportHolds(srcLocationID: Int): List[String] =
-    getSupportHolds(srcLocationID).map(getFormattedLocationName(_))
+  def getFormattedSupportHolds(game: Game, srcLocationID: Int): List[String] =
+    getSupportHolds(game)(srcLocationID).map(getFormattedLocationName(_))
 	  
-  def getSupportHoldsMap(diplomacyUnits: List[DiplomacyUnit]) =
+  def getSupportHoldsMap(game: Game)(diplomacyUnits: List[DiplomacyUnit]) =
     diplomacyUnits.map(dpu => {
       val srcLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
       srcLocationOption.map(loc => 
         (getFormattedLocationName(loc), 
-         getSupportHolds(dpu.unitLocation).map(getFormattedLocationName(_))))
+         getSupportHolds(game)(dpu.unitLocation).map(getFormattedLocationName(_))))
     }).flatten
 	
-  def getSupportMoves(diplomacyUnit: DiplomacyUnit): List[(Location, List[Location])] = {
-    val allOtherUnits = DBQueries.getAllUnits.filter(_.id != diplomacyUnit.id)
+  def getSupportMoves(game: Game)(diplomacyUnit: DiplomacyUnit): List[(Location, List[Location])] = {
+    val allOtherUnits = 
+      DBQueries.getDiplomacyUnitsForGameAtCurrentGameTime(game).
+        	filter(_.id != diplomacyUnit.id)
+     
+    
     val movesForAllOtherUnits: List[(Location, List[Location])] = 
       allOtherUnits.map(dpu => {
         val otherUnitLocation = DBQueries.locations.find(_.id == dpu.unitLocation)
-        otherUnitLocation.map((_, getTotalMoves(dpu)))
+        otherUnitLocation.map((_, getTotalMoves(game)(dpu)))
       }).flatten
     
     val regularMovesForThisUnit = getMoves(diplomacyUnit)
@@ -101,14 +102,14 @@ object DiplomacyQueries {
     filteredMovesThatMatterForAllOtherUnits
   } 
 
-  def getSupportMovesMap(diplomacyUnits: List[DiplomacyUnit]): 
+  def getSupportMovesMap(game: Game)(diplomacyUnits: List[DiplomacyUnit]): 
 	  List[(String, List[(String, List[String])])] = {
     
     val allSupportMovesForUnits = diplomacyUnits.map(dpu => {
       val unitLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
       
       unitLocationOption.map(loc => 
-        (loc, getSupportMoves(dpu))
+        (loc, getSupportMoves(game)(dpu))
       )
     }).flatten
     
@@ -129,11 +130,12 @@ object DiplomacyQueries {
   }
   
 
-  def getMovesByConvoy(diplomacyUnit: DiplomacyUnit): List[Location] = {
+  def getMovesByConvoy(game: Game)(diplomacyUnit: DiplomacyUnit): List[Location] = {
     diplomacyUnit match {
       case DiplomacyUnit(UnitType.ARMY, _, unitLocation, _, _) => 
         DBQueries.locations.filter(_.id == unitLocation).flatMap(loc => {
-          val allPaths = findAllPathsExternal(loc, DBQueries.getAllFleetUnits)
+          val allPaths = 
+            findAllPathsExternal(loc, DBQueries.getAllFleetUnitsForGame(game))
           allPaths.map(_ match {
             case h :: tail => h
           })
@@ -201,7 +203,8 @@ object DiplomacyQueries {
   }
 
 
-  def getConvoys(diplomacyUnit: DiplomacyUnit): List[(Location, List[Location])] = {
+  def getConvoys(game: Game)(diplomacyUnit: DiplomacyUnit): 
+	  List[(Location, List[Location])] = {
     diplomacyUnit match {
       case DiplomacyUnit(UnitType.FLEET, _, unitLocation, _, _) => {
         DBQueries.locations.find(_.id == unitLocation).flatMap(loc => {
@@ -213,8 +216,10 @@ object DiplomacyQueries {
             Some(loc)
           }
         }).map(fleetLoc => {
-          val allLandUnits: List[DiplomacyUnit] = DBQueries.getAllLandUnits
-          val allFleetUnits: List[DiplomacyUnit] = DBQueries.getAllFleetUnits
+          val allLandUnits: List[DiplomacyUnit] = 
+            DBQueries.getAllLandUnitsForGame(game)
+          val allFleetUnits: List[DiplomacyUnit] = 
+            DBQueries.getAllFleetUnitsForGame(game)
           val allLandUnitLocations = allLandUnits.
             map((ldpu: DiplomacyUnit) => DBQueries.
                 locations.find(_.id == ldpu.unitLocation)).
@@ -237,10 +242,10 @@ object DiplomacyQueries {
     }
   }
   
-  def getConvoysMap(diplomacyUnits: List[DiplomacyUnit]): 
+  def getConvoysMap(game: Game)(diplomacyUnits: List[DiplomacyUnit]): 
 	  List[(String, List[(String, List[String])])] = {
     val convoysForUnits = diplomacyUnits.map(dpu => {
-      val convoysForUnit = getConvoys(dpu)
+      val convoysForUnit = getConvoys(game)(dpu)
       val stringFormattedConvoys = convoysForUnit.map(u => {
         val unitLocation = u._1
         val movesForUnit = u._2
