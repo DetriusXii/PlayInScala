@@ -65,13 +65,13 @@ object JdipSVGRenderer {
       val gamePlayerEmpireID = owp.gamePlayerEmpireID
       
       val uniqueProvinceNamesForProvince = 
-        uniqueProvinceNames.filter(_.provinceName.equals(province))
+        DBQueries.uniqueProvinceNames.filter(_.provinceName.equals(province))
       
-      val gamePlayerEmpireOption = lookupGamePlayerEmpire(gamePlayerEmpireID)
+      val gamePlayerEmpireOption = DBQueries.getGamePlayerEmpire(gamePlayerEmpireID)
       val provinceColourOption = gamePlayerEmpireOption.map(_ match {
         case GamePlayerEmpire(_, empire) => empire
       }).flatMap((empireName: String) => {
-        empires.find(_.id.equals(empireName)).map(_.provinceColour)
+        DBQueries.empires.find(_.id.equals(empireName)).map(_.provinceColour)
       })
       
       uniqueProvinceNamesForProvince.map((upn: UniqueProvinceName) => {

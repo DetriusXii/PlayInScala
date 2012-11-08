@@ -164,7 +164,14 @@ object DBQueries extends States  {
       }
     })
   
-
+  def getDiplomacyUnitsForGamePlayerEmpire(gamePlayerEmpire: GamePlayerEmpire):
+	  List[GamePlayerEmpire] =
+	    DB.withConnection((conn: java.sql.Connection) => {
+	      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
+	      using(dbSession) {
+	        
+	      }
+	    })
   
   def getDiplomacyUnit(location: Location): Option[DiplomacyUnit] =
     DB.withConnection((conn: java.sql.Connection) => {
