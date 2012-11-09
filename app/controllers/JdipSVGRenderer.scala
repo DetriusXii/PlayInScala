@@ -84,7 +84,7 @@ object JdipSVGRenderer {
     })
   }
   
-  def getRenderedDocument(game: Game) = {
+  def getRenderedDocument(game: Game): scala.xml.Elem = {
     val document = getUneditedDocument
 
     val briefLabelLayerOption: Option[Element] = 

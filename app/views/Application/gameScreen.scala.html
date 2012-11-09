@@ -4,7 +4,8 @@
 	supportMovesMap: List[(String, List[(String, List[String])])],
 	convoysMap: List[(String, List[(String, List[String])])],
 	fleetOrders: List[scala.xml.Elem], 
-	armyOrders: List[scala.xml.Elem])
+	armyOrders: List[scala.xml.Elem],
+	mapElement: scala.xml.Elem)
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" 
@@ -74,6 +75,9 @@
 			</ul>
 		}
 	</div>
+</div>
+<div style="margin: 0px auto;">
+	@mapElement
 </div>
 <table style="margin: 0px auto;">
 	<thead>

@@ -93,7 +93,8 @@ object Application extends Controller with OptionTs {
                   supportMovesMap,
                   convoysMap,
                   DiplomacyQueries.getFleetMovementPhaseOrderTypes(), 
-                  DiplomacyQueries.getArmyMovementPhaseOrderTypes()))
+                  DiplomacyQueries.getArmyMovementPhaseOrderTypes(),
+                  JdipSVGRenderer.getRenderedDocument(game)))
         }
         case Failure(e: Exception) => Ok(e.getMessage)
       }
