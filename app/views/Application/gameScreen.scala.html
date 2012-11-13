@@ -93,7 +93,7 @@
 		<tr id="@diplomacyUnit._2">
 			<td>@diplomacyUnit._1</td>
 			<td>@diplomacyUnit._2</td>
-			<td><select class="orderSelect">
+			<td><select class="orderSelect" name="@(diplomacyUnit._2)-order">
 				@defining(diplomacyUnit._1) { unitType =>
 					@unitType match { 
 						case com.squeryl.jdip.tables.UnitType.ARMY =>  { @armyOrders }
@@ -110,20 +110,20 @@
 <script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js">
 </script>
 <script type="text/javascript">
-	function wrapTextInSelect(text) {
-		return "<select>" + text + "</select>";
+	function wrapTextInSelectWithName(text, name) {
+		return "<select name=" + name + ">" + text + "</select>";
 	}
 	
 	function wrapTextInOption(text) {
 		return "<option>" + text + "</option>";
 	}
 	
-	function createBasicOrder(orderSelector, targetLocationSelector) {
+	function createBasicOrder(unitID, orderSelector, targetLocationSelector) {
 		var children = $(orderSelector).children();
 		var optionElements = children.map(function() {
 			return wrapTextInOption(this.textContent);
 		}).get().join("");
-		var selectElement = wrapTextInSelect(optionElements);
+		var selectElement = wrapTextInSelectWithName(optionElements, unitID + "-target");
 		$(targetLocationSelector).html(selectElement);
 	}
 	
@@ -134,7 +134,7 @@
 		var optionElements = childLists.map(function() {
 			return wrapTextInOption(this.className);
 		}).get().join("");
-		var selectElement = wrapTextInSelect(optionElements);
+		var selectElement = wrapTextInSelectWithName(optionElements, unitID + "-source");
 		$(sourceLocationSelector).html(selectElement);
 		$(sourceLocationSelector + " select").change(function() {
 			var value = $(this).val();
@@ -146,7 +146,7 @@
 				return wrapTextInOption(this.textContent);
 			}).get().join("");
 			
-			var selectElement = wrapTextInSelect(optionElements);
+			var selectElement = wrapTextInSelectWithName(optionElements, unitID + "-target");
 			$(targetLocationSelector).html(selectElement);
 		});
 		
@@ -158,7 +158,7 @@
 				return wrapTextInOption(this.textContent);
 			}).get().join("");
 			
-			var selectElement = wrapTextInSelect(optionElements);
+			var selectElement = wrapTextInSelectWithName(optionElements, unitID + "-target");
 			$(targetLocationSelector).html(selectElement);
 		}
 	}
@@ -183,11 +183,11 @@
 					break;
 				}
 				case "Move": {
-					createBasicOrder(moveOrdersSelector, targetLocationSelector);
+					createBasicOrder(id, moveOrdersSelector, targetLocationSelector);
 					break;
 				}
 				case "Support Hold": {
-					createBasicOrder(supportHoldOrdersSelector, targetLocationSelector);
+					createBasicOrder(id, supportHoldOrdersSelector, targetLocationSelector);
 					break;
 				}
 				case "Support Move": {
