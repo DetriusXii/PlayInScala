@@ -15,6 +15,10 @@ object OrderHandler extends Controller with OptionTs {
     	case None => ListT.empty[Option, A]
   	}
   
+  implicit def convertListToListT[A](list: List[A]): ListT[Option, A] =
+    list.reverse.foldLeft(ListT.empty[Option, A])((u: ListT[Option, A], v: A) => v :: u)
+    
+  implicit def convertSeqToSingleString(seq: Seq[String]): String = seq.mkString("")
   
   def submitMoveOrders: ApplicationAction[AnyContent] = new ApplicationAction {
     Action { implicit request =>
@@ -22,7 +26,10 @@ object OrderHandler extends Controller with OptionTs {
       for (postParameters <- request.body.asFormUrlEncoded;
     	   gamePlayerEmpireID <- postParameters.get(GAME_PLAYER_EMPIRE_ID_NAME);
     	   gamePlayerEmpire <- DBQueries.getGamePlayerEmpire(gamePlayerEmpireID);
-    	   					<- DBQueries.getDiplomacyUnitsForGamePlayerEmpire
+    	   dpu	<- DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gamePlayerEmpire);
+    	   location <- DBQueries.locations.find(_.id == dpu.unitLocation);
+    	   order <- postParameters.get("%s-%s" format ())
+      ) 
     }
   }
 }
