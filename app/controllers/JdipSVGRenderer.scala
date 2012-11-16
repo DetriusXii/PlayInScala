@@ -116,7 +116,7 @@ object JdipSVGRenderer {
     diplomacyUnits.map(dpu => {
       val locationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
       
-      val gamePlayerEmpireOption = DBQueries.getGamePlayerEmpire(dpu.owner)
+      val gamePlayerEmpireOption = DBQueries.getGamePlayerEmpire(dpu.gamePlayerEmpireID)
       val empireOption = gamePlayerEmpireOption.flatMap(gpe => 
         DBQueries.empires.find(_.id == gpe.empireName))
       

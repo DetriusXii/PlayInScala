@@ -10,22 +10,10 @@ object OrderHandler extends Controller with OptionTs {
   val SOURCE_SUFFIX = "source"
   val TARGET_SUFFIX = "target"
   
-  implicit def embedOptionInListT[A](option: Option[A]): ListT[Option, A] =
-    option match {
-    	case Some(a) => a :: ListT.empty[Option, A]
-    	case None => ListT.empty[Option, A]
-  	}
-  
-  implicit def convertSomeListIntoListT[A](optionList: Option[List[A]]): ListT[Option, A] = 
-    optionList match {
-      case Some(x: List[_]) => x.reverse.foldLeft(ListT.empty[Option, A])((u, v) => v :: u)
-      case None => ListT.empty[Option, A]
-  	}
-  
   def submitMoveOrders: ApplicationAction[AnyContent] = new ApplicationAction (
     Action ( implicit request => {
       
-      val postParametersListT = embedOptionInListT(request.body.asFormUrlEncoded)
+      val postParametersOption = request.body.asFormUrlEncoded
       
       val dpuAndLocsListT =
         postParametersOptionT.flatMap(getDiplomacyUnitAndLocation)
@@ -39,8 +27,7 @@ object OrderHandler extends Controller with OptionTs {
       dpuAndLocsListT: ListT[Option, (DiplomacyUnit, Location)]): Boolean = {
 	  dpuAndLocsListT.foldLeft(true)((u, v) => {
 	    val unitLocation = v._2
-	    val formattedLocationName = 
-	      DiplomacyQueries.getFormattedLocationName(unitLocation)
+	    val formattedLocationName = unitLocation.presentationName
 	    val orderForUnitOption = 
 	      postParameters.get("%s-%s" format (formattedLocationName, ORDER_SUFFIX))
 	    orderForUnitOption match {
@@ -52,12 +39,11 @@ object OrderHandler extends Controller with OptionTs {
   
   private def ordersMatchForUnitTypeAndPhase(
 		  postParameters: Map[String, Seq[String]],
-		  dpuAndLocsListT: ListT[Option, (DiplomacyUnit, Location)]): Boolean = {
-    dpuAndLocsListT.foldLeft(true)((u, v) => {
+		  dpuAndLocs: List[(DiplomacyUnit, Location)]): Boolean = {
+    dpuAndLocs.foldLeft(true)((u, v) => {
       val dpu = v._1
       val unitLocation = v._2
-      val formattedLocationName =
-        DiplomacyQueries.getFormattedLocationName(unitLocation)
+      val formattedLocationName = unitLocation.presentationName
       val orderForUnitOption =
         postParameters.get("%s-%s" format (formattedLocationName, ORDER_SUFFIX))
       orderForUnitOption match {
@@ -75,7 +61,7 @@ object OrderHandler extends Controller with OptionTs {
   }
   
   private def analyzeOrders(postParameters: Map[String, Seq[String]],
-      dpuAndLocsListT: ListT[Option, (DiplomacyUnit, Location)]): Unit = {
+      dpuAndLocs: List[(DiplomacyUnit, Location)]): Unit = {
     val dpuAndFormattedLocsListT =
       dpuAndLocsListT.map(u => (u._1, DiplomacyQueries.getFormattedLocationName(u._2)))
     
@@ -112,10 +98,9 @@ object OrderHandler extends Controller with OptionTs {
     }
     
     val dpuAndLocs = diplomacyUnits.map(dpu => 
-    	DBQueries.locations.find(_.id == dpu.unitLocation)
-    )
-    for (dpu <- diplomacyUnitsListT;
-    	loc <- DBQueries.locations.find(_.id == dpu.unitLocation)
-    ) yield ((dpu, loc))
+    	DBQueries.locations.find(_.id == dpu.unitLocation).map((dpu, _))
+    ).flatten
+    
+    dpuAndLocs
   }
 }

@@ -12,7 +12,7 @@ object DiplomacyQueries {
   }
     
   def getMoves(srcDiplomacyUnit: DiplomacyUnit): List[Location] = 
-    getMoves(srcDiplomacyUnit.unitLocation)
+    getMoves(srcDiplomacyUnit.unitLocationID)
     
   def getTotalMoves(game: Game)(srcDiplomacyUnit: DiplomacyUnit): List[Location] = {
     val regularMoves = getMoves(srcDiplomacyUnit)
@@ -28,18 +28,15 @@ object DiplomacyQueries {
   def getMoveOrdersMap(game: Game)(diplomacyUnits: List[DiplomacyUnit]) = 
     diplomacyUnits.map(dpu => {
       val allMoves = getTotalMoves(game)(dpu)
-      val allFormattedMoves = allMoves.map(getFormattedLocationName(_))
+      val allFormattedMoves = allMoves.map(_.presentationName)
+      
+      val srcLocation = dpu.unitLocation
       
       val srcLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
       srcLocationOption.map(loc => 
-        (getFormattedLocationName(loc), allFormattedMoves))
+        (loc.presentationName, allFormattedMoves))
+       
     }).flatten
-    
-  def getFormattedLocationName(location: Location): String = location match {
-	case Location(prov, Coast.NO_COAST) => prov
-	case Location(prov, Coast.ALL_COAST) => prov
-	case Location(prov, coast) => "%s-%s" format (prov, coast)
-  }
   
   def getSupportHolds(game: Game)(srcLocationID: Int): List[Location] = {
     val locationOption = DBQueries.locations.find(_.id == srcLocationID)
@@ -57,17 +54,17 @@ object DiplomacyQueries {
   }
 	
   def getSupportHolds(game: Game, srcDiplomacyUnit: DiplomacyUnit): List[Location] = 
-    getSupportHolds(game)(srcDiplomacyUnit.unitLocation)
+    getSupportHolds(game)(srcDiplomacyUnit.unitLocationID)
 	
   def getFormattedSupportHolds(game: Game, srcLocationID: Int): List[String] =
-    getSupportHolds(game)(srcLocationID).map(getFormattedLocationName(_))
+    getSupportHolds(game)(srcLocationID).map(_.presentationName)
 	  
   def getSupportHoldsMap(game: Game)(diplomacyUnits: List[DiplomacyUnit]) =
     diplomacyUnits.map(dpu => {
       val srcLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
       srcLocationOption.map(loc => 
-        (getFormattedLocationName(loc), 
-         getSupportHolds(game)(dpu.unitLocation).map(getFormattedLocationName(_))))
+        (loc.presentationName, 
+         getSupportHolds(game)(dpu.unitLocationID).map(_.presentationName)))
     }).flatten
 	
   def getSupportMoves(game: Game)(diplomacyUnit: DiplomacyUnit): List[(Location, List[Location])] = {
@@ -106,7 +103,7 @@ object DiplomacyQueries {
 	  List[(String, List[(String, List[String])])] = {
     
     val allSupportMovesForUnits = diplomacyUnits.map(dpu => {
-      val unitLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
+      val unitLocationOption = DBQueries.locations.find(_.id == dpu.unitLocationID)
       
       unitLocationOption.map(loc => 
         (loc, getSupportMoves(game)(dpu))
@@ -115,10 +112,10 @@ object DiplomacyQueries {
     
     val allStringFormattedSupportMovesForUnits =
       allSupportMovesForUnits.map(u => {
-        val stringFormattedUnitLocation = getFormattedLocationName(u._1)
+        val stringFormattedUnitLocation = u._1.presentationName
         val stringFormattedOtherUnits = u._2.map(v => {
-          val stringFormattedUnitMovingLocation = getFormattedLocationName(v._1)
-          val stringFormattedMoveDestinations = v._2.map(getFormattedLocationName(_))
+          val stringFormattedUnitMovingLocation = v._1.presentationName
+          val stringFormattedMoveDestinations = v._2.map(_.presentationName)
           
           (stringFormattedUnitMovingLocation, stringFormattedMoveDestinations)
         })
@@ -250,16 +247,16 @@ object DiplomacyQueries {
         val unitLocation = u._1
         val movesForUnit = u._2
         
-        val stringFormattedUnitLocation = getFormattedLocationName(unitLocation)
+        val stringFormattedUnitLocation = unitLocation.presentationName
         val stringFormattedMoves =
-          movesForUnit.map(getFormattedLocationName(_))
+          movesForUnit.map(_.presentationName)
         (stringFormattedUnitLocation, stringFormattedMoves)
       }).filter(!_._2.isEmpty)
       
       
       val unitLocationOption = DBQueries.locations.find(_.id == dpu.unitLocation)
       unitLocationOption.map(loc => {
-        val stringFormattedFleetUnitLocation = getFormattedLocationName(loc)
+        val stringFormattedFleetUnitLocation = loc.presentationName
         (stringFormattedFleetUnitLocation, stringFormattedConvoys)
       })
     })

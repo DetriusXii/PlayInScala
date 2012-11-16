@@ -104,7 +104,7 @@ object Application extends Controller with OptionTs {
     List[Tuple2[String, String]] =
     diplomacyUnits.map((dpu: DiplomacyUnit) =>
       DBQueries.locations.find(_.id == dpu.unitLocation).
-        map(DiplomacyQueries.getFormattedLocationName(_)).
+        map(_.presentationName).
         map((dpu.unitType, _))       
     ).flatten
 	  

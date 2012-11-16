@@ -124,8 +124,8 @@ object DBQueries extends States  {
       using(dbSession) {
     	from(Jdip.diplomacyUnits)(dpu => (
           where((dpu.unitType === UnitType.ARMY) and 
-              (dpu.owner in gamePlayerEmpireQueryForGame(game)) and
-              (dpu.gameTime === game.gameTime)) 
+              (dpu.gamePlayerEmpireID in gamePlayerEmpireQueryForGame(game)) and
+              (dpu.gameTimeID === game.gameTime)) 
           select(dpu)
         )).toList
       }
@@ -137,8 +137,8 @@ object DBQueries extends States  {
       using(dbSession) {
         from(Jdip.diplomacyUnits)(dpu => (
           where((dpu.unitType === UnitType.FLEET) and 
-        	(dpu.owner in gamePlayerEmpireQueryForGame(game)) and
-        	(dpu.gameTime === game.gameTime)
+        	(dpu.gamePlayerEmpireID in gamePlayerEmpireQueryForGame(game)) and
+        	(dpu.gameTimeID === game.gameTime)
         ) 
         select(dpu)
       )).toList
@@ -150,8 +150,8 @@ object DBQueries extends States  {
       val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
       using(dbSession) {
         from(Jdip.diplomacyUnits)(dpu => 
-          where((dpu.owner in gamePlayerEmpireQueryForGame(game))
-          	and (dpu.gameTime === game.gameTime))
+          where((dpu.gamePlayerEmpireID in gamePlayerEmpireQueryForGame(game))
+          	and (dpu.gameTimeID === game.gameTime))
           select(dpu)
         ).toList
       }
@@ -213,8 +213,8 @@ object DBQueries extends States  {
 	        from(Jdip.games, Jdip.gamePlayers, Jdip.diplomacyUnits) ((g, gp, dpu) => 
 	        	where((gp.id === gamePlayerEmpire.gamePlayerKey) and
 	        		(g.id === gp.gameName) and
-	        		(dpu.owner === gamePlayerEmpire.id) and
-	        		(dpu.gameTime === g.gameTime)
+	        		(dpu.gamePlayerEmpireID === gamePlayerEmpire.id) and
+	        		(dpu.gameTimeID === g.gameTime)
 	        	)
 	        	select(dpu)
 	        ).toList
