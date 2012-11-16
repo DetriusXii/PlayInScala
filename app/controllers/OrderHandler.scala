@@ -1,6 +1,7 @@
 package controllers
 import play.api.mvc._
 import scalaz._
+import com.squeryl.jdip.tables._
 
 object OrderHandler extends Controller with OptionTs {
   val GAME_PLAYER_EMPIRE_ID_NAME = "gamePlayerEmpireID"
@@ -15,10 +16,11 @@ object OrderHandler extends Controller with OptionTs {
     	case None => ListT.empty[Option, A]
   	}
   
-  implicit def convertListToListT[A](list: List[A]): ListT[Option, A] =
-    list.reverse.foldLeft(ListT.empty[Option, A])((u: ListT[Option, A], v: A) => v :: u)
-    
-  implicit def convertSeqToSingleString(seq: Seq[String]): String = seq.mkString("")
+  implicit def convertSomeListIntoListT[A](optionList: Option[List[A]]): ListT[Option, A] = 
+    optionList match {
+      case Some(x: List[_]) => x.reverse.foldLeft(ListT.empty[Option, A])((u, v) => v :: u)
+      case None => ListT.empty[Option, A]
+  	}
   
   def submitMoveOrders: ApplicationAction[AnyContent] = new ApplicationAction (
     Action ( implicit request => {
@@ -63,8 +65,8 @@ object OrderHandler extends Controller with OptionTs {
           case OrderType.HOLD | 
           		OrderType.MOVE | 
           		OrderType.SUPPORT_HOLD | 
-          		OrderType.SUPPORT_MOVE => v && true
-          case OrderType.CONVOY if dpu.UNIT_TYPE.equals(UnitType.FLEET) => u && true
+          		OrderType.SUPPORT_MOVE => u && true
+          case OrderType.CONVOY if dpu.unitType.equals(UnitType.FLEET) => u && true
           case _ => u && false
         }
         case None => u && false
@@ -78,7 +80,7 @@ object OrderHandler extends Controller with OptionTs {
       dpuAndLocsListT.map(u => (u._1, DiplomacyQueries.getFormattedLocationName(u._2)))
     
     
-    dpuAndFormattedLocsListT.map(u: (DiplomacyUnit, String) => {
+    dpuAndFormattedLocsListT.map((u: (DiplomacyUnit, String)) => {
       val orderForUnitOption = postParameters.get("%s-%s" format(u._2, ORDER_SUFFIX))
       
       orderForUnitOption match {
@@ -103,11 +105,17 @@ object OrderHandler extends Controller with OptionTs {
     val gamePlayerEmpireOption = 
       gamePlayerEmpireIDOption.flatMap(DBQueries.getGamePlayerEmpire(_))
     val diplomacyUnits = 
-      gamePlayerEmpireOption.flatMap(gpe =>
-        convertListToListT(DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gpe)))
+      gamePlayerEmpireOption.map(gpe =>
+        DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gpe)) match {
+      case Some(x: List[_]) => x
+      case None => Nil
+    }
     
-    for (dpu <- diplomacyUnits;
+    val dpuAndLocs = diplomacyUnits.map(dpu => 
+    	DBQueries.locations.find(_.id == dpu.unitLocation)
+    )
+    for (dpu <- diplomacyUnitsListT;
     	loc <- DBQueries.locations.find(_.id == dpu.unitLocation)
-    ) yield ((dpu, location))
+    ) yield ((dpu, loc))
   }
 }
