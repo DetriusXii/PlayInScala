@@ -34,13 +34,16 @@ object Application extends Controller with OptionTs {
   def games = new ApplicationAction(Action { implicit request =>
   	val usernameOption = session.get(Security.username)
   	usernameOption.map(username => {
-  	  val gamesForUser = DBQueries.getGamesForUser(username)
-	  val gameTimesForUser = DBQueries.getGameTimesForGames(gamesForUser.map(_.gameTime))
+  	  val gamesForUser = DBQueries.dbQueries.getGamesForUser(username)
+      val gameTimeIDs = gamesForUser.map(_.gameTimeID)
+	    val gameTimesForUser = 
+        DBQueries.dbQueries.getGameTimesForGame(gameTimeIDs)
+
 		
-	  val gamesWithGameTimes = 
-	  	(gamesForUser zip gameTimesForUser)
-	  val gameScreenURL = controllers.routes.Application.gameScreen("").url
-		Ok(views.html.Application.games(gameScreenURL, gamesWithGameTimes))
+	    val gamesWithGameTimes = 
+	  	  (gamesForUser zip gameTimesForUser)
+	    val gameScreenURL = controllers.routes.Application.gameScreen("").url
+		  Ok(views.html.Application.games(gameScreenURL, gamesWithGameTimes))
   	}) match {
   	  case Some(x) => x
   	  case None => PreconditionFailed("No username entered")
@@ -56,13 +59,15 @@ object Application extends Controller with OptionTs {
       import Scalaz._
   
       val usernameValidation: Validation[Exception, String] = 
-        session.get(Security.username).toSuccess(new Exception("No username in session"))
+        session.get(Security.username).
+          toSuccess(new Exception("No username in session"))
       
       def getGamePlayerEmpireValidation(gameName: String, playerName: String) =
-        DBQueries.getGamePlayerEmpire(gameName, playerName).
+        DBQueries.dbQueries.getGamePlayerEmpire(gameName, playerName).
         toSuccess(
           new Exception(
-            "No GamePlayerEmpireFound with game name %s and player name %s" format 
+            "No GamePlayerEmpireFound with game name %s " + 
+            "and player name %s" format 
             (gameName, playerName)
           ))
           
@@ -74,7 +79,8 @@ object Application extends Controller with OptionTs {
         username <- usernameValidation;
         gamePlayerEmpire <- getGamePlayerEmpireValidation(gameName, username);
         game <- getGameValidation(gameName)) yield {
-        (game, DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gamePlayerEmpire))
+        (game, 
+          DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gamePlayerEmpire))
       }
 
       diplomacyUnitsValidation match {
@@ -86,7 +92,8 @@ object Application extends Controller with OptionTs {
           val supportMovesMap = 
             DiplomacyQueries.getSupportMovesMap(game)(diplomacyUnits)
           val convoysMap = DiplomacyQueries.getConvoysMap(game)(diplomacyUnits)
-          
+         
+            
           Ok(views.html.Application.gameScreen(getGameScreenData(diplomacyUnits),
                   moveOrdersMap,
                   supportHoldsMap,
@@ -100,12 +107,5 @@ object Application extends Controller with OptionTs {
       }
     })
 
-	private def getGameScreenData(diplomacyUnits: List[DiplomacyUnit]): 
-    List[Tuple2[String, String]] =
-    diplomacyUnits.map((dpu: DiplomacyUnit) =>
-      DBQueries.locations.find(_.id == dpu.unitLocation).
-        map(_.presentationName).
-        map((dpu.unitType, _))       
-    ).flatten
 	  
 }
