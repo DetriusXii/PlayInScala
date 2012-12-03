@@ -10,12 +10,12 @@ import com.squeryl.jdip.schemas._
 import com.squeryl.jdip.tables._
 import com.squeryl.jdip.adapters._
 
-object CommonQueries extends States  {
-  import play.api.Play.
+object DBQueries extends States  {
+  import play.api.Play._
   
-  lazy val dbQueries: DBQueries = 
+  lazy val dbQueries: com.squeryl.jdip.queries.DBQueries = 
     DB.withConnection((conn: java.sql.Connection) => {
-      new DBQueries(conn)
+      new com.squeryl.jdip.queries.DBQueries(conn)
     })
   
   lazy val locations: List[Location] = dbQueries.locations
@@ -51,5 +51,5 @@ object CommonQueries extends States  {
       case _ => false
     })
   
-  def getPlayers: List[Player] = dbQueries.getPlayers  
+  def getPlayers: List[Player] = dbQueries.getPlayers
 }

@@ -37,7 +37,7 @@ object Application extends Controller with OptionTs {
   	  val gamesForUser = DBQueries.dbQueries.getGamesForUser(username)
       val gameTimeIDs = gamesForUser.map(_.gameTimeID)
 	    val gameTimesForUser = 
-        DBQueries.dbQueries.getGameTimesForGame(gameTimeIDs)
+        DBQueries.dbQueries.getGameTimesForGames(gameTimeIDs)
 
 		
 	    val gamesWithGameTimes = 
@@ -72,7 +72,7 @@ object Application extends Controller with OptionTs {
           ))
           
       def getGameValidation(gameName: String) =
-        DBQueries.getGame(gameName).toSuccess(
+        DBQueries.dbQueries.getGame(gameName).toSuccess(
             new Exception("No game found with game name %s" format gameName))
 
       val diplomacyUnitsValidation = for (
@@ -80,7 +80,7 @@ object Application extends Controller with OptionTs {
         gamePlayerEmpire <- getGamePlayerEmpireValidation(gameName, username);
         game <- getGameValidation(gameName)) yield {
         (game, 
-          DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gamePlayerEmpire))
+          DBQueries.dbQueries.getDiplomacyUnitsForGamePlayerEmpire(gamePlayerEmpire))
       }
 
       diplomacyUnitsValidation match {
