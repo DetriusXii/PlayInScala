@@ -30,6 +30,19 @@ object DBQueries extends States  {
   lazy val orderTypes: List[OrderType] =
     dbQueries.orderTypes
 
+  lazy val armyMovementPhaseOrderTypes: List[OrderType] = 
+    orderTypes.filter((orderType: OrderType) => 
+      orderTypeUnitTypes.exists((otut: OrderTypeUnitType) => 
+        otut.unitType.equals(UnitType.ARMY) && 
+        otut.orderType.equals(orderType.id)) && 
+        orderType.phase.equals(Phase.MOVEMENT))
+  
+  lazy val fleetMovementPhaseOrderTypes: List[OrderType] =
+    orderTypes.filter((orderType: OrderType) => 
+      orderTypeUnitTypes.exists((otut: OrderTypeUnitType) =>
+        otut.unitType.equals(UnitType.FLEET) &&
+        otut.orderType.equals(orderType.id)) &&
+        orderType.phase.equals(Phase.MOVEMENT))  
 
   def getAdjacentLocationsForLocation(loc: Location): List[Location] = {
     adjacencies.filter(_.srcLocation == loc.id).map(adj => {
