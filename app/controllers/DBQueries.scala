@@ -9,6 +9,7 @@ import org.squeryl.PrimitiveTypeMode._
 import com.squeryl.jdip.schemas._
 import com.squeryl.jdip.tables._
 import com.squeryl.jdip.adapters._
+import com.squeryl.jdip.creators._
 
 object DBQueries extends States  {
   import play.api.Play._
@@ -65,4 +66,16 @@ object DBQueries extends States  {
     })
   
   def getPlayers: List[Player] = dbQueries.getPlayers
+  
+  def getPotentialMoveOrders(game: Game): List[PotentialMoveOrder] =
+    new PotentialMoveOrderCreator(game, dbQueries).createPotentialMoveOrders
+   
+  def getPotentialSupportHoldOrders(game: Game): List[PotentialSupportHoldOrder] =
+    new PotentialSupportHoldOrderCreator(game, dbQueries).createPotentialSupportHoldOrders
+    
+  def getPotentialSupportMoveOrders(game: Game): List[PotentialSupportMoveOrder] =
+    new PotentialSupportMoveOrderCreator(game, dbQueries).createPotentialSupportMoveOrders
+  
+  def getPotentialConvoyOrders(game: Game): List[PotentialConvoyOrder] =
+    new PotentialConvoyOrderCreator(game, dbQueries).createPotentialConvoyOrders
 }

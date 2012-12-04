@@ -14,6 +14,10 @@ import play.api.db.DB
 import scala.xml._
 import scalaz._
 import scala.xml.Elem
+import com.squeryl.jdip.creators.PotentialMoveOrderCreator
+import com.squeryl.jdip.creators.PotentialSupportHoldOrderCreator
+import com.squeryl.jdip.creators.PotentialSupportMoveOrderCreator
+import com.squeryl.jdip.creators.PotentialConvoyOrderCreator
 
 class ApplicationAction[A](action: Action[A]) extends Action[A] {
   def apply(request: Request[A]): Result = action.apply(request)
@@ -50,6 +54,46 @@ object Application extends Controller with OptionTs {
   	}
   })
     
+  
+  private def prepareStatus(gameOption: Option[Game], 
+      diplomacyUnits: List[DiplomacyUnit]): List[Status] =
+    gameOption.map((game: Game) => {
+      
+      val potentialMoveOrders = DBQueries.getPotentialMoveOrders(game)
+      val potentialSupportHoldOrders = DBQueries.getPotentialSupportHoldOrders(game)
+      val potentialSupportMoveOrders = DBQueries.getPotentialSupportMoveOrders(game)
+      val potentialConvoyOrders = DBQueries.getPotentialConvoyOrders(game)
+        
+      val locationIDs = diplomacyUnits.map(_.unitLocationID)
+      val locations = 
+        DBQueries.dbQueries.getLocationFromLocationIDs(locationIDs)
+      
+        
+      val fleetOrderTypes = DBQueries.fleetMovementPhaseOrderTypes
+      val armyOrderTypes = DBQueries.armyMovementPhaseOrderTypes
+      
+      val tableRow = (diplomacyUnits zip locations) map (u => {
+        <tr id="{u._1.id}">
+    	  <td>{u._1.unitType}</td>
+    	  <td>{u._2.presentationName}</td>
+    	  <td></td>
+    	  <td></td>
+    	  <td></td>
+    	</tr>
+      })
+        
+      views.html.Application.gameScreen(diplomacyUnits, 
+          locations, 
+          potentialMoveOrders, 
+          potentialSupportHoldOrders, 
+          potentialSupportMoveOrders,
+          potentialConvoyOrders,
+          )
+    }) match {
+      case Some
+      case None => PreconditionFailed("Failed to identify resources")
+    }
+  
   def gameScreen(gameName: String = "") = 
     new ApplicationAction(Action { implicit request =>
       import Scalaz._
