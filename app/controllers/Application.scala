@@ -25,6 +25,9 @@ class ApplicationAction[A](action: Action[A]) extends Action[A] {
 }
 
 object Application extends Controller with OptionTs {
+  val SOURCE_LOCATION = "sourceLocation"
+  val TARGET_LOCATION = "targetLocation"
+  
   import play.api.Play._
   
   def index = new ApplicationAction(Action {
@@ -56,42 +59,60 @@ object Application extends Controller with OptionTs {
     
   
   private def prepareStatus(gameOption: Option[Game], 
-      diplomacyUnits: List[DiplomacyUnit]): List[Status] =
-    gameOption.map((game: Game) => {
+      diplomacyUnits: List[DiplomacyUnit]): SimpleResult[_] =
+    gameOption.flatMap((game: Game) => {
       
-      val potentialMoveOrders = DBQueries.getPotentialMoveOrders(game)
-      val potentialSupportHoldOrders = DBQueries.getPotentialSupportHoldOrders(game)
-      val potentialSupportMoveOrders = DBQueries.getPotentialSupportMoveOrders(game)
-      val potentialConvoyOrders = DBQueries.getPotentialConvoyOrders(game)
+      val potentialMoveOrders = 
+        DBQueries.getPotentialMoveOrders(game)
+      val potentialSupportHoldOrders = 
+        DBQueries.getPotentialSupportHoldOrders(game)
+      val potentialSupportMoveOrders = 
+        DBQueries.getPotentialSupportMoveOrders(game)
+      val potentialConvoyOrders = 
+        DBQueries.getPotentialConvoyOrders(game)
         
       val locationIDs = diplomacyUnits.map(_.unitLocationID)
       val locations = 
         DBQueries.dbQueries.getLocationFromLocationIDs(locationIDs)
       
         
-      val fleetOrderTypes = DBQueries.fleetMovementPhaseOrderTypes
-      val armyOrderTypes = DBQueries.armyMovementPhaseOrderTypes
+      val fleetOrderTypes = DBQueries.fleetMovementPhaseOrderTypes.map(
+          (ot: OrderType) => <option>{ot.id}</option>)
+      val armyOrderTypes = DBQueries.armyMovementPhaseOrderTypes.map(
+          (ot: OrderType) => <option>{ot.id}</option>)
       
-      val tableRow = (diplomacyUnits zip locations) map (u => {
+      val tableRows = (diplomacyUnits zip locations) map (u => {
         <tr id="{u._1.id}">
     	  <td>{u._1.unitType}</td>
     	  <td>{u._2.presentationName}</td>
-    	  <td></td>
-    	  <td></td>
-    	  <td></td>
+    	  <td>
+    	  	<select>{u._1.unitType match {
+    	  		case UnitType.ARMY => armyOrderTypes
+    	  		case UnitType.FLEET => fleetOrderTypes
+    	  	}}
+    	  	</select>
+    	  </td>
+    	  <td class="{TARGET_LOCATION}"></td>
+    	  <td class="{SOURCE_LOCATION}"></td>
     	</tr>
       })
         
-      views.html.Application.gameScreen(diplomacyUnits, 
-          locations, 
-          potentialMoveOrders, 
-          potentialSupportHoldOrders, 
-          potentialSupportMoveOrders,
-          potentialConvoyOrders,
-          )
+      val gameMapOption =
+        DBQueries.dbQueries.getGameMapForGameAtCurrentTime(game)
+      gameMapOption.map((gameMap: GameMap) => {
+        val stringXML = new String(gameMap.gameMap)
+        val gameMapElem = scala.xml.XML.loadString(stringXML)
+        
+        views.html.Application.gameScreen(tableRows, 
+            potentialMoveOrders,
+            potentialSupportHoldOrders,
+            potentialSupportMoveOrders,
+            potentialConvoyOrders,
+            gameMapElem)
+      })
     }) match {
-      case Some
-      case None => PreconditionFailed("Failed to identify resources")
+      case Some(view: Content) => Ok(view)
+      case None => PreconditionFailed(Txt("Failed to identify resources"))
     }
   
   def gameScreen(gameName: String = "") = 
@@ -101,54 +122,19 @@ object Application extends Controller with OptionTs {
       
       
       val usernameOption = session.get(Security.username)
-      val gamePlayerEmpireOption = usernameOption.map((username: String) => {
+      val gamePlayerEmpireOption = usernameOption.flatMap((username: String) => {
         DBQueries.dbQueries.getGamePlayerEmpire(gameName, username)
       })
-      val gameOption = gamePlayerEmpireOption.map(_ => 
+      val gameOption = gamePlayerEmpireOption.flatMap(_ => 
         DBQueries.dbQueries.getGame(gameName))
       val diplomacyUnits: List[DiplomacyUnit] = 
         gamePlayerEmpireOption.map((gpe: GamePlayerEmpire) =>
-        DBQueries.dbQueries.getDiplomacyUnitsForGamePlayerEmpire(gpe)).flatten
-      
-      
-
-      diplomacyUnitsValidation match {
-        case Success((game, diplomacyUnits: List[_])) => {
-          val potentialMoveOrderCreator = 
-            new PotentialMoveOrderCreator(game, DBQueries.dbQueries)
-          val potentialSupportHoldOrderCreator =
-            new PotentialSupportHoldOrderCreator(game, DBQueries.dbQueries)
-          val potentialSupportMoveOrderCreator =
-            new PotentialSupportMoveOrderCreator(game, DBQueries.dbQueries)
-          val potentialConvoyOrderCreator =
-            new PotentialConvoyOrderCreator(game, DBQueries.dbQueries)
-          
-          val potentialMoveOrders =
-            potentialMoveOrderCreator.createPotentialMoveOrders
-          val potentialSupportHoldOrders =
-            potentialSupportHoldOrderCreator.createPotentialSupportHoldOrders
-          val potentialSupportMoveOrders =
-            potentialSupportMoveOrderCreator.createPotentialSupportMoveOrders
-          val potentialConvoyOrders =
-            potentialConvoyOrdersCreator.createPotentialConvoyOrders
-            
-          val locationIDs = diplomacyUnits.map(_.unitLocationID)
-          val locations = 
-            DBQueries.dbQueries.getLocationsFromLocationIDs(locationIDs)
-          
-            
-          Ok(views.html.Application.gameScreen(diplomacyUnits,
-              locations,
-                  moveOrdersMap,
-                  supportHoldsMap,
-                  supportMovesMap,
-                  convoysMap,
-                  DBQueries.fleetMovementPhaseOrderTypes,
-                  DBQueries.armyMovementPhaseOrderTypes, 
-                  JdipSVGRenderer.getRenderedDocument(game)))
-        }
-        case Failure(e: Exception) => Ok(e.getMessage)
-      }
+          DBQueries.
+          	dbQueries.
+          	getDiplomacyUnitsForGamePlayerEmpire(gpe)).
+          	flatten[DiplomacyUnit].toList
+          	
+      prepareStatus(gameOption, diplomacyUnits)
     })
 
 	  

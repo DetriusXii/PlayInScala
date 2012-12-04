@@ -1,13 +1,10 @@
-@(diplomacyUnits: List[com.squeryl.jdip.tables.DiplomacyUnit],
-  unitLocations: List[com.squeryl.jdip.tables.Location],
+@(preparedTableRows: List[scala.xml.Elem],
 	potentialMoveOrders: List[com.squeryl.jdip.tables.PotentialMoveOrder],
 	potentialSupportHoldOrders: 
 	  List[com.squeryl.jdip.tables.PotentialSupportHoldOrder],
 	potentialSupportMoveOrders: 
 	  List[com.squeryl.jdip.tables.PotentialSupportMoveOrder],
 	convoysMap: List[com.squeryl.jdip.tables.PotentialConvoyOrder],
-	fleetOrders: List[scala.xml.Elem], 
-	armyOrders: List[scala.xml.Elem],
 	mapElement: scala.xml.Elem)
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
@@ -17,68 +14,6 @@
       xmlns:svg="http://www.w3.org/2000/svg" 
       xmlns:xlink="http://www.w3.org/1999/xlink">
 <body>
-<div id="orders" style="visibility: hidden; display: none;">
-	<div class="moveOrders">
-		@moveOrdersMap.map { moveOrder =>
-			<ul class="@moveOrder._1">
-			@defining(moveOrder._2) { moveDestinations =>
-				@moveDestinations.map { moveDestination =>
-				<li>@moveDestination</li>
-				}
-			}
-			</ul>
-		}
-	</div>
-	<div class="supportHoldOrders">
-		@supportHoldsMap.map { supportHold =>
-			<ul class="@supportHold._1">
-			@defining(supportHold._2) { supportDestinations =>
-				@supportDestinations.map { supportDestination =>
-				<li>@supportDestination</li>
-				}
-			}
-			</ul>
-		}
-	</div>
-	<div class="supportMoveOrders">
-		@supportMovesMap.map { supportMove =>
-			<ul class="@supportMove._1">
-			@defining(supportMove._2) { moveDestinationsForUnits =>
-				@moveDestinationsForUnits.map { moveDestinationForUnit =>
-					<li>
-						<ul class="@moveDestinationForUnit._1">
-							@defining(moveDestinationForUnit._2) { moves =>
-								@moves.map { move =>
-									<li>@move</li>
-								}
-							}
-						</ul>
-					</li>
-				}
-			}
-			</ul>
-		}
-	</div>
-	<div class="convoyOrders">
-		@convoysMap.map { convoy =>
-			<ul class="@convoy._1">
-			@defining(convoy._2) { moveDestinationsForUnits =>
-				@moveDestinationsForUnits.map { moveDestinationForUnit =>
-					<li>
-						<ul class="@moveDestinationForUnit._1">
-							@defining(moveDestinationForUnit._2) { moves =>
-								@moves.map { move =>
-									<li>@move</li>
-								}
-							}
-						</ul>
-					</li>	
-				}
-			}
-			</ul>
-		}
-	</div>
-</div>
 <div style="margin: 0px auto;">
 	@mapElement
 </div>
@@ -92,27 +27,13 @@
 			<td>Source Location</td>
 		</tr>
 	</thead>
-	@diplomacyUnits.map {diplomacyUnit =>
-		<tr id="@diplomacyUnit._2">
-			<td>@diplomacyUnit._1</td>
-			<td>@diplomacyUnit._2</td>
-			<td><select class="orderSelect" name="@(diplomacyUnit._2)-order">
-				@defining(diplomacyUnit._1) { unitType =>
-					@unitType match { 
-						case com.squeryl.jdip.tables.UnitType.ARMY =>  { @armyOrders }
-						case com.squeryl.jdip.tables.UnitType.FLEET => { @fleetOrders }
-					}
-				}
-				</select></td>
-			<td class="targetLocation"></td>
-			<td class="sourceLocation"></td>
-		</tr>
-	}
+	@preparedTableRows
 </table>
 </body>
 <script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js">
 </script>
 <script type="text/javascript">
+
 	function wrapTextInSelectWithName(text, name) {
 		return "<select name=" + name + ">" + text + "</select>";
 	}
