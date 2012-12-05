@@ -5,7 +5,7 @@
 	potentialSupportMoveOrders: 
 	  List[com.squeryl.jdip.tables.PotentialSupportMoveOrder],
 	convoysMap: List[com.squeryl.jdip.tables.PotentialConvoyOrder],
-	mapElement: scala.xml.Elem)
+	mapElement: String)
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" 
@@ -15,7 +15,7 @@
       xmlns:xlink="http://www.w3.org/1999/xlink">
 <body>
 <div style="margin: 0px auto;">
-	@mapElement
+	@Html(mapElement)
 </div>
 <table style="margin: 0px auto;">
 	<thead>

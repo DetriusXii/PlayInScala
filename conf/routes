@@ -17,7 +17,7 @@ GET     /gameScreen/:gameName                 	controllers.Application.gameScree
 
 # Post
 POST    /authenticate                           controllers.Authentication.authenticate
-POST	/submitMoveOrders						controllers.Application.submitMoveOrders
+POST	/submitMoveOrders			controllers.OrderHandler.submitMoveOrders
 
 # Map static resources from the /app/public folder to the /public path
 GET     /public/*file                           controllers.Assets.at(path="/public", file)

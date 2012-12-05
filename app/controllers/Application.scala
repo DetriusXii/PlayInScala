@@ -58,11 +58,11 @@ object Application extends Controller with OptionTs {
   })
     
   
-  private def prepareStatus(gameOption: Option[Game], 
-      diplomacyUnits: List[DiplomacyUnit]): SimpleResult[_] =
+  private def prepareStatus(gameOption: Option[Game],
+      gameMap: Promise[Option[GameMap]],
+      diplomacyUnits: List[DiplomacyUnit]): Promise[SimpleResult[_]] =
     gameOption.flatMap((game: Game) => {
-      
-      val potentialMoveOrders = 
+      val potentialMoveOrdersPromise = 
         DBQueries.getPotentialMoveOrders(game)
       val potentialSupportHoldOrders = 
         DBQueries.getPotentialSupportHoldOrders(game)
@@ -76,9 +76,20 @@ object Application extends Controller with OptionTs {
         DBQueries.dbQueries.getLocationFromLocationIDs(locationIDs)
       
         
-      val fleetOrderTypes = DBQueries.fleetMovementPhaseOrderTypes.map(
+      val fleetOrderTypes = 
+        DBQueries.
+          fleetMovementPhaseOrderTypes.sortWith((a, b) => (a.id, b.id) match {
+            case (OrderType.HOLD, _) => true
+            case (_, OrderType.HOLD) => false
+            case _ => true
+          }).map(
           (ot: OrderType) => <option>{ot.id}</option>)
-      val armyOrderTypes = DBQueries.armyMovementPhaseOrderTypes.map(
+      val armyOrderTypes = DBQueries.armyMovementPhaseOrderTypes.
+        sortWith((a, b) => (a.id, b.id) match {
+            case (OrderType.HOLD, _) => true
+            case (_, OrderType.HOLD) => false
+            case _ => true
+          }).map(
           (ot: OrderType) => <option>{ot.id}</option>)
       
       val tableRows = (diplomacyUnits zip locations) map (u => {
@@ -101,14 +112,14 @@ object Application extends Controller with OptionTs {
         DBQueries.dbQueries.getGameMapForGameAtCurrentTime(game)
       gameMapOption.map((gameMap: GameMap) => {
         val stringXML = new String(gameMap.gameMap)
-        val gameMapElem = scala.xml.XML.loadString(stringXML)
+        //val gameMapElem = scala.xml.XML.loadString(stringXML)
         
         views.html.Application.gameScreen(tableRows, 
             potentialMoveOrders,
             potentialSupportHoldOrders,
             potentialSupportMoveOrders,
             potentialConvoyOrders,
-            gameMapElem)
+            stringXML)
       })
     }) match {
       case Some(view: Content) => Ok(view)
@@ -127,6 +138,10 @@ object Application extends Controller with OptionTs {
       })
       val gameOption = gamePlayerEmpireOption.flatMap(_ => 
         DBQueries.dbQueries.getGame(gameName))
+      val gameMapPromise: Promise[Option[GameMap]] = Akka.future {
+        gameOption.flatMap((game: Game) =>
+          DBQueries.dbQueries.getGameMapForGameAtCurrentTime(game))
+      }
       val diplomacyUnits: List[DiplomacyUnit] = 
         gamePlayerEmpireOption.map((gpe: GamePlayerEmpire) =>
           DBQueries.
@@ -134,7 +149,9 @@ object Application extends Controller with OptionTs {
           	getDiplomacyUnitsForGamePlayerEmpire(gpe)).
           	flatten[DiplomacyUnit].toList
           	
-      prepareStatus(gameOption, diplomacyUnits)
+      Async {
+        prepareStatus(gameOption, diplomacyUnits)
+      }
     })
 
 	  

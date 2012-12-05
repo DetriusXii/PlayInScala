@@ -7,7 +7,8 @@ gameTuples: Iterable[Tuple2[com.squeryl.jdip.tables.Game, com.squeryl.jdip.table
         <li>
             <a href="@gameScreenURL@gameTuple._1.id">
                 <div class="gamePanel panel">
-                    Game name: <span class="id">@gameTuple._1.id</span> Game state: @gameTuple._1.gameState<br />
+                    Game name: <span class="id">@gameTuple._1.id</span> 
+                    Game state: @gameTuple._1.gameStateID<br />
                     Year: @gameTuple._2.gameYear Season: @gameTuple._2.gameSeason Phase: @gameTuple._2.gamePhase
                 </div>
             </a>

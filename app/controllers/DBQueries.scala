@@ -10,14 +10,13 @@ import com.squeryl.jdip.schemas._
 import com.squeryl.jdip.tables._
 import com.squeryl.jdip.adapters._
 import com.squeryl.jdip.creators._
+import com.squeryl.jdip.queries.DBQueries
 
 object DBQueries extends States  {
   import play.api.Play._
   
-  lazy val dbQueries: com.squeryl.jdip.queries.DBQueries = 
-    DB.withConnection((conn: java.sql.Connection) => {
-      new com.squeryl.jdip.queries.DBQueries(conn)
-    })
+  def dbQueries: com.squeryl.jdip.queries.DBQueries = 
+    new com.squeryl.jdip.queries.DBQueries(() => DB.getConnection())
   
   lazy val locations: List[Location] = dbQueries.locations
   
