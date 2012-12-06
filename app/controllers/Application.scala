@@ -14,10 +14,7 @@ import play.api.db.DB
 import scala.xml._
 import scalaz._
 import scala.xml.Elem
-import com.squeryl.jdip.creators.PotentialMoveOrderCreator
-import com.squeryl.jdip.creators.PotentialSupportHoldOrderCreator
-import com.squeryl.jdip.creators.PotentialSupportMoveOrderCreator
-import com.squeryl.jdip.creators.PotentialConvoyOrderCreator
+import com.squeryl.jdip.queries._
 
 class ApplicationAction[A](action: Action[A]) extends Action[A] {
   def apply(request: Request[A]): Result = action.apply(request)
@@ -66,7 +63,7 @@ object Application extends Controller with OptionTs {
         
       val locationIDs = diplomacyUnits.map(_.unitLocationID)
       val locations = 
-        DBQueries.dbQueries.getLocationFromLocationIDs(locationIDs)
+        DBQueries.getLocationFromLocationIDs(locationIDs)
       
         
       val fleetOrderTypes = DBQueries.fleetMovementPhaseOrderTypes

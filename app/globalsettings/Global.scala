@@ -4,6 +4,7 @@ import play.api._
 import play.api.mvc._
 import play.api.mvc.Results._
 import controllers.ApplicationAction
+import org.squeryl.SessionFactory
 
 object Global extends GlobalSettings {
   override def onRouteRequest(request: RequestHeader): Option[Handler] = {
@@ -20,5 +21,9 @@ object Global extends GlobalSettings {
         }
       }
     }
-  } 
+  }
+  
+  override def onStart(app: Application) {
+    SessionFactory.concreteFactory = 
+  }
 }
