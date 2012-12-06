@@ -15,6 +15,7 @@ import scala.xml._
 import scalaz._
 import scala.xml.Elem
 import com.squeryl.jdip.queries._
+import play.api.libs.concurrent._
 
 class ApplicationAction[A](action: Action[A]) extends Action[A] {
   def apply(request: Request[A]): Result = action.apply(request)
@@ -38,10 +39,10 @@ object Application extends Controller with OptionTs {
   def games = new ApplicationAction(Action { implicit request =>
   	val usernameOption = session.get(Security.username)
   	usernameOption.map(username => {
-  	  val gamesForUser = DBQueries.dbQueries.getGamesForUser(username)
+  	  val gamesForUser = DBQueries.getGamesForUser(username)
       val gameTimeIDs = gamesForUser.map(_.gameTimeID)
 	    val gameTimesForUser = 
-        DBQueries.dbQueries.getGameTimesForGames(gameTimeIDs)
+        DBQueries.getGameTimesForGames(gameTimeIDs)
 
 		
 	    val gamesWithGameTimes = 
@@ -53,42 +54,73 @@ object Application extends Controller with OptionTs {
   	  case None => PreconditionFailed("No username entered")
   	}
   })
-    
   
-  private def prepareStatus(gameOption: Option[Game],
-      gameMap: Promise[Option[GameMap]],
-      diplomacyUnits: List[DiplomacyUnit]): Promise[SimpleResult[_]] =
-    gameOption.flatMap((game: Game) => {
-      val potentialMoveOrdersPromise = 
-        DBQueries.getPotentialMoveOrders(game)
-      val potentialSupportHoldOrders = 
-        DBQueries.getPotentialSupportHoldOrders(game)
-      val potentialSupportMoveOrders = 
-        DBQueries.getPotentialSupportMoveOrders(game)
-      val potentialConvoyOrders = 
-        DBQueries.getPotentialConvoyOrders(game)
-        
+  private lazy val movementPhaseOrderTypes: List[OrderType] =
+    DBQueries.orderTypes.filter((ot: OrderType) => 
+      ot.phase.equals(Phase.MOVEMENT)
+    )
+    
+  private lazy val fleetMovementPhaseOrderTypes: List[OrderType] =
+    DBQueries.orderTypes.filter((ot: OrderType) =>
+      DBQueries.orderTypeUnitTypes.exists((otut: OrderTypeUnitType) =>
+        otut.orderType.equals(ot.id) && otut.unitType.equals(UnitType.FLEET)
+      )
+    )
+    
+  private lazy val armyMovementPhaseOrderTypes: List[OrderType] =
+    DBQueries.orderTypes.filter((ot: OrderType) =>
+      DBQueries.orderTypeUnitTypes.exists((otut: OrderTypeUnitType) =>
+        otut.orderType.equals(ot.id) && otut.unitType.equals(UnitType.ARMY)  
+      )  
+    )
+  
+  private def prepareStatus(gpe: GamePlayerEmpire): 
+	Promise[SimpleResult[_]] = {
+	  val gameOptionPromise = Akka.future { 
+        DBQueries.getGameForGamePlayerEmpireID(gpe.id)
+	  }
+	  val gameMapOptionPromise: Promise[Option[GameMap]] = 
+	    gameOptionPromise.map((gameOption: Option[Game]) =>
+        gameOption.flatMap((game: Game) =>
+          DBQueries.getGameMapForGameAtCurrentTime(game))
+      )
+	  
+	  val potentialMoveOrdersPromise = Akka.future {
+	    DBQueries.getPotentialMoveOrdersForGamePlayerEmpireAtCurrentTime(gpe)
+	  }
+	  val potentialSupportHoldOrdersPromise = Akka.future {
+	    DBQueries.getPotentialSupportHoldOrdersForGamePlayerEmpire(gpe)
+	  }
+	  val potentialSupportMoveOrdersPromise = Akka.future {
+	    DBQueries.getPotentialSupportMoveOrdersForGamePlayerEmpire(gpe)
+	  }
+	  val potentialConvoyOrdersPromise = Akka.future {
+	     DBQueries.getPotentialConvoyOrdersForGamePlayerEmpire(gpe)
+	  }
+	  
+	  val diplomacyUnits: List[DiplomacyUnit] = 
+        DBQueries.
+          	getDiplomacyUnitsForGamePlayerEmpire(gpe)
+      
       val locationIDs = diplomacyUnits.map(_.unitLocationID)
       val locations = 
         DBQueries.getLocationFromLocationIDs(locationIDs)
-      
         
       val fleetOrderTypes = 
-        DBQueries.
-          fleetMovementPhaseOrderTypes.sortWith((a, b) => (a.id, b.id) match {
+        fleetMovementPhaseOrderTypes.sortWith((a, b) => (a.id, b.id) match {
             case (OrderType.HOLD, _) => true
             case (_, OrderType.HOLD) => false
             case _ => true
           }).map(
           (ot: OrderType) => <option>{ot.id}</option>)
-      val armyOrderTypes = DBQueries.armyMovementPhaseOrderTypes.
+      val armyOrderTypes = armyMovementPhaseOrderTypes.
         sortWith((a, b) => (a.id, b.id) match {
             case (OrderType.HOLD, _) => true
             case (_, OrderType.HOLD) => false
             case _ => true
           }).map(
           (ot: OrderType) => <option>{ot.id}</option>)
-      
+          
       val tableRows = (diplomacyUnits zip locations) map (u => {
         <tr id="{u._1.id}">
     	  <td>{u._1.unitType}</td>
@@ -104,50 +136,45 @@ object Application extends Controller with OptionTs {
     	  <td class="{SOURCE_LOCATION}"></td>
     	</tr>
       })
-        
-      val gameMapOption =
-        DBQueries.dbQueries.getGameMapForGameAtCurrentTime(game)
-      gameMapOption.map((gameMap: GameMap) => {
-        val stringXML = new String(gameMap.gameMap)
-        //val gameMapElem = scala.xml.XML.loadString(stringXML)
-        
-        views.html.Application.gameScreen(tableRows, 
+      
+      for (gameMapOption <- gameMapOptionPromise;
+    	potentialMoveOrders <- potentialMoveOrdersPromise;
+    	potentialSupportHoldOrders <- potentialSupportHoldOrdersPromise;
+    	potentialSupportMoveOrders <- potentialSupportMoveOrdersPromise;
+    	potentialConvoyOrders <- potentialConvoyOrdersPromise
+      ) yield {
+        gameMapOption.map((gameMap: GameMap) =>
+          views.html.Application.gameScreen(tableRows, 
             potentialMoveOrders,
             potentialSupportHoldOrders,
             potentialSupportMoveOrders,
             potentialConvoyOrders,
-            stringXML)
-      })
-    }) match {
-      case Some(view: Content) => Ok(view)
-      case None => PreconditionFailed(Txt("Failed to identify resources"))
-    }
+            new String(gameMap.gameMap))
+        ) match {
+          case Some(view: Content) => Ok(view) 
+          case None => PreconditionFailed("Failed to identify resources")
+        }
+      }
+	}
   
   def gameScreen(gameName: String = "") = 
     new ApplicationAction(Action { implicit request =>
       import Scalaz._
   
-      
-      
       val usernameOption = session.get(Security.username)
       val gamePlayerEmpireOption = usernameOption.flatMap((username: String) => {
-        DBQueries.dbQueries.getGamePlayerEmpire(gameName, username)
+        DBQueries.getGamePlayerEmpire(gameName, username)
       })
-      val gameOption = gamePlayerEmpireOption.flatMap(_ => 
-        DBQueries.dbQueries.getGame(gameName))
-      val gameMapPromise: Promise[Option[GameMap]] = Akka.future {
-        gameOption.flatMap((game: Game) =>
-          DBQueries.dbQueries.getGameMapForGameAtCurrentTime(game))
-      }
-      val diplomacyUnits: List[DiplomacyUnit] = 
-        gamePlayerEmpireOption.map((gpe: GamePlayerEmpire) =>
-          DBQueries.
-          	dbQueries.
-          	getDiplomacyUnitsForGamePlayerEmpire(gpe)).
-          	flatten[DiplomacyUnit].toList
           	
       Async {
-        prepareStatus(gameOption, diplomacyUnits)
+        gamePlayerEmpireOption match {
+          case Some(gpe: GamePlayerEmpire) => 
+            prepareStatus(gpe)
+          case None => 
+            Akka.future {
+              PreconditionFailed("GamePlayerEmpire does not exist")
+            }
+        }
       }
     })
 

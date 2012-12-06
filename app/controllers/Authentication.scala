@@ -15,6 +15,7 @@ import play.api.mvc._
 import play.api.templates._
 import play.api.db.DB
 import play.core.Router.StaticPart
+import com.squeryl.jdip.queries._
 
 object Authentication extends Controller {
   import play.api.Play._
@@ -55,7 +56,7 @@ object Authentication extends Controller {
 	    if (username.isEmpty) {
 	      Redirect(controllers.routes.Authentication.noUserEnteredLogin)
 	    } else {
-	    	DBQueries.dbQueries.getPlayerFromPlayerName(username) match {
+	    	DBQueries.getPlayerFromPlayerName(username) match {
 	    	  case Some(p: Player) => if (password.equals(p.password)) {
 		        Redirect(controllers.routes.Application.index).
 		          withSession(session + (Security.username -> username))

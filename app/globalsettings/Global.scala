@@ -3,10 +3,13 @@ package globalsettings
 import play.api._
 import play.api.mvc._
 import play.api.mvc.Results._
+import play.api.db.DB
 import controllers.ApplicationAction
-import org.squeryl.SessionFactory
+import com.squeryl.jdip.adapters._
 
 object Global extends GlobalSettings {
+  import play.api.Play._
+  
   override def onRouteRequest(request: RequestHeader): Option[Handler] = {
     request.session.get(Security.username) match {
       case Some(x) => super.onRouteRequest(request) 
@@ -24,6 +27,7 @@ object Global extends GlobalSettings {
   }
   
   override def onStart(app: Application) {
-    SessionFactory.concreteFactory = 
+    org.squeryl.SessionFactory.concreteFactory = Some(() => 
+      org.squeryl.Session.create(DB.getConnection(), new RevisedPostgreSqlAdapter))
   }
 }

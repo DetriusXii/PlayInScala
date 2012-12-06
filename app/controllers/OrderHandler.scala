@@ -15,7 +15,6 @@ object OrderHandler extends Controller {
       
       val postParametersOption = request.body.asFormUrlEncoded
       
-      
       Ok("Uoi have submitted your moves")
 	})
   )
