@@ -55,21 +55,16 @@ object Authentication extends Controller {
 	    if (username.isEmpty) {
 	      Redirect(controllers.routes.Authentication.noUserEnteredLogin)
 	    } else {
-	    
-		    DB.withConnection((conn: java.sql.Connection) => {
-		      val dbSession = DBSession.create(conn, new RevisedPostgreSqlAdapter)
-		      using(dbSession) {
-		        val queriedPlayer = Jdip.players.lookup(username)
-		        queriedPlayer match {
-			        case Some(p: Player) => if (password.equals(p.password)) {
-			          Redirect(controllers.routes.Application.index).withSession(session + (Security.username -> username))
-			        } else {
-			          Redirect(controllers.routes.Authentication.noPasswordLogin(username))
-			        }
-			        case None => Redirect(controllers.routes.Authentication.noUserLogin(username))
-		        }
+	    	DBQueries.dbQueries.getPlayerFromPlayerName(username) match {
+	    	  case Some(p: Player) => if (password.equals(p.password)) {
+		        Redirect(controllers.routes.Application.index).
+		          withSession(session + (Security.username -> username))
+		      } else {
+		        Redirect(controllers.routes.Authentication.noPasswordLogin(username))
 		      }
-		    })
+	    	  case None => 
+	    	    Redirect(controllers.routes.Authentication.noUserLogin(username))
+	    	}
 	    }
 	  }
   }
