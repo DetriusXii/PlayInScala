@@ -1,11 +1,10 @@
 @(preparedTableRows: List[scala.xml.Elem],
-	potentialMoveOrders: List[com.squeryl.jdip.tables.PotentialMoveOrder],
-	potentialSupportHoldOrders: 
-	  List[com.squeryl.jdip.tables.PotentialSupportHoldOrder],
-	potentialSupportMoveOrders: 
-	  List[com.squeryl.jdip.tables.PotentialSupportMoveOrder],
-	convoysMap: List[com.squeryl.jdip.tables.PotentialConvoyOrder],
-	mapElement: String)
+  potentialMoveOrders: play.api.libs.json.JsValue,
+  potentialSupportHoldOrders: play.api.libs.json.JsValue,
+  potentialSupportMoveOrders: play.api.libs.json.JsValue,
+  potentialConvoyOrders: play.api.libs.json.JsValue,
+	mapElement: String,
+	orderHandlerURL: String)
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" 
@@ -17,22 +16,31 @@
 <div style="margin: 0px auto;">
 	@Html(mapElement)
 </div>
+<form method="POST" action="@orderHandlerURL">
 <table style="margin: 0px auto;">
 	<thead>
 		<tr>
 			<td>Unit Type</td>
 			<td>Unit Location</td>
-			<td>Action</td>
-			<td>Target Location</td>
-			<td>Source Location</td>
+			<td>Order Type</td>
+			<td></td>
+			<td></td>
 		</tr>
 	</thead>
 	@preparedTableRows
 </table>
+</form>
 </body>
 <script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js">
 </script>
 <script type="text/javascript">
+	var potentialMoveOrders = @Html(potentialMoveOrders.toString);
+	var potentialSupportHoldOrders = 
+		@Html(potentialSupportHoldOrders.toString);
+	var potentialSupportMoveOrders =
+		@Html(potentialSupportMoveOrders.toString);
+	var potentialConvoyOrders =
+		@Html(potentialConvoyOrders.toString);
 
 	function wrapTextInSelectWithName(text, name) {
 		return "<select name=" + name + ">" + text + "</select>";

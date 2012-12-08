@@ -13,7 +13,7 @@ GET     /noUserLogin              	        controllers.Authentication.noUserLogi
 GET     /noPasswordLogin		        controllers.Authentication.noPasswordLogin(username)
 GET	/noUserEnteredLogin			controllers.Authentication.noUserEnteredLogin
 GET     /logout                                 controllers.Authentication.logout
-GET     /gameScreen/:gameName                 	controllers.Application.gameScreen(gameName)
+GET     /gameScreen/:gameName                 	controllers.GameScreenController.gameScreen(gameName)
 
 # Post
 POST    /authenticate                           controllers.Authentication.authenticate

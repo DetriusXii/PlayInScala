@@ -9,7 +9,9 @@ object OrderHandler extends Controller {
   val ORDER_SUFFIX = "order"
   val SOURCE_SUFFIX = "source"
   val TARGET_SUFFIX = "target"
-  
+  val SUBMIT_MOVE_ORDERS_URL = 
+    controllers.routes.OrderHandler.submitMoveOrders.url
+    
   def submitMoveOrders: ApplicationAction[AnyContent] = new ApplicationAction (
     Action ( implicit request => {
       
