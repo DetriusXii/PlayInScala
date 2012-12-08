@@ -121,7 +121,9 @@ object PotentialConvoyOrderWrites extends
 }
   
 object GameScreenController extends Controller {
-  
+  val TARGET_LOCATION = "targetLocation"
+  val SOURCE_LOCATION = "sourceLocation"
+  val UNIT_ORDER = "unitOrder"
   val LOCATION_ID = "locationID"
   val PRESENTATION_NAME = "presentationName"
   val DIPLOMACY_UNIT_ID = "diplomacyUnitID"
@@ -172,18 +174,18 @@ object GameScreenController extends Controller {
 	  sortAndTransformOrderTypes(armyMovementPhaseOrderTypes)
 	  
 	val tableRows = (diplomacyUnits zip locations) map (u => {
-        <tr id="{u._1.id}">
+        <tr id={ u._1.id.toString }>
     	  <td>{u._1.unitType}</td>
     	  <td>{u._2.presentationName}</td>
     	  <td>
-    	  	<select name="{UNIT_ORDER}">{u._1.unitType match {
+    	  	<select name={ UNIT_ORDER }>{u._1.unitType match {
     	  		case UnitType.ARMY => armyOrderTypes
     	  		case UnitType.FLEET => fleetOrderTypes
     	  	}}
     	  	</select>
     	  </td>
-    	  <td class="{TARGET_LOCATION}"></td>
-    	  <td class="{SOURCE_LOCATION}"></td>
+    	  <td class={ TARGET_LOCATION }></td>
+    	  <td class={ SOURCE_LOCATION }></td>
     	</tr>
       })
       

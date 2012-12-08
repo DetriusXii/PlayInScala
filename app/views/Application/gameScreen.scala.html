@@ -42,59 +42,7 @@
 	var potentialConvoyOrders =
 		@Html(potentialConvoyOrders.toString);
 
-	function wrapTextInSelectWithName(text, name) {
-		return "<select name=" + name + ">" + text + "</select>";
-	}
 	
-	function wrapTextInOption(text) {
-		return "<option>" + text + "</option>";
-	}
-	
-	function createBasicOrder(unitID, orderSelector, targetLocationSelector) {
-		var children = $(orderSelector).children();
-		var optionElements = children.map(function() {
-			return wrapTextInOption(this.textContent);
-		}).get().join("");
-		var selectElement = wrapTextInSelectWithName(optionElements, unitID + "-target");
-		$(targetLocationSelector).html(selectElement);
-	}
-	
-	function createAdvancedOrder(ordersSelector, sourceLocationSelector, 
-								targetLocationSelector,
-								unitID) {
-		var childLists = $(ordersSelector);
-		var optionElements = childLists.map(function() {
-			return wrapTextInOption(this.className);
-		}).get().join("");
-		var selectElement = wrapTextInSelectWithName(optionElements, unitID + "-source");
-		$(sourceLocationSelector).html(selectElement);
-		$(sourceLocationSelector + " select").change(function() {
-			var value = $(this).val();
-			
-			var targetListItemsSelector =
-				".supportMoveOrders ul." + unitID + " ul." + value + " li";
-			var selectedItem = $(targetListItemsSelector);
-			var optionElements = $(targetListItemsSelector).map(function() {
-				return wrapTextInOption(this.textContent);
-			}).get().join("");
-			
-			var selectElement = wrapTextInSelectWithName(optionElements, unitID + "-target");
-			$(targetLocationSelector).html(selectElement);
-		});
-		
-		var value = $(sourceLocationSelector + " select").val();
-		if (value != null && value.length > 0) {
-			var targetListItemsSelector =
-				".supportMoveOrders ul." + unitID + " ul." + value + " li";
-			var optionElements = $(targetListItemsSelector).map(function() {
-				return wrapTextInOption(this.textContent);
-			}).get().join("");
-			
-			var selectElement = wrapTextInSelectWithName(optionElements, unitID + "-target");
-			$(targetLocationSelector).html(selectElement);
-		}
-	}
-
 	$(document).ready(function() {
 		$(".orderSelect").change(function() {
 			var id = this.parentElement.parentElement.id;

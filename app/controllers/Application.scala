@@ -24,10 +24,6 @@ class ApplicationAction[A](action: Action[A]) extends Action[A] {
 }
 
 object Application extends Controller with OptionTs {
-  val SOURCE_LOCATION = "sourceLocation"
-  val TARGET_LOCATION = "targetLocation"
-  val UNIT_ORDER = "unitOrder"
-  
   import play.api.Play._
   
   def index = new ApplicationAction(Action {
