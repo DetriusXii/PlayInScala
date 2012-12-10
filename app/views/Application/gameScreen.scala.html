@@ -7,6 +7,7 @@
 	orderHandlerURL: String)
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
+@import controllers.GameScreenController
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" 
 	"http://www.w3.org/TR/html4/strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" 
@@ -34,21 +35,32 @@
 <script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js">
 </script>
 <script type="text/javascript">
-	var potentialMoveOrders = @Html(potentialMoveOrders.toString);
-	var potentialSupportHoldOrders = 
-		@Html(potentialSupportHoldOrders.toString);
-	var potentialSupportMoveOrders =
-		@Html(potentialSupportMoveOrders.toString);
-	var potentialConvoyOrders =
-		@Html(potentialConvoyOrders.toString);
+	function getPotentialMoveOrders() {
+		return @Html(potentialMoveOrders.toString);
+	}
 
-	
+	function getPotentialSupportHoldOrders() {
+		return @Html(potentialSupportHoldOrders.toString);
+	}
+
+	function getPotentialSupportMoveOrders() {
+		return @Html(potentialSupportMoveOrders.toString);
+	}
+
+	function getPotentialConvoyOrders() {
+		return @Html(potentialConvoyOrders.toString);
+	}
+
+	function createClassName(name) {
+		return "." + name;
+	}
+
 	$(document).ready(function() {
-		$(".orderSelect").change(function() {
+		$(".@GameScreenController.UNIT_ORDER").change(function() {
 			var id = this.parentElement.parentElement.id;
 			var idSelector = "#" + id;
-			var targetLocationSelector = idSelector + " .targetLocation";
-			var sourceLocationSelector = idSelector + " .sourceLocation";
+			var targetLocationSelector = idSelector + " .@GameScreenController.TARGET_LOCATION";
+			var sourceLocationSelector = idSelector + " .@GameScreenController.SOURCE_LOCATION";
 			
 			$(targetLocationSelector).empty();
 			$(sourceLocationSelector).empty();
