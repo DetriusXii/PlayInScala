@@ -65,31 +65,27 @@
 			$(targetLocationSelector).empty();
 			$(sourceLocationSelector).empty();
 			
-			var moveOrdersSelector = ".moveOrders ul." + id;
-			var supportHoldOrdersSelector = ".supportHoldOrders ul." + id;
-			var supportMoveOrdersSelector = ".supportMoveOrders ul." + id + " ul";
-			var convoyOrdersSelector = ".convoyOrders ul." + id + " ul";
 			
 			switch($(this).val()) {
-				case "Hold": {
+				case "@OrderType.HOLD": {
 					break;
 				}
-				case "Move": {
+				case "@OrderType.MOVE": {
 					createBasicOrder(id, moveOrdersSelector, targetLocationSelector);
 					break;
 				}
-				case "Support Hold": {
+				case "@OrderType.SUPPORT_HOLD": {
 					createBasicOrder(id, supportHoldOrdersSelector, targetLocationSelector);
 					break;
 				}
-				case "Support Move": {
+				case "@OrderType.SUPPORT_MOVE": {
 					createAdvancedOrder(supportMoveOrdersSelector, 
 										sourceLocationSelector,
 										targetLocationSelector,
 										id);
 					break;
 				}
-				case "Convoy": {
+				case "@OrderType.CONVOY": {
 					createAdvancedOrder(convoyOrdersSelector, 
 										sourceLocationSelector,
 										targetLocationSelector,
