@@ -35,6 +35,32 @@
 <script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js">
 </script>
 <script type="text/javascript">
+	function foldLeft(array, initialValue) {
+		return function(accumulatingFunction) {
+			var accumulator = initialValue;
+			
+			array.forEach(function(elem) {
+				accumulator = accumulatingFunction(accumulator, elem);
+			});
+			
+			return accumulator;
+		};
+	}
+	
+	function exists(array, existsDelegate) {
+		return 
+	}
+
+	function getBasicHeading(id) {
+		return "<tr class='heading " + id + "'>" + 
+			"<td></td><td></td><td></td><td>Target</td><td></td></tr>";
+	}
+	
+	function getAdvancedHeading(id) {
+		return "<tr class='heading '" + id + "'>" +
+			"<td></td><td></td><td></td><td>Source</td><td>Target</td></tr>"
+	}
+
 	function getPotentialMoveOrders() {
 		return @Html(potentialMoveOrders.toString);
 	}
@@ -54,9 +80,79 @@
 	function createClassName(name) {
 		return "." + name;
 	}
+	
+	function getBasicOrdersForId(id, orders) {
+		return orders.filter(function(order) {
+			return order.@GameScreenController.DIPLOMACY_UNIT_ID === id;
+		});
+	}
+	
+	function getAdvancedOrdersForId(id, orders) {
+		return orders.filter(function(order) {
+			return order.@GameScreenController.DIPLOMACY_UNIT_ID;
+		});
+	}
+	
+	function removeHeading(id) {
+		$(".heading." + id).remove();
+	}
+	
+	function createBasicOrder(id, orders, targetLocationSelector, emptyTargetMessage) {
+		var basicOrdersForId = getBasicOrdersForId(id, orders);
+		var basicHeading = getBasicHeading(id);
+		
+		var optionElements = transformBasicOrdersIntoElements(basicOrdersForId);
+		var selectElement = document.createElement("select");
+		selectElement.name = "moveOrder-" + id;
+		optionElements.map(function(optionElement) {
+			selectElement.appendChild(optionElement);
+			
+			return null;
+		});
+		
+		$("#" + id).before(basicHeading);
+		if (optionElements.length > 0) {
+			$(targetLocationSelector).append(selectElement);
+		} else {
+			$(targetLocationSelector).append(emptyTargetMessage);
+		}
+	}
+	
+	function createAdvancedOrder(id, orders, targetLocationSelector, 
+							emptySourceMessage, emptyTargetMessage) {
+		var advancedOrdersForId = getAdvancedOrdersForId(id, orders);
+		var advancedHeading = getAdvancedHeading(id);
+	}
+	
+	function getUniqueSourceOrders(advancedOrders) {
+		return foldLeft(advancedOrders, [])(function(list, order) {
+			
+		});
+	}
+	
+	function getSourceOptionElements(advancedOrdersForSource) {
+		return advancedOrders.map(function(order) {
+			var optionElement = document.createElement("option");
+			optionElement.textContent = order.@GameScreenController.SOURCE_PRESENTATION_NAME;
+			optionElement.setAttribute("value", @GameScreenController.SOURCE_LOCATION_ID);
+			
+			return optionElement;
+		});
+	}
+	
+	function transformBasicOrdersIntoElements(orders) {
+		return orders.map(function(order) {
+			var option = document.createElement("option");
+			option.textContent = order.@GameScreenController.PRESENTATION_NAME;
+			option.setAttribute("value", order.@GameScreenController.LOCATION_ID);
+		
+			return option;
+		});
+	}
 
 	$(document).ready(function() {
 		$(".@GameScreenController.UNIT_ORDER").change(function() {
+			var tableRow = this.parentElement.parentElement;
 			var id = this.parentElement.parentElement.id;
 			var idSelector = "#" + id;
 			var targetLocationSelector = idSelector + " .@GameScreenController.TARGET_LOCATION";
@@ -64,32 +160,27 @@
 			
 			$(targetLocationSelector).empty();
 			$(sourceLocationSelector).empty();
-			
+			removeHeading(id);
 			
 			switch($(this).val()) {
 				case "@OrderType.HOLD": {
 					break;
 				}
 				case "@OrderType.MOVE": {
-					createBasicOrder(id, moveOrdersSelector, targetLocationSelector);
+					createBasicOrder(id, getPotentialMoveOrders(), targetLocationSelector);
 					break;
 				}
 				case "@OrderType.SUPPORT_HOLD": {
-					createBasicOrder(id, supportHoldOrdersSelector, targetLocationSelector);
+					createBasicOrder(id, 
+						getPotentialSupportHoldOrders(), 
+						targetLocationSelector,
+						"No support holds for this unit");
 					break;
 				}
 				case "@OrderType.SUPPORT_MOVE": {
-					createAdvancedOrder(supportMoveOrdersSelector, 
-										sourceLocationSelector,
-										targetLocationSelector,
-										id);
 					break;
 				}
 				case "@OrderType.CONVOY": {
-					createAdvancedOrder(convoyOrdersSelector, 
-										sourceLocationSelector,
-										targetLocationSelector,
-										id);
 					break;
 				}
 			}

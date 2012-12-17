@@ -138,14 +138,14 @@ object GameScreenController extends Controller {
     )
     
   private lazy val fleetMovementPhaseOrderTypes: List[OrderType] =
-    DBQueries.orderTypes.filter((ot: OrderType) =>
+    movementPhaseOrderTypes.filter((ot: OrderType) =>
       DBQueries.orderTypeUnitTypes.exists((otut: OrderTypeUnitType) =>
         otut.orderType.equals(ot.id) && otut.unitType.equals(UnitType.FLEET)
       )
     )
     
   private lazy val armyMovementPhaseOrderTypes: List[OrderType] =
-    DBQueries.orderTypes.filter((ot: OrderType) =>
+    movementPhaseOrderTypes.filter((ot: OrderType) =>
       DBQueries.orderTypeUnitTypes.exists((otut: OrderTypeUnitType) =>
         otut.orderType.equals(ot.id) && otut.unitType.equals(UnitType.ARMY)  
       )  
@@ -178,7 +178,7 @@ object GameScreenController extends Controller {
     	  <td>{u._1.unitType}</td>
     	  <td>{u._2.presentationName}</td>
     	  <td>
-    	  	<select name={ UNIT_ORDER }>{u._1.unitType match {
+    	  	<select class={ UNIT_ORDER }>{u._1.unitType match {
     	  		case UnitType.ARMY => armyOrderTypes
     	  		case UnitType.FLEET => fleetOrderTypes
     	  	}}
