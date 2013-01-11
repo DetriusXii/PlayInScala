@@ -113,11 +113,8 @@
 		
 		var optionElements = transformBasicOrdersIntoElements(basicOrdersForId);
 		var selectElement = document.createElement("select");
-		selectElement.name = "moveOrder-" + id;
-		optionElements.map(function(optionElement) {
+		optionElements.each(function(optionElement) {
 			selectElement.appendChild(optionElement);
-			
-			return null;
 		});
 		
 		$("#" + id).before(basicHeading);
@@ -128,10 +125,16 @@
 		}
 	}
 	
-	function createAdvancedOrder(id, orders, targetLocationSelector, 
-							emptySourceMessage, emptyTargetMessage) {
+	function createAdvancedOrder(id, orders, 
+			sourceLocationSelector,
+			targetLocationSelector, 
+			emptySourceMessage, emptyTargetMessage) {
 		var advancedOrdersForId = getAdvancedOrdersForId(id, orders);
 		var advancedHeading = getAdvancedHeading(id);
+		
+		var uniqueSourceOrders = getUniqueSourceOrders(advancedOrdersForId)
+		var sourceOptionElements = getSourceOptionElements(uniqueSourceOrder)
+		
 	}
 	
 	function getUniqueSourceOrders(advancedOrders) {
@@ -140,6 +143,12 @@
 				return order.@GameScreenController.SOURCE_LOCATION_ID === 
 					uniqueOrder.@GameScreenController.SOURCE_LOCATION_ID;
 			});
+			
+			if (!doesExist) {
+				list.push(order);
+			}
+			
+			return list;
 		});
 	}
 	
@@ -148,6 +157,12 @@
 			var optionElement = document.createElement("option");
 			optionElement.textContent = order.@GameScreenController.SOURCE_PRESENTATION_NAME;
 			optionElement.setAttribute("value", @GameScreenController.SOURCE_LOCATION_ID);
+			$(optionElement).select(function() {
+				var value = this.value;
+				
+				
+			});
+			
 			
 			return optionElement;
 		});
@@ -191,6 +206,11 @@
 					break;
 				}
 				case "@OrderType.SUPPORT_MOVE": {
+					createAdvancedOrder(id, getPotentialSupportMoveOrders(),
+						sourceLocationSelector, targetLocationSelector,
+						"No support moves for this unit",
+						"No suppr"
+					)
 					break;
 				}
 				case "@OrderType.CONVOY": {
