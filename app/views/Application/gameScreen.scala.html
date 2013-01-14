@@ -35,17 +35,6 @@
 <script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js">
 </script>
 <script type="text/javascript">
-	function foldLeft(array, initialValue) {
-		return function(accumulatingFunction) {
-			var accumulator = initialValue;
-			
-			array.forEach(function(elem) {
-				accumulator = accumulatingFunction(accumulator, elem);
-			});
-			
-			return accumulator;
-		};
-	}
 	
 	function exists(array, existsDelegate) {
 		var i = 0;
@@ -113,7 +102,7 @@
 		
 		var optionElements = transformBasicOrdersIntoElements(basicOrdersForId);
 		var selectElement = document.createElement("select");
-		optionElements.each(function(optionElement) {
+		optionElements.forEach(function(optionElement) {
 			selectElement.appendChild(optionElement);
 		});
 		
@@ -133,12 +122,21 @@
 		var advancedHeading = getAdvancedHeading(id);
 		
 		var uniqueSourceOrders = getUniqueSourceOrders(advancedOrdersForId)
-		var sourceOptionElements = getSourceOptionElements(uniqueSourceOrder)
+		var sourceOptionElements = getSourceOptionElements(id, uniqueSourceOrders, advancedOrdersForId)
+		
+		var selectElement = document.createElement("select");
+		sourceOptionElements.forEach(function(optionElement) {
+			selectElement.appendChild(optionElement);
+		});
+		
+		if (sourceOptionElements.length > 0) {
+			$(sourceLocationSelector).append(selectElement);
+		}
 		
 	}
 	
 	function getUniqueSourceOrders(advancedOrders) {
-		return foldLeft(advancedOrders, [])(function(list, order) {
+		return advancedOrders.reduce(function(list, order) {
 			var doesExist = exists(list, function(uniqueOrder) {
 				return order.@GameScreenController.SOURCE_LOCATION_ID === 
 					uniqueOrder.@GameScreenController.SOURCE_LOCATION_ID;
@@ -149,23 +147,43 @@
 			}
 			
 			return list;
-		});
+		}, []);
 	}
 	
-	function getSourceOptionElements(advancedOrdersForSource) {
-		return advancedOrders.map(function(order) {
+	function getSourceOptionElements(id, advancedOrdersForSource, allOrdersForId) {
+		return advancedOrdersForSource.map(function(order) {
 			var optionElement = document.createElement("option");
 			optionElement.textContent = order.@GameScreenController.SOURCE_PRESENTATION_NAME;
-			optionElement.setAttribute("value", @GameScreenController.SOURCE_LOCATION_ID);
+			optionElement.setAttribute("value", order.@GameScreenController.SOURCE_LOCATION_ID);
 			$(optionElement).select(function() {
 				var value = this.value;
+				var selector = "#" + id + " .@GameScreenController.TARGET_LOCATION";
+				$(selector).empty();
 				
+				var targets = allOrdersForId.filter(function(elem) {
+					return elem.@GameScreenController.SOURCE_LOCATION_ID === value;
+				});
 				
+				var targetOptionElements = getTargetOptionElements(targets);
+				var selectElement = document.createElement("select");
+				targetOptionElements.each(function(elem) {
+					selectElement.appendChild(elem);
+				});
+				
+				$(selector).append(selectElement);
 			});
 			
 			
 			return optionElement;
 		});
+	}
+	
+	function getTargetOptionElements(targetList) {
+		return targetList.map(function(target) {
+			var optionElement = document.createElement("option");
+			optionElement.textContent = target.@GameScreenController.TARGET_PRESENTATION_NAME;
+			optionElement.setAttribute("value", target.@GameScreenController.TARGET_LOCATION_ID);
+		})
 	}
 	
 	function transformBasicOrdersIntoElements(orders) {
