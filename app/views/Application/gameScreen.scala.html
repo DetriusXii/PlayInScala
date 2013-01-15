@@ -18,18 +18,19 @@
 	@Html(mapElement)
 </div>
 <form method="POST" action="@orderHandlerURL">
-<table style="margin: 0px auto;">
-	<thead>
-		<tr>
-			<td>Unit Type</td>
-			<td>Unit Location</td>
-			<td>Order Type</td>
-			<td></td>
-			<td></td>
-		</tr>
-	</thead>
-	@preparedTableRows
-</table>
+	<table style="margin: 0px auto;">
+		<thead>
+			<tr>
+				<td>Unit Type</td>
+				<td>Unit Location</td>
+				<td>Order Type</td>
+				<td></td>
+				<td></td>
+			</tr>
+		</thead>
+		@preparedTableRows
+	</table>
+	<input id="submitButton" type="button" value="Submit Move Orders" />
 </form>
 </body>
 <script type="text/javascript" src="/public/javascripts/jquery-1.5.1.js">
@@ -106,10 +107,11 @@
 		var advancedOrdersForId = getAdvancedOrdersForId(id, orders);
 		var advancedHeading = getAdvancedHeading(id);
 		
-		var uniqueSourceOrders = getUniqueSourceOrders(advancedOrdersForId)
-		var sourceOptionElements = getSourceOptionElements(id, uniqueSourceOrders, advancedOrdersForId)
+		var uniqueSourceOrders = getUniqueSourceOrders(advancedOrdersForId);
+		var sourceOptionElements = getSourceOptionElements(id, uniqueSourceOrders, advancedOrdersForId);
 		
 		var selectElement = document.createElement("select");
+		selectElement.className="sourceUnit";
 		sourceOptionElements.forEach(function(optionElement) {
 			selectElement.appendChild(optionElement);
 		});
@@ -124,6 +126,7 @@
 			
 			var targetOptionElements = getTargetOptionElements(targets);
 			var selectElement = document.createElement("select");
+			selectElement.className="targetUnit";
 			targetOptionElements.forEach(function(elem) {
 				selectElement.appendChild(elem);
 			});
@@ -218,12 +221,25 @@
 					break;
 				}
 				case "@OrderType.CONVOY": {
+					createAdvancedOrder(id, getPotentialConvoyOrders(),
+						sourceLocationSelector, targetLocationSelector,
+						"No convoys for this unit",
+						"No support moves for this unit");
 					break;
 				}
 			}
 			
 			
 		});
+		
+		$("#submitButton").click(function() {
+			$(".@GameScreenController.DIPLOMACY_UNIT_ROW").map(function() {
+				
+			}).get();	
+		});
+		
 	});
+	
+	
 </script>
 </html>

@@ -131,6 +131,7 @@ object GameScreenController extends Controller {
   val TARGET_LOCATION_ID = "targetLocationID"
   val SOURCE_PRESENTATION_NAME = "sourcePresentationName"
   val TARGET_PRESENTATION_NAME = "targetPresentationName"
+  val DIPLOMACY_UNIT_ROW = "diplomacyUnitRow"
   
   private lazy val movementPhaseOrderTypes: List[OrderType] =
     DBQueries.orderTypes.filter((ot: OrderType) => 
@@ -174,7 +175,7 @@ object GameScreenController extends Controller {
 	  sortAndTransformOrderTypes(armyMovementPhaseOrderTypes)
 	  
 	val tableRows = (diplomacyUnits zip locations) map (u => {
-        <tr id={ u._1.id.toString }>
+        <tr id={ u._1.id.toString } class={ DIPLOMACY_UNIT_ROW } >
     	  <td>{u._1.unitType}</td>
     	  <td>{u._2.presentationName}</td>
     	  <td>
