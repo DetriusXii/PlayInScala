@@ -42,7 +42,7 @@
 	}
 	
 	function getAdvancedHeading(id) {
-		return "<tr class='heading '" + id + "'>" +
+		return "<tr class='heading " + id + "'>" +
 			"<td></td><td></td><td></td><td>Source</td><td>Target</td></tr>"
 	}
 
@@ -111,7 +111,7 @@
 		var sourceOptionElements = getSourceOptionElements(id, uniqueSourceOrders, advancedOrdersForId);
 		
 		var selectElement = document.createElement("select");
-		selectElement.className="sourceUnit";
+		selectElement.className = "@GameScreenController.SOURCE_UNIT";
 		sourceOptionElements.forEach(function(optionElement) {
 			selectElement.appendChild(optionElement);
 		});
@@ -126,7 +126,7 @@
 			
 			var targetOptionElements = getTargetOptionElements(targets);
 			var selectElement = document.createElement("select");
-			selectElement.className="targetUnit";
+			selectElement.className = "@GameScreenController.TARGET_UNIT";
 			targetOptionElements.forEach(function(elem) {
 				selectElement.appendChild(elem);
 			});
@@ -134,8 +134,11 @@
 			$(sourceLocationSelector).append(selectElement);
 		});
 		
+		$("#" + id).before(getAdvancedHeading(id));
 		if (sourceOptionElements.length > 0) {
 			$(targetLocationSelector).append(selectElement);
+		} else {
+			$(targetLocationSelector).append(emptySourceMessage);
 		}
 		
 	}
@@ -233,9 +236,47 @@
 		});
 		
 		$("#submitButton").click(function() {
-			$(".@GameScreenController.DIPLOMACY_UNIT_ROW").map(function() {
+			 var unitOrders = $(".@GameScreenController.DIPLOMACY_UNIT_ROW").map(function() {
+				var unitId = this.id;
+				var unitOrder =
+					$(this).find(".@GameScreenController.UNIT_ORDER").val();
+				
+				switch(unitOrder) {
+					case "@OrderType.HOLD": {
+						return {unitId: unitId, unitOrder: unitOrder};
+						break;
+					}
+					case "@OrderType.MOVE": 
+					case "@OrderType.SUPPORT_HOLD": {
+						var sourceUnit = 
+							$(this).find(".@GameScreenController.SOURCE_UNIT").val();
+						return {unitId: unitId, 
+							unitOrder: unitOrder, 
+							sourceUnit: sourceUnit};
+						break;
+					}
+					case "@OrderType.SUPPORT_MOVE":
+					case "@OrderType.CONVOY": {
+						var sourceUnit = 
+							$(this).find(".@GameScreenController.SOURCE_UNIT").val();
+						var targetUnit =
+							$(this).find(".@GameScreenController.TARGET_UNIT").val();
+						
+						return {
+							unitId: unitId,
+							unitOrder: unitOrder,
+							sourceUnit: sourceUnit,
+							targetUnit: targetUnit
+						};
+						
+						break;
+					}
+				}
+				
 				
 			}).get();	
+			 
+			 unitOrders;
 		});
 		
 	});

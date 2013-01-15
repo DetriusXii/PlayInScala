@@ -123,6 +123,8 @@ object PotentialConvoyOrderWrites extends
 object GameScreenController extends Controller {
   val TARGET_LOCATION = "targetLocation"
   val SOURCE_LOCATION = "sourceLocation"
+  val SOURCE_UNIT = "sourceUnit"
+  val TARGET_UNIT = "targetUnit"
   val UNIT_ORDER = "unitOrder"
   val LOCATION_ID = "locationID"
   val PRESENTATION_NAME = "presentationName"
@@ -151,13 +153,38 @@ object GameScreenController extends Controller {
         otut.orderType.equals(ot.id) && otut.unitType.equals(UnitType.ARMY)  
       )  
     )
+ 
+  private def getPotentialMoveOrders(gpe: GamePlayerEmpire): 
+	  Promise[List[PotentialMoveOrder]] =
+    Akka.future {
+	  DBQueries.getPotentialMoveOrdersForGamePlayerEmpireAtCurrentTime(gpe)
+	}
+  private def getPotentialSupportHoldOrders(gpe: GamePlayerEmpire):
+	  Promise[List[PotentialSupportHoldOrder]] =
+	Akka.future {
+	  DBQueries.getPotentialSupportHoldOrdersForGamePlayerEmpire(gpe)	
+  	}
+  private def getPotentialSupportMoveOrders(gpe: GamePlayerEmpire):
+	Promise[List[PotentialSupportMoveOrder]] =
+	  Akka.future {
+	  	DBQueries.getPotentialSupportMoveOrdersForGamePlayerEmpire(gpe)
+  	  }
+  private def getPotentialConvoyOrders(gpe: GamePlayerEmpire):
+	Promise[List[PotentialConvoyOrder]] = 
+	  Akka.future {
+	  	DBQueries.getPotentialConvoyOrdersForGamePlayerEmpire(gpe)
+  	  }
   
+    
   private def sortAndTransformOrderTypes(orderTypes: List[OrderType]): 
     List[scala.xml.Elem] = orderTypes.sortWith((a, b) => (a.id, b.id) match {
       case (OrderType.HOLD, _) => true
       case (_, OrderType.HOLD) => false
+      case (OrderType.MOVE, _) => true
+      case (_, OrderType.MOVE) => false
       case _ => true
     }).map((ot: OrderType) => <option>{ot.id}</option>)
+    
     
   private def getTableRows(gpe: GamePlayerEmpire): 
     List[scala.xml.Elem] = {
@@ -173,6 +200,8 @@ object GameScreenController extends Controller {
 	  sortAndTransformOrderTypes(fleetMovementPhaseOrderTypes)
 	val armyOrderTypes = 
 	  sortAndTransformOrderTypes(armyMovementPhaseOrderTypes)
+	  
+	  
 	  
 	val tableRows = (diplomacyUnits zip locations) map (u => {
         <tr id={ u._1.id.toString } class={ DIPLOMACY_UNIT_ROW } >
