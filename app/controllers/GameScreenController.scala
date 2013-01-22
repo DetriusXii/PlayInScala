@@ -6,6 +6,7 @@ import play.api.libs.concurrent._
 import com.squeryl.jdip.queries._
 import play.api.mvc._
 import play.api.Play._
+import controllers.json._
 
 object GameScreenController extends Controller {
   val TARGET_LOCATION = "targetLocation"
@@ -73,7 +74,11 @@ object GameScreenController extends Controller {
     }).map((ot: OrderType) => <option>{ot.id}</option>)
     
     
-  private def getTableRows(gpe: GamePlayerEmpire): 
+  private def getTableRows(gpe: GamePlayerEmpire,
+		  pshos: List[PotentialSupportHoldOrder],
+		  psmos: List[PotentialSupportMoveOrder],
+		  pcos: List[PotentialConvoyOrder]
+  ): 
     List[scala.xml.Elem] = {
     val diplomacyUnits: List[DiplomacyUnit] = 
         DBQueries.
@@ -120,24 +125,43 @@ object GameScreenController extends Controller {
           DBQueries.getGameMapForGameAtCurrentTime(game))
       )
 	  
-	  val potentialMoveOrderJSValue =
-	    PotentialMoveOrderWrites.getJSValuePromise(gpe)
-	  val potentialSupportHoldOrderJSValue =
-	    PotentialSupportHoldOrderWrites.getJSValuePromise(gpe)
-	  val potentialSupportMoveOrderJSValue =
-	    PotentialSupportMoveOrderWrites.getJSValuePromise(gpe)
-	  val potentialConvoyOrderJSValue =
-	    PotentialConvoyOrderWrites.getJSValuePromise(gpe)
+      val pmosPromise = Akka.future {
+	    DBQueries.getPotentialMoveOrdersForGamePlayerEmpireAtCurrentTime(gpe)
+	  }
+	  val pshosPromise = Akka.future {
+	    DBQueries.getPotentialSupportHoldOrdersForGamePlayerEmpire(gpe)
+	  }
+	  val psmosPromise = Akka.future {
+	    DBQueries.getPotentialSupportMoveOrdersForGamePlayerEmpire(gpe)
+	  }
+	  val pcosPromise = Akka.future {
+	    DBQueries.getPotentialConvoyOrdersForGamePlayerEmpire(gpe)
+	  }
+      
+	  val pmosJSValuePromise = pmosPromise.map(pmos => 
+	    new PotentialMoveOrderWrites(pmos).getJSValue
+	  )
+	  val pshosJSValuePromise = pshosPromise.map(pshos => 
+	    new PotentialSupportHoldOrderWrites(pshos).getJSValue)
+	  val psmosJSValuePromise = psmosPromise.map(psmos =>
+	  	new PotentialSupportMoveOrderWrites(psmos).getJSValue
+	  )
+	  val pcosJSValuePromise = pcosPromise.map(pcos => 
+	  	new PotentialConvoyOrderWrites(pcos).getJSValue
+	  )
 	  
-	  
-      val tableRows = getTableRows(gpe)
+      val tableRows = for (pshos <- pshosPromise;
+    		  				psmos <- psmosPromise;
+    		  				pcos <- pcosPromise) yield {
+        getTableRows
+      }
       
       
       for (gameMapOption <- gameMapOptionPromise;
-    	potentialMoveOrders <- potentialMoveOrderJSValue;
-    	potentialSupportHoldOrders <- potentialSupportHoldOrderJSValue;
-    	potentialSupportMoveOrders <- potentialSupportMoveOrderJSValue;
-    	potentialConvoyOrders <- potentialConvoyOrderJSValue
+    	potentialMoveOrders <- pmosJSValuePromise;
+    	potentialSupportHoldOrders <- pshosJSValuePromise;
+    	potentialSupportMoveOrders <- psmosJSValuePromise;
+    	potentialConvoyOrders <- pcosJSValuePromise
       ) yield {
         gameMapOption.map((gameMap: GameMap) =>
           views.html.Application.gameScreen(tableRows, 

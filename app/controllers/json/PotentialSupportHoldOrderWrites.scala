@@ -5,7 +5,7 @@ import com.squeryl.jdip.queries.DBQueries
 
 class PotentialSupportHoldOrderWrites(pshos: List[PotentialSupportHoldOrder]) extends 
   Writes[Tuple2[PotentialSupportHoldOrder, Location]] {
-  def getJSValuePromise: JsValue = {
+  def getJSValue: JsValue = {
 	  val pshosWithLocations = pshos.map((psho: PotentialSupportHoldOrder) => {
 	  val locationOption =
 	    DBQueries.locations.find(_.id == psho.supportHoldLocationID)

@@ -6,7 +6,7 @@ import com.squeryl.jdip.queries.DBQueries
 
 class PotentialSupportMoveOrderWrites(psmos: List[PotentialSupportMoveOrder]) extends
   Writes[Tuple3[PotentialSupportMoveOrder, Location, Location]] {
-  def getJSValuePromise: JsValue = {
+  def getJSValue: JsValue = {
       val psmosWithLocations =
         psmos.map((psmo: PotentialSupportMoveOrder) => {
           val sourceLocationOption = 

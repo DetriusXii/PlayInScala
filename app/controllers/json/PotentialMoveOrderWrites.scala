@@ -5,7 +5,7 @@ import com.squeryl.jdip.queries.DBQueries
 
 class PotentialMoveOrderWrites(pmos: List[PotentialMoveOrder]) extends 
   Writes[Tuple2[PotentialMoveOrder, Location]] {
-  def getJSValuePromise: JsValue = {
+  def getJSValue: JsValue = {
 	  val pmosWithLocations = pmos.map((pmo: PotentialMoveOrder) => {
 		val locationOption = 
 	      DBQueries.locations.find(_.id == pmo.moveLocationID)
