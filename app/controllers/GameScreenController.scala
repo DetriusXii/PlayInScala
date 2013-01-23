@@ -15,6 +15,7 @@ object GameScreenController extends Controller {
   val TARGET_UNIT = "targetUnit"
   val UNIT_ORDER = "unitOrder"
   val LOCATION_ID = "locationID"
+  val GAME_PLAYER_EMPIRE_ID = "gamePlayerEmpireID"
   val PRESENTATION_NAME = "presentationName"
   val DIPLOMACY_UNIT_ID = "diplomacyUnitID"
   val SOURCE_LOCATION_ID = "sourceLocationID"
@@ -120,18 +121,22 @@ object GameScreenController extends Controller {
 	  sortAndTransformOrderTypes(armyMovementPhaseOrderTypes)
 	  
 	val fleetOrderTypesCurried = 
-	  getAddedDisabledOrderTypes(fleetOrderTypes,
-			  pshos, psmos, pcos)
+	  getAddedDisabledOrderTypes(fleetOrderTypes, pshos, psmos, pcos) _
+	val armyOrderTypesCurried =
+	  getAddedDisabledOrderTypes(armyOrderTypes, pshos, psmos, pcos) _
 	  
       
 	val tableRows = (diplomacyUnits zip locations) map (u => {
+	  val orderForUnitName = 
+	    "%s%s" format (OrderHandler.ORDER_PREFIX, u._1.id.toString)
+	  
         <tr id={ u._1.id.toString } class={ DIPLOMACY_UNIT_ROW } >
     	  <td>{u._1.unitType}</td>
     	  <td>{u._2.presentationName}</td>
     	  <td>
-    	  	<select class={ UNIT_ORDER }>{u._1.unitType match {
-    	  		case UnitType.ARMY => getAddedDisabledOrderTypes(u._1.id, armyOrderTypes)
-    	  		case UnitType.FLEET => fleetOrderTypes
+    	  	<select class={ UNIT_ORDER } name={ orderForUnitName }>{u._1.unitType match {
+    	  		case UnitType.ARMY => armyOrderTypesCurried(u._1.id)
+    	  		case UnitType.FLEET => fleetOrderTypesCurried(u._1.id)
     	  	}}
     	  	</select>
     	  </td>
@@ -179,10 +184,10 @@ object GameScreenController extends Controller {
 	  	new PotentialConvoyOrderWrites(pcos).getJSValue
 	  )
 	  
-      val tableRows = for (pshos <- pshosPromise;
+      val tableRowsPromise = for (pshos <- pshosPromise;
     		  				psmos <- psmosPromise;
     		  				pcos <- pcosPromise) yield {
-        getTableRows
+        getTableRows(gpe, pshos, psmos, pcos)
       }
       
       
@@ -190,7 +195,8 @@ object GameScreenController extends Controller {
     	potentialMoveOrders <- pmosJSValuePromise;
     	potentialSupportHoldOrders <- pshosJSValuePromise;
     	potentialSupportMoveOrders <- psmosJSValuePromise;
-    	potentialConvoyOrders <- pcosJSValuePromise
+    	potentialConvoyOrders <- pcosJSValuePromise;
+    	tableRows <- tableRowsPromise
       ) yield {
         gameMapOption.map((gameMap: GameMap) =>
           views.html.Application.gameScreen(tableRows, 
@@ -199,7 +205,8 @@ object GameScreenController extends Controller {
             potentialSupportMoveOrders,
             potentialConvoyOrders,
             new String(gameMap.gameMap),
-            OrderHandler.SUBMIT_MOVE_ORDERS_URL  
+            OrderHandler.SUBMIT_MOVE_ORDERS_URL,
+            gpe.id.toString
           )
         ) match {
           case Some(view: Content) => Ok(view) 

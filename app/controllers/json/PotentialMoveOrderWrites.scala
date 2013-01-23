@@ -1,7 +1,9 @@
 package controllers.json
 import com.squeryl.jdip.tables._
 import play.api.libs.json._
+import play.api.libs.json.Writes._
 import com.squeryl.jdip.queries.DBQueries
+import controllers.GameScreenController
 
 class PotentialMoveOrderWrites(pmos: List[PotentialMoveOrder]) extends 
   Writes[Tuple2[PotentialMoveOrder, Location]] {
@@ -13,7 +15,7 @@ class PotentialMoveOrderWrites(pmos: List[PotentialMoveOrder]) extends
 	  }).flatten
 	    
 	  Json.toJson(pmosWithLocations)(listWrites(this))
-	})
+	}
     
   def writes(u: Tuple2[PotentialMoveOrder, Location]): JsValue =
 	Json.toJson(Map(

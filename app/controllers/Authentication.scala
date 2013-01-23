@@ -16,6 +16,7 @@ import play.api.templates._
 import play.api.db.DB
 import play.core.Router.StaticPart
 import com.squeryl.jdip.queries._
+import play.api.data._
 
 object Authentication extends Controller {
   import play.api.Play._
@@ -25,6 +26,9 @@ object Authentication extends Controller {
   val PLEASE_ENTER_USERNAME = "Please enter a username"
   val AUTHENTICATE_URL = controllers.routes.Authentication.authenticate.url
   val PASSWORD = "password"
+    
+  val loginForm = Form(Forms.tuple(Security.username -> Forms.text, 
+      PASSWORD -> Forms.text))
     
   def login = Action {
 	  Ok(views.html.login(AUTHENTICATE_URL, Security.username, PASSWORD))

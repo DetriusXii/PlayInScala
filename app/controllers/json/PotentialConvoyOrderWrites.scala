@@ -1,7 +1,9 @@
 package controllers.json
 import com.squeryl.jdip.tables._
 import play.api.libs.json._
+import play.api.libs.json.Writes._
 import com.squeryl.jdip.queries.DBQueries
+import controllers.GameScreenController
 
 class PotentialConvoyOrderWrites(pcos: List[PotentialConvoyOrder]) extends 
   Writes[Tuple3[PotentialConvoyOrder, Location, Location]] {
@@ -19,7 +21,7 @@ class PotentialConvoyOrderWrites(pcos: List[PotentialConvoyOrder]) extends
       }).flatten
       
       Json.toJson(pcosWithLocations)(listWrites(this))
-    })
+    }
     
   
   def writes(u: Tuple3[PotentialConvoyOrder, Location, Location]): JsValue =

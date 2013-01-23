@@ -4,7 +4,8 @@
   potentialSupportMoveOrders: play.api.libs.json.JsValue,
   potentialConvoyOrders: play.api.libs.json.JsValue,
 	mapElement: String,
-	orderHandlerURL: String)
+	orderHandlerURL: String,
+	gamePlayerEmpireID: String)
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
 @import controllers.GameScreenController
@@ -18,6 +19,9 @@
 	@Html(mapElement)
 </div>
 <form method="POST" action="@orderHandlerURL">
+	<input type="hidden" 
+		name="@GameScreenController.GAME_PLAYER_EMPIRE_ID" 
+		value="@gamePlayerEmpireID" />
 	<table style="margin: 0px auto;">
 		<thead>
 			<tr>
@@ -88,6 +92,7 @@
 		
 		var optionElements = transformBasicOrdersIntoElements(basicOrdersForId);
 		var selectElement = document.createElement("select");
+		selectElement.setAttribute("name", "@OrderHandler.SOURCE_PREFIX" + id)
 		optionElements.forEach(function(optionElement) {
 			selectElement.appendChild(optionElement);
 		});
@@ -112,6 +117,7 @@
 		
 		var selectElement = document.createElement("select");
 		selectElement.className = "@GameScreenController.SOURCE_UNIT";
+		selectElement.setAttribute("name", "@OrderHandler.SOURCE_PREFIX" + id)
 		sourceOptionElements.forEach(function(optionElement) {
 			selectElement.appendChild(optionElement);
 		});
@@ -127,6 +133,7 @@
 			var targetOptionElements = getTargetOptionElements(targets);
 			var selectElement = document.createElement("select");
 			selectElement.className = "@GameScreenController.TARGET_UNIT";
+			selectElement.setAttribute("name", "@OrderHandler.TARGET_PREFIX" + id)
 			targetOptionElements.forEach(function(elem) {
 				selectElement.appendChild(elem);
 			});
@@ -235,49 +242,7 @@
 			
 		});
 		
-		$("#submitButton").click(function() {
-			 var unitOrders = $(".@GameScreenController.DIPLOMACY_UNIT_ROW").map(function() {
-				var unitId = this.id;
-				var unitOrder =
-					$(this).find(".@GameScreenController.UNIT_ORDER").val();
-				
-				switch(unitOrder) {
-					case "@OrderType.HOLD": {
-						return {unitId: unitId, unitOrder: unitOrder};
-						break;
-					}
-					case "@OrderType.MOVE": 
-					case "@OrderType.SUPPORT_HOLD": {
-						var sourceUnit = 
-							$(this).find(".@GameScreenController.SOURCE_UNIT").val();
-						return {unitId: unitId, 
-							unitOrder: unitOrder, 
-							sourceUnit: sourceUnit};
-						break;
-					}
-					case "@OrderType.SUPPORT_MOVE":
-					case "@OrderType.CONVOY": {
-						var sourceUnit = 
-							$(this).find(".@GameScreenController.SOURCE_UNIT").val();
-						var targetUnit =
-							$(this).find(".@GameScreenController.TARGET_UNIT").val();
-						
-						return {
-							unitId: unitId,
-							unitOrder: unitOrder,
-							sourceUnit: sourceUnit,
-							targetUnit: targetUnit
-						};
-						
-						break;
-					}
-				}
-				
-				
-			}).get();	
-			 
-			 unitOrders;
-		});
+		
 		
 	});
 	

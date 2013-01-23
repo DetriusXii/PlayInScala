@@ -2,7 +2,9 @@ package controllers.json
 
 import com.squeryl.jdip.tables._
 import play.api.libs.json._
+import play.api.libs.json.Writes._
 import com.squeryl.jdip.queries.DBQueries
+import controllers.GameScreenController
 
 class PotentialSupportMoveOrderWrites(psmos: List[PotentialSupportMoveOrder]) extends
   Writes[Tuple3[PotentialSupportMoveOrder, Location, Location]] {
@@ -20,7 +22,7 @@ class PotentialSupportMoveOrderWrites(psmos: List[PotentialSupportMoveOrder]) ex
         }).flatten
       
       Json.toJson(psmosWithLocations)(listWrites(this))
-	})
+	}
   
   def writes(u: Tuple3[PotentialSupportMoveOrder, Location, Location]):
     JsValue =
