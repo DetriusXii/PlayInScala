@@ -73,13 +73,39 @@ object GameScreenController extends Controller {
       case _ => true
     }).map((ot: OrderType) => <option>{ot.id}</option>)
     
+  private def getAddedDisabledOrderTypes(optionTypes: List[scala.xml.Elem],
+      pshos: List[PotentialSupportHoldOrder],
+      psmos: List[PotentialSupportMoveOrder],
+      pcos: List[PotentialConvoyOrder])(unitId: Int): List[scala.xml.Elem] = {
+    optionTypes.map(optionOrder => optionOrder.text match {
+      case OrderType.SUPPORT_HOLD => 
+          if (!pshos.filter(_.diplomacyUnitID == unitId).isEmpty) {
+	        optionOrder
+	      } else { 
+	        <option disabled="disabled" >{ optionOrder.text }</option> 
+	      }
+      case OrderType.SUPPORT_MOVE =>
+        if (!psmos.filter(_.diplomacyUnitID == unitId).isEmpty) {
+          optionOrder
+        } else {
+          <option disabled="disabled" >{ optionOrder.text }</option>
+        }
+      case OrderType.CONVOY =>
+        if (!pcos.filter(_.diplomacyUnitID == unitId).isEmpty) {
+          optionOrder
+        } else {
+          <option disabled="disabled">{ optionOrder.text }</option>
+        }
+      case _ => optionOrder
+    })
+  }
+    
     
   private def getTableRows(gpe: GamePlayerEmpire,
 		  pshos: List[PotentialSupportHoldOrder],
 		  psmos: List[PotentialSupportMoveOrder],
 		  pcos: List[PotentialConvoyOrder]
-  ): 
-    List[scala.xml.Elem] = {
+  ): List[scala.xml.Elem] = {
     val diplomacyUnits: List[DiplomacyUnit] = 
         DBQueries.
           	getDiplomacyUnitsForGamePlayerEmpire(gpe)
@@ -93,15 +119,18 @@ object GameScreenController extends Controller {
 	val armyOrderTypes = 
 	  sortAndTransformOrderTypes(armyMovementPhaseOrderTypes)
 	  
+	val fleetOrderTypesCurried = 
+	  getAddedDisabledOrderTypes(fleetOrderTypes,
+			  pshos, psmos, pcos)
 	  
-	  
+      
 	val tableRows = (diplomacyUnits zip locations) map (u => {
         <tr id={ u._1.id.toString } class={ DIPLOMACY_UNIT_ROW } >
     	  <td>{u._1.unitType}</td>
     	  <td>{u._2.presentationName}</td>
     	  <td>
     	  	<select class={ UNIT_ORDER }>{u._1.unitType match {
-    	  		case UnitType.ARMY => armyOrderTypes
+    	  		case UnitType.ARMY => getAddedDisabledOrderTypes(u._1.id, armyOrderTypes)
     	  		case UnitType.FLEET => fleetOrderTypes
     	  	}}
     	  	</select>
