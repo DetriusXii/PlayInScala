@@ -27,7 +27,8 @@ object Authentication extends Controller {
   val AUTHENTICATE_URL = controllers.routes.Authentication.authenticate.url
   val PASSWORD = "password"
     
-  val loginForm = Form(Forms.tuple(Security.username -> Forms.nonEmptyText, 
+  val loginForm: Form[(String, String)] = 
+    Form(Forms.tuple(Security.username -> Forms.nonEmptyText, 
       PASSWORD -> Forms.text))
     
   def login = Action {
@@ -44,19 +45,13 @@ object Authentication extends Controller {
   }
   
   def noUserEnteredLogin = Action {
-    Ok(views.html.login(AUTHENTICATE_URL, logiinForm, PLEASE_ENTER_USERNAME))
+    Ok(views.html.login(AUTHENTICATE_URL, loginForm, PLEASE_ENTER_USERNAME))
   }
     
   def authenticate: Action[AnyContent] =
     Action { implicit request => {
-    	val (username, password) = request.body.asFormUrlEncoded match {
-    	  case Some(x: Map[_, Seq[String]]) => {
-    	    val username = x.getOrElse(Security.username, Nil).flatten.mkString("")
-    	    val password = x.getOrElse(PASSWORD, Nil).flatten.mkString("")
-    	    (username, password)
-    	  }
-    	  case None => ("", "")
-    	}
+    	val (username, password) = loginForm.bindFromRequest.get
+    	
 	    if (username.isEmpty) {
 	      Redirect(controllers.routes.Authentication.noUserEnteredLogin)
 	    } else {

@@ -1,4 +1,6 @@
-@(authenticate: String, username: String, password: String, errorMessage: String = "")
+@(authenticate: String, 
+	loginForm: Form[(String, String)],
+	errorMessage: String = "")
 <!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -28,13 +30,11 @@
         </style>
     </head>
     <body>
-        <form method="post" action="@authenticate">
-        	<div class="loginContainer">
-        	Login<br />
-            <label>Username:</label><input type="text" name="@username" /><br />
-            <label>Password:</label><input type="password" name="@password" /><br />
-            <input type="submit" value="Submit" />
-        </form>
+    	@helper.form(action = routes.Authentication.authenticate) {
+    		@helper.inputText(loginForm(play.api.mvc.Security.username))
+    		@helper.inputPassword(loginForm(controllers.Authentication.PASSWORD))
+    		<input type="submit" value="Submit" />
+    	}
         <p>
             @errorMessage
         </p>
