@@ -27,24 +27,24 @@ object Authentication extends Controller {
   val AUTHENTICATE_URL = controllers.routes.Authentication.authenticate.url
   val PASSWORD = "password"
     
-  val loginForm = Form(Forms.tuple(Security.username -> Forms.text, 
+  val loginForm = Form(Forms.tuple(Security.username -> Forms.nonEmptyText, 
       PASSWORD -> Forms.text))
     
   def login = Action {
-	  Ok(views.html.login(AUTHENTICATE_URL, Security.username, PASSWORD))
+	  Ok(views.html.login(AUTHENTICATE_URL, loginForm))
   }
   
   def noUserLogin(username: String) = Action {
-    Ok(views.html.login(AUTHENTICATE_URL, Security.username, PASSWORD, NO_USER_MSG format username))
+    Ok(views.html.login(AUTHENTICATE_URL, loginForm, NO_USER_MSG format username))
   }
   
   def noPasswordLogin(username: String) = Action {
     Ok(views.html.login(AUTHENTICATE_URL, 
-        Security.username, PASSWORD, NO_PASSWORD_MSG format username))
+        loginForm, NO_PASSWORD_MSG format username))
   }
   
   def noUserEnteredLogin = Action {
-    Ok(views.html.login(AUTHENTICATE_URL, Security.username, PASSWORD, PLEASE_ENTER_USERNAME))
+    Ok(views.html.login(AUTHENTICATE_URL, logiinForm, PLEASE_ENTER_USERNAME))
   }
     
   def authenticate: Action[AnyContent] =
