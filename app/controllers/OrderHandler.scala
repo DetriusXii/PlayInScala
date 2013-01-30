@@ -32,9 +32,10 @@ object OrderHandler extends Controller with Kleislis {
     val dpuUnits = 
       DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gpe)
     
-    dpuUnits.foldLeft(kleisliPure[Option, Map[String, Seq[String]]].pure(Unit))((kl, dpu) => {
+    dpuUnits.foldLeft(kleisliPure[Option, Map[String, Seq[String]]].pure(()))((kl, dpu) => {
       kl.flatMap(_ => ask[Option, Map[String, Seq[String]]]).flatMap(r => 
-        liftKleisli(r.get("%s%d" format (ORDER_PREFIX, dpu.id)).map(_.toString))
+        liftKleisli(r.get("%s%d" format (ORDER_PREFIX, dpu.id)).
+            map(_.mkString("")))
       ).flatMap(unitOrder => unitOrder match {
       	case OrderType.HOLD => addHoldOrder(dpu)
       	case OrderType.MOVE | OrderType.SUPPORT_HOLD => addBasicOrder(dpu, unitOrder)
@@ -49,12 +50,12 @@ object OrderHandler extends Controller with Kleislis {
     val postEnvironment = ask[Option, Map[String, Seq[String]]]
     val srcOrderReader = postEnvironment.flatMap(r => 
     	liftKleisli(r.get("%s%d" format (SOURCE_PREFIX, dpu.id)).
-    	    map(_.toString.toInt))).flatMap(srcLocationId => 
+    	    map(_.mkString("").toInt))).flatMap(srcLocationId => 
     	    	liftKleisli(DBQueries.locations.find(_.id == srcLocationId))
     	    )
     val dstOrderReader = postEnvironment.flatMap(r =>
     	liftKleisli(r.get("%s%d" format (TARGET_PREFIX, dpu.id)).
-    	    map(_.toString.toInt))).flatMap(dstLocationId => 
+    	    map(_.mkString("").toInt))).flatMap(dstLocationId => 
     	    	liftKleisli(DBQueries.locations.find(_.id == dstLocationId))
     	    )
     
@@ -65,7 +66,7 @@ object OrderHandler extends Controller with Kleislis {
       orderOption match {
         case Some(_) => UpdateStatements.updateMovementPhaseOrder(
         		dpu, unitOrder, Some(srcLocation), Some(dstLocation))
-        case None => InsertStatements.updateMovementPhaseOrder(
+        case None => InsertStatements.insertMovementPhaseOrder(
         		dpu, unitOrder, Some(srcLocation), Some(dstLocation)
         )
       }
@@ -77,7 +78,7 @@ object OrderHandler extends Controller with Kleislis {
     def postEnvironment = ask[Option, Map[String, Seq[String]]]
     postEnvironment.flatMap(r => {
       val simpleTargetIDOption = 
-        r.get("%s%d" format (SOURCE_PREFIX, dpu.id)).map(_.toString().toInt)
+        r.get("%s%d" format (SOURCE_PREFIX, dpu.id)).map(_.mkString("").toInt)
       liftKleisli(simpleTargetIDOption)
     }).flatMap(simpleTargetID => {
       val locOption = DBQueries.locations.find(_.id == simpleTargetID)
@@ -96,8 +97,8 @@ object OrderHandler extends Controller with Kleislis {
     
   }
   
-  def addHoldOrder(dpu: DiplomacyUnit): Kleisli[Option, 
-    Map[String, Seq[String]], Unit]  = 
+  def addHoldOrder(dpu: DiplomacyUnit): 
+	  Kleisli[Option, Map[String, Seq[String]], Unit]  = 
       kleisliPure[Option, Map[String, Seq[String]]].
       	pure(DBQueries.getOrderForDiplomacyUnit(dpu) match {
 	      case Some(_) => 
@@ -115,13 +116,28 @@ object OrderHandler extends Controller with Kleislis {
       postParametersOption.map((pp: Map[String, Seq[String]]) => {
         val postEnvironment = ask[Option, Map[String, Seq[String]]]
         
-        for (r <- postEnvironment;
-        	gpeID <- liftKleisli(r.get(GameScreenController.GAME_PLAYER_EMPIRE_ID));
-        	gamePlayerEmpire <- liftKleisli(DBQueries.getGamePlayerEmpire(gpeID.toInt));
+        def liftTrueBoolean[R](b: Boolean): Kleisli[Option, R, Boolean] = 
+          if (b) {
+        	  liftKleisli[Option, R, Boolean](Some(true))
+          } else {
+            liftKleisli[Option, R, Boolean](None)
+          }
+        
+        val monadReader = for (r <- postEnvironment;
+        	gpeID <- liftKleisli(
+        	    r.get(GameScreenController.GAME_PLAYER_EMPIRE_ID));
+        	gamePlayerEmpire <- 
+        		liftKleisli(DBQueries.getGamePlayerEmpire(
+        		    gpeID.mkString("").toInt));
         	username <- liftKleisli(request.session.get(Security.username));
-        	_ <- kleisliPure(processRequest(gamePlayerEmpire, username)) if
-        		isGamePlayeEmpireInSession(gamePlayerEmpire, username)
-        ) yield { Unit }
+        	_ <- liftTrueBoolean(
+        			isGamePlayerEmpireInSession(gamePlayerEmpire, 
+        					username));
+        	_ <- processRequest(gamePlayerEmpire, username)
+        		
+        ) yield { () }
+        
+        monadReader(pp)
       })
       
       
