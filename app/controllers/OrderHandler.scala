@@ -33,16 +33,12 @@ object OrderHandler extends Controller with Kleislis {
       DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gpe)
     
     dpuUnits.foldLeft(kleisliPure[Option, Map[String, Seq[String]]].pure(Unit))((kl, dpu) => {
-      kl.flatMap(r => {
-        val unitOrderOption = 
-          r.get("%s%d" format (ORDER_PREFIX, dpu.id)).map(_.toString)
-        unitOrderOption.map(unitOrder => unitOrder match {
-          case OrderType.HOLD => addHoldOrder(dpu)
-          case OrderType.MOVE | OrderType.SUPPORT_HOLD => 
-            addBasicOrder(dpu, unitOrder)
-          case OrderType.SUPPORT_MOVE | OrderType.CONVOY =>
-            addAdvancedOrder(dpu, unitOrder)
-        })
+      kl.flatMap(_ => ask[Option, Map[String, Seq[String]]]).flatMap(r => 
+        liftKleisli(r.get("%s%d" format (ORDER_PREFIX, dpu.id)).map(_.toString))
+      ).flatMap(unitOrder => unitOrder match {
+      	case OrderType.HOLD => addHoldOrder(dpu)
+      	case OrderType.MOVE | OrderType.SUPPORT_HOLD => addBasicOrder(dpu, unitOrder)
+      	case OrderType.SUPPORT_MOVE | OrderType.CONVOY => addAdvancedOrder(dpu, unitOrder)
       })
     })
       
@@ -82,27 +78,28 @@ object OrderHandler extends Controller with Kleislis {
     postEnvironment.flatMap(r => {
       val simpleTargetIDOption = 
         r.get("%s%d" format (SOURCE_PREFIX, dpu.id)).map(_.toString().toInt)
-      liftKleisli(simpleTargetID)
+      liftKleisli(simpleTargetIDOption)
     }).flatMap(simpleTargetID => {
       val locOption = DBQueries.locations.find(_.id == simpleTargetID)
       
       val orderOption = DBQueries.getOrderForDiplomacyUnit(dpu)
       
-      locOption.map(loc => orderOption match {
+      liftKleisli(locOption.map(loc => orderOption match {
         case Some(_) => 
           UpdateStatements.updateMovementPhaseOrder(dpu, unitOrder,
               Some(loc), None)
         case None =>
           InsertStatements.insertMovementPhaseOrder(dpu, unitOrder,
               Some(loc), None)
-      })
+      }))
     })
     
   }
   
   def addHoldOrder(dpu: DiplomacyUnit): Kleisli[Option, 
     Map[String, Seq[String]], Unit]  = 
-      kleisliPure[Option, Map[String, Seq[String]]].pure(DBQueries.getOrderForDiplomacyUnit(dpu) match {
+      kleisliPure[Option, Map[String, Seq[String]]].
+      	pure(DBQueries.getOrderForDiplomacyUnit(dpu) match {
 	      case Some(_) => 
 	        UpdateStatements.updateMovementPhaseOrder(dpu, 
 	            OrderType.HOLD, None, None)
