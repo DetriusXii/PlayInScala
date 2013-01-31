@@ -31,6 +31,8 @@ object OrderHandler extends Controller with Kleislis {
 		  username: String): Kleisli[Option, Map[String, Seq[String]], Unit] = {
     val dpuUnits = 
       DBQueries.getDiplomacyUnitsForGamePlayerEmpire(gpe)
+      
+    println(dpuUnits)
     
     dpuUnits.foldLeft(kleisliPure[Option, Map[String, Seq[String]]].pure(()))((kl, dpu) => {
       kl.flatMap(_ => ask[Option, Map[String, Seq[String]]]).flatMap(r => 
