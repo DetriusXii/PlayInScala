@@ -9,11 +9,11 @@
 @import com.squeryl.jdip.tables.OrderType
 @import com.squeryl.jdip.tables.UnitType
 @import controllers.GameScreenController
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" 
-	"http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
 <html xmlns="http://www.w3.org/1999/xhtml" 
       xmlns:svg="http://www.w3.org/2000/svg" 
-      xmlns:xlink="http://www.w3.org/1999/xlink">
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:jdipns="http://jdip.sourceforge.org/jdipNS">
 <body>
 <div style="margin: 0px auto;">
 	@Html(mapElement)
@@ -92,7 +92,8 @@
 		
 		var optionElements = transformBasicOrdersIntoElements(basicOrdersForId);
 		var selectElement = document.createElement("select");
-		selectElement.setAttribute("name", "@OrderHandler.SOURCE_PREFIX" + id)
+		selectElement.setAttribute("name", 
+				"@MovementPhaseOrderHandler.SOURCE_PREFIX" + id)
 		optionElements.forEach(function(optionElement) {
 			selectElement.appendChild(optionElement);
 		});
@@ -117,7 +118,8 @@
 		
 		var selectElement = document.createElement("select");
 		selectElement.className = "@GameScreenController.SOURCE_UNIT";
-		selectElement.setAttribute("name", "@OrderHandler.SOURCE_PREFIX" + id)
+		selectElement.setAttribute("name", 
+				"@MovementPhaseOrderHandler.SOURCE_PREFIX" + id)
 		sourceOptionElements.forEach(function(optionElement) {
 			selectElement.appendChild(optionElement);
 		});
@@ -133,7 +135,8 @@
 			var targetOptionElements = getTargetOptionElements(targets);
 			var selectElement = document.createElement("select");
 			selectElement.className = "@GameScreenController.TARGET_UNIT";
-			selectElement.setAttribute("name", "@OrderHandler.TARGET_PREFIX" + id)
+			selectElement.setAttribute("name", 
+					"@MovementPhaseOrderHandler.TARGET_PREFIX" + id)
 			targetOptionElements.forEach(function(elem) {
 				selectElement.appendChild(elem);
 			});

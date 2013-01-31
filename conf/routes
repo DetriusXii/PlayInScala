@@ -5,20 +5,20 @@
 # ~~~~
 
 # Home page
-GET     /                                       controllers.Application.index
-GET     /players                                controllers.Application.players
-GET     /games                                  controllers.Application.games
-GET     /login                                  controllers.Authentication.login
-GET     /noUserLogin              	        controllers.Authentication.noUserLogin(username)
-GET     /noPasswordLogin		        controllers.Authentication.noPasswordLogin(username)
-GET	/noUserEnteredLogin			controllers.Authentication.noUserEnteredLogin
-GET     /logout                                 controllers.Authentication.logout
-GET     /gameScreen/:gameName                 	controllers.GameScreenController.gameScreen(gameName)
+GET     /                       controllers.Application.index
+GET     /players                controllers.Application.players
+GET     /games                  controllers.Application.games
+GET     /login                  controllers.Authentication.login
+GET     /noUserLogin            controllers.Authentication.noUserLogin(username)
+GET     /noPasswordLogin	controllers.Authentication.noPasswordLogin(username)
+GET	/noUserEnteredLogin	controllers.Authentication.noUserEnteredLogin
+GET     /logout                 controllers.Authentication.logout
+GET     /gameScreen/:gameName   controllers.GameScreenController.gameScreen(gameName)
 
 # Post
-POST    /authenticate                           controllers.Authentication.authenticate
-POST	/submitMoveOrders			controllers.OrderHandler.submitMoveOrders
+POST    /authenticate           controllers.Authentication.authenticate
+POST	/submitMoveOrders	controllers.MovementPhaseOrderHandler.submitMoveOrders
 
 # Map static resources from the /app/public folder to the /public path
-GET     /public/*file                           controllers.Assets.at(path="/public", file)
+GET     /public/*file           controllers.Assets.at(path="/public", file)
 

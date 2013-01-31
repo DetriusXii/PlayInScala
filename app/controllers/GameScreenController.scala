@@ -128,7 +128,8 @@ object GameScreenController extends Controller {
       
 	val tableRows = (diplomacyUnits zip locations) map (u => {
 	  val orderForUnitName = 
-	    "%s%s" format (OrderHandler.ORDER_PREFIX, u._1.id.toString)
+	    "%s%s" format (MovementPhaseOrderHandler.ORDER_PREFIX, 
+	        u._1.id.toString)
 	  
         <tr id={ u._1.id.toString } class={ DIPLOMACY_UNIT_ROW } >
     	  <td>{u._1.unitType}</td>
@@ -205,7 +206,7 @@ object GameScreenController extends Controller {
             potentialSupportMoveOrders,
             potentialConvoyOrders,
             new String(gameMap.gameMap),
-            OrderHandler.SUBMIT_MOVE_ORDERS_URL,
+            MovementPhaseOrderHandler.SUBMIT_MOVE_ORDERS_URL,
             gpe.id.toString
           )
         ) match {

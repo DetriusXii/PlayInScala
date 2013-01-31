@@ -5,14 +5,14 @@ import scalaz._
 import com.squeryl.jdip.tables._
 import com.squeryl.jdip.queries._
 
-object OrderHandler extends Controller with Kleislis {
+object MovementPhaseOrderHandler extends Controller with Kleislis {
   val GAME_PLAYER_EMPIRE_ID_NAME = "gamePlayerEmpireID"
   val UNIT_NAME = "unit"
   val ORDER_PREFIX = "order-"
   val SOURCE_PREFIX = "source-"
   val TARGET_PREFIX = "target-"
   val SUBMIT_MOVE_ORDERS_URL = 
-    controllers.routes.OrderHandler.submitMoveOrders.url
+    controllers.routes.MovementPhaseOrderHandler.submitMoveOrders.url
     
   def isGamePlayerEmpireInSession(gpe: GamePlayerEmpire, 
       username: String): Boolean = {
