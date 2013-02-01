@@ -1,4 +1,4 @@
-﻿function getLine(srcLocationName, dstLocationName) {
+﻿function getLine(srcLocationName, dstLocationName, strokeWidth) {
 	var provinceElements = 
 		document.getElementsByTagName("jdipns:province");
 	var filterProvinceElements = provinceElements.filter(function(element) {
@@ -22,7 +22,14 @@
 	var srcUnit = srcProvince.getElementsByTagName("jdipns:unit");
 	var dstUnit = dstProvince.getElementsByTagName("jdipns:unit");
 	
-	document.createElement(
+	var svgLine = document.createElement("line");
+	svgLine.setAttribute("x1", srcUnit.getAttribute("x"));
+	svgLine.setAttribute("x2", dstUnit.getAttribute("x"));
+	svgLine.setAttribute("y1", srcUnit.getAttribute("y"));
+	svgLine.setAttribute("y2", dstUnit.getAttribute("y"));
+	svgLine.setAttribute("stroke-width", strokeWidth);
+
+	return svgLine;
 }
 
 function getDistance(srcUnit, dstUnit) {
@@ -30,50 +37,6 @@ function getDistance(srcUnit, dstUnit) {
 	var ycompSquare = Math.pow(dstUnit.y - srcUnit.y, 2);
 
 	return Math.sqrt(xcompSquare + ycompSquare);
-}
-
-function NotOptionException() {}
-
-function Option() {
-	this.map = function(mappingFunction) {
-		if (this instanceof Some) {
-			return new Some(mappingFunction(this.value));
-		} else {
-			return new None;
-		}
-	}
-	
-	this.bind = function(bindingFunction) {
-		if (this instanceof Some) {
-			var newMonad = bindingFunction(this.value);
-			
-			if (newMonad instanceof Option) {
-				return newMonad;
-			} else {
-				throw new NotOptionException();
-			}
-		} else {
-			return new None();
-		}
-	}
-}
-
-Option.prototype = {
-	pure: function(value) {
-		return new Some(value);
-	}
-}
-
-function Some(value) {
-	Option.call(this);
-	this.value = value;
-}
-
-Some.prototype = Object.create(Option.prototype);
-None.prototype = Object.create(Option.prototype);
-
-function None() {
-	Option.call(this);
 }
 
 function getPhiAngle(srcUnit, dstUnit) {
