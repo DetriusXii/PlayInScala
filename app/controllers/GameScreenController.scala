@@ -20,8 +20,8 @@ object GameScreenController extends Controller {
   val DIPLOMACY_UNIT_ID = "diplomacyUnitID"
   val SOURCE_LOCATION_ID = "sourceLocationID"
   val TARGET_LOCATION_ID = "targetLocationID"
-  val SOURCE_PRESENTATION_NAME = "sourcePresentationName"
-  val TARGET_PRESENTATION_NAME = "targetPresentationName"
+  val FIRST_TARGET_SELECT = "firstTargetSelect"
+  val SECOND_TARGET_SELECT = "secondTargetSelect"
   val DIPLOMACY_UNIT_ROW = "diplomacyUnitRow"
   
   private lazy val movementPhaseOrderTypes: List[OrderType] =
@@ -133,7 +133,7 @@ object GameScreenController extends Controller {
 	  
         <tr id={ u._1.id.toString } class={ DIPLOMACY_UNIT_ROW } >
     	  <td>{u._1.unitType}</td>
-    	  <td>{u._2.presentationName}</td>
+    	  <td class={ PRESENTATION_NAME }>{u._2.presentationName}</td>
     	  <td>
     	  	<select class={ UNIT_ORDER } name={ orderForUnitName }>{u._1.unitType match {
     	  		case UnitType.ARMY => armyOrderTypesCurried(u._1.id)

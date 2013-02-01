@@ -1,4 +1,5 @@
-﻿function getLine(srcLocationName, dstLocationName, strokeWidth) {
+﻿function getLine(srcLocationName, 
+	dstLocationName, strokeWidth, classStyleName) {
 	var provinceElements = 
 		document.getElementsByTagName("jdipns:province");
 	var filterProvinceElements = provinceElements.filter(function(element) {
@@ -28,7 +29,8 @@
 	svgLine.setAttribute("y1", srcUnit.getAttribute("y"));
 	svgLine.setAttribute("y2", dstUnit.getAttribute("y"));
 	svgLine.setAttribute("stroke-width", strokeWidth);
-
+	svgLine.className = classStyleName;
+	
 	return svgLine;
 }
 

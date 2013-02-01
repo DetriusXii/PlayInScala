@@ -102,12 +102,24 @@
 			selectElement.appendChild(optionElement);
 		});
 		
+		
 		$("#" + id).before(basicHeading);
 		if (optionElements.length > 0) {
 			$(targetLocationSelector).append(selectElement);
 		} else {
 			$(targetLocationSelector).append(emptyTargetMessage);
 		}
+		
+
+		prepareBasicLine(id);
+	}
+	
+	function prepareBasicLine(id) {
+		var sourceName =
+			$("#" + id + " .@GameScreenController.PRESENTATION_NAME").text();
+		var basicTargetName =
+			$("#" + id + " .@GameScreenController.")
+		
 	}
 	
 	function createAdvancedOrder(id, orders, 
@@ -213,6 +225,8 @@
 			$(targetLocationSelector).empty();
 			$(sourceLocationSelector).empty();
 			removeHeading(id);
+			
+			$(".orderDrawing-" +id).remove();
 			
 			switch($(this).val()) {
 				case "@OrderType.HOLD": {
