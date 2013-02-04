@@ -2,14 +2,16 @@
 	dstLocationName, strokeWidth, classStyleName) {
 	var provinceElements = 
 		document.getElementsByTagName("jdipns:province");
-	var filterProvinceElements = provinceElements.filter(function(element) {
-		return element.name === srcLocationName || 
-			element.name === dstLocationName;
-	});
+	var filterProvinceElements =$(provinceElements).filter(function() {
+		return this.getAttribute("name") === srcLocationName || 
+			this.getAttribute("name") === dstLocationName;
+	}).get();
 	
 	
 	function getProvinceTuple() {
-		if (filterProvinceElements[0].name === srcLocationName) {
+		if (
+			filterProvinceElements[0].getAttribute("name") === 
+				srcLocationName) {
 			return {a: filterProvinceElements[0], b: filterProvinceElements[1]};
 		} else {
 			return {a: filterProvinceElements[1], b: filterProvinceElements[2]};
@@ -45,7 +47,7 @@ function getPhiAngle(srcUnit, dstUnit) {
 	var xDist = dstUnit.x - srcUnit.x;
 	var yDist = dstUnit.y - srcUnit.y;
 	
-	if (xDist == 0.0 and yDist == 0.0) {
+	if (xDist == 0.0 && yDist == 0.0) {
 		return new None();
 	} else {
 		return new Some(Math.atan2(yDist, xDist));

@@ -20,8 +20,9 @@ object GameScreenController extends Controller {
   val DIPLOMACY_UNIT_ID = "diplomacyUnitID"
   val SOURCE_LOCATION_ID = "sourceLocationID"
   val TARGET_LOCATION_ID = "targetLocationID"
+  val SOURCE_PRESENTATION_NAME = "sourcePresentationName"
+  val TARGET_PRESENTATION_NAME = "targetPresentationName"
   val FIRST_TARGET_SELECT = "firstTargetSelect"
-  val SECOND_TARGET_SELECT = "secondTargetSelect"
   val DIPLOMACY_UNIT_ROW = "diplomacyUnitRow"
   
   private lazy val movementPhaseOrderTypes: List[OrderType] =
