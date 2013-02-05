@@ -3,6 +3,7 @@
   potentialSupportHoldOrders: play.api.libs.json.JsValue,
   potentialSupportMoveOrders: play.api.libs.json.JsValue,
   potentialConvoyOrders: play.api.libs.json.JsValue,
+  uniqueProvinceNames: play.api.libs.json.JsValue,
 	mapElement: String,
 	orderHandlerURL: String,
 	gamePlayerEmpireID: String)
@@ -43,6 +44,9 @@
 </script>
 <script type="text/javascript" src="/public/javascripts/order_rendering.js">
 </script>
-<script type="text/javascript" src="/public/javascripts/game_screen.js">
-</script>
+@game_screen_js(potentialMoveOrders: play.api.libs.json.JsValue,
+  potentialSupportHoldOrders: play.api.libs.json.JsValue,
+  potentialSupportMoveOrders: play.api.libs.json.JsValue,
+  potentialConvoyOrders: play.api.libs.json.JsValue,
+  uniqueProvinceNames: play.api.libs.json.JsValue)
 </html>

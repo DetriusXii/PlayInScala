@@ -1,5 +1,25 @@
-﻿function getLine(srcLocationName, 
+﻿function getUsedAlternateName(srcLocationName) {
+	var splitName = srcLocationName.split("-")
+	
+	var provinceName = splitName[0]
+	
+	
+	var upnNames = getUniqueProvinceNames().filter(function(upn) {
+		return upn.provinceName === provinceName
+	}).map(function(upn) {
+		return upn.alternateName;
+	});
+	
+	upnNames.filter(function(alternateName) {
+		return document.get
+	})
+}
+
+function getLine(srcLocationName, 
 	dstLocationName, strokeWidth, classStyleName) {
+	var srcAlternateNames = getAlternateNames(srcLocationName);
+	var dstAlternateNames
+	
 	var provinceElements = 
 		document.getElementsByTagName("jdipns:province");
 	var filterProvinceElements =$(provinceElements).filter(function() {

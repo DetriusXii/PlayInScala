@@ -64,7 +64,6 @@ object GameScreenController extends Controller {
 	  Akka.future {
 	  	DBQueries.getPotentialConvoyOrdersForGamePlayerEmpire(gpe)
   	  }
-  
     
   private def sortAndTransformOrderTypes(orderTypes: List[OrderType]): 
     List[scala.xml.Elem] = orderTypes.sortWith((a, b) => (a.id, b.id) match {
@@ -161,18 +160,10 @@ object GameScreenController extends Controller {
           DBQueries.getGameMapForGameAtCurrentTime(game))
       )
 	  
-      val pmosPromise = Akka.future {
-	    DBQueries.getPotentialMoveOrdersForGamePlayerEmpireAtCurrentTime(gpe)
-	  }
-	  val pshosPromise = Akka.future {
-	    DBQueries.getPotentialSupportHoldOrdersForGamePlayerEmpire(gpe)
-	  }
-	  val psmosPromise = Akka.future {
-	    DBQueries.getPotentialSupportMoveOrdersForGamePlayerEmpire(gpe)
-	  }
-	  val pcosPromise = Akka.future {
-	    DBQueries.getPotentialConvoyOrdersForGamePlayerEmpire(gpe)
-	  }
+      val pmosPromise = getPotentialMoveOrders(gpe)
+	  val pshosPromise = getPotentialSupportHoldOrders(gpe)
+	  val psmosPromise = getPotentialSupportMoveOrders(gpe)
+	  val pcosPromise = getPotentialConvoyOrders(gpe)
       
 	  val pmosJSValuePromise = pmosPromise.map(pmos => 
 	    new PotentialMoveOrderWrites(pmos).getJSValue
@@ -185,6 +176,10 @@ object GameScreenController extends Controller {
 	  val pcosJSValuePromise = pcosPromise.map(pcos => 
 	  	new PotentialConvoyOrderWrites(pcos).getJSValue
 	  )
+	  val upnJSValuePromise = Akka.future {
+	    UniqueProvinceNameWrites.getJSValue
+	  }
+	  
 	  
       val tableRowsPromise = for (pshos <- pshosPromise;
     		  				psmos <- psmosPromise;
@@ -198,6 +193,7 @@ object GameScreenController extends Controller {
     	potentialSupportHoldOrders <- pshosJSValuePromise;
     	potentialSupportMoveOrders <- psmosJSValuePromise;
     	potentialConvoyOrders <- pcosJSValuePromise;
+    	uniqueProvinceNames <- upnJSValuePromise;
     	tableRows <- tableRowsPromise
       ) yield {
         gameMapOption.map((gameMap: GameMap) =>
@@ -206,6 +202,7 @@ object GameScreenController extends Controller {
             potentialSupportHoldOrders,
             potentialSupportMoveOrders,
             potentialConvoyOrders,
+            uniqueProvinceNames,
             new String(gameMap.gameMap),
             MovementPhaseOrderHandler.SUBMIT_MOVE_ORDERS_URL,
             gpe.id.toString
