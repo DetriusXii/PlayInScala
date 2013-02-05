@@ -58,7 +58,8 @@
 		$(".heading." + id).remove();
 	}
 	
-	function createBasicOrder(id, orders, targetLocationSelector, emptyTargetMessage) {
+	function createBasicOrder(id, 
+			orders, targetLocationSelector, emptyTargetMessage) {
 		var basicOrdersForId = getBasicOrdersForId(id, orders);
 		var basicHeading = getBasicHeading(id);
 		
@@ -94,7 +95,13 @@
 			}).text();
 		
 		var line = 
-			getLine(sourceName, basicTargetName, 5, "defaultorder unitfrance");
+			getLine(sourceName, basicTargetName, 5, "unitfrance");
+		line.map(function(line) {
+			$("#OrderLayer").append(line);
+			
+			return null;
+		});
+		
 		
 		return 0;
 	}
@@ -163,12 +170,14 @@
 		}, []);
 	}
 	
-	function getSourceOptionElements(id, advancedOrdersForSource, allOrdersForId) {
+	function getSourceOptionElements(id, 
+			advancedOrdersForSource, allOrdersForId) {
 		return advancedOrdersForSource.map(function(order) {
 			var optionElement = document.createElement("option");
 			optionElement.textContent = 
 				order.@GameScreenController.SOURCE_PRESENTATION_NAME;
-			optionElement.setAttribute("value", order.@GameScreenController.SOURCE_LOCATION_ID);
+			optionElement.setAttribute("value", 
+					order.@GameScreenController.SOURCE_LOCATION_ID);
 			
 			return optionElement;
 		});
@@ -177,8 +186,10 @@
 	function getTargetOptionElements(targetList) {
 		return targetList.map(function(target) {
 			var optionElement = document.createElement("option");
-			optionElement.textContent = target.@GameScreenController.TARGET_PRESENTATION_NAME;
-			optionElement.setAttribute("value", target.@GameScreenController.TARGET_LOCATION_ID);
+			optionElement.textContent = 
+				target.@GameScreenController.TARGET_PRESENTATION_NAME;
+			optionElement.setAttribute("value", 
+					target.@GameScreenController.TARGET_LOCATION_ID);
 		
 			return optionElement;
 		})

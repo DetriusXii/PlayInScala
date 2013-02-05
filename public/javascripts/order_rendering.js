@@ -1,8 +1,6 @@
 ﻿function getUsedAlternateName(srcLocationName) {
 	var splitName = srcLocationName.split("-")
-	
 	var provinceName = splitName[0]
-	
 	
 	var upnNames = getUniqueProvinceNames().filter(function(upn) {
 		return upn.provinceName === provinceName
@@ -10,50 +8,72 @@
 		return upn.alternateName;
 	});
 	
-	upnNames.filter(function(alternateName) {
-		return document.get
-	})
+	var provinceElements = 
+		getArrayFromNodeList(document.getElementsByTagName("jdipns:province"));
+	
+	
+	var usedUpnNames = upnNames.filter(function(alternateName) {
+		return provinceElements.some(function(elem) {
+			return elem.getAttribute("name") === alternateName;
+		});
+	});
+	
+	if (usedUpnNames.length > 0) {
+		return new Some(usedUpnNames[0]);
+	} else {
+		return new None;
+	}
+}
+
+function getArrayFromNodeList(nodeList) {
+	var array = [];
+	
+	for (var i = 0; i < nodeList.length; i++) array.push(nodeList[i]);
+	
+	return array;
+}
+
+function getProvinceTuple(provinceElems, srcName) {
+	if (provinceElems[0].getAttribute("name") === srcName) {
+		return {a: provinceElems[0], b: provinceElems[1]};
+	} else {
+		return {a: provinceElems[1], b: provinceElems[0]};
+	}
 }
 
 function getLine(srcLocationName, 
 	dstLocationName, strokeWidth, classStyleName) {
-	var srcAlternateNames = getAlternateNames(srcLocationName);
-	var dstAlternateNames
+	var srcAlternateName = getUsedAlternateName(srcLocationName);
+	var dstAlternateName = getUsedAlternateName(dstLocationName)
 	
-	var provinceElements = 
-		document.getElementsByTagName("jdipns:province");
-	var filterProvinceElements =$(provinceElements).filter(function() {
-		return this.getAttribute("name") === srcLocationName || 
-			this.getAttribute("name") === dstLocationName;
-	}).get();
-	
-	
-	function getProvinceTuple() {
-		if (
-			filterProvinceElements[0].getAttribute("name") === 
-				srcLocationName) {
-			return {a: filterProvinceElements[0], b: filterProvinceElements[1]};
-		} else {
-			return {a: filterProvinceElements[1], b: filterProvinceElements[2]};
-		}
-	}
-	
-	var tuple = getProvinceTuple();
-	var srcProvince = tuple.a;
-	var dstProvince = tuple.b;
-	
-	var srcUnit = srcProvince.getElementsByTagName("jdipns:unit");
-	var dstUnit = dstProvince.getElementsByTagName("jdipns:unit");
-	
-	var svgLine = document.createElement("line");
-	svgLine.setAttribute("x1", srcUnit.getAttribute("x"));
-	svgLine.setAttribute("x2", dstUnit.getAttribute("x"));
-	svgLine.setAttribute("y1", srcUnit.getAttribute("y"));
-	svgLine.setAttribute("y2", dstUnit.getAttribute("y"));
-	svgLine.setAttribute("stroke-width", strokeWidth);
-	svgLine.className = classStyleName;
-	
-	return svgLine;
+	return srcAlternateName.bind(function(srcName) {
+		return dstAlternateName.map(function(dstName) {
+			var provinceElements = 
+				document.getElementsByTagName("jdipns:province");
+			var filterProvinceElements = $(provinceElements).filter(function() {
+				return this.getAttribute("name") === srcName || 
+						this.getAttribute("name") === dstName;
+			}).get();
+			
+			var tuple = getProvinceTuple(filterProvinceElements, srcName);
+			var srcProvince = tuple.a;
+			var dstProvince = tuple.b;
+			
+			var srcUnit = srcProvince.getElementsByTagName("jdipns:unit")[0];
+			var dstUnit = dstProvince.getElementsByTagName("jdipns:unit")[0];
+			
+			var svgLine = document.createElement("line");
+			svgLine.setAttribute("x1", srcUnit.getAttribute("x"));
+			svgLine.setAttribute("x2", dstUnit.getAttribute("x"));
+			svgLine.setAttribute("y1", srcUnit.getAttribute("y"));
+			svgLine.setAttribute("y2", dstUnit.getAttribute("y"));
+			svgLine.setAttribute("stroke-width", strokeWidth);
+			svgLine.className = classStyleName;
+			
+			svgLine.setAttribute("style", "stroke-width: 6");
+			return svgLine;
+		});
+	});
 }
 
 function getDistance(srcUnit, dstUnit) {
