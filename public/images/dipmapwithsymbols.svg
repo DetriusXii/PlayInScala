@@ -796,6 +796,14 @@
 		.unitrussia 	{fill:white;		fill-opacity:1.0}
 		.unitturkey 	{fill:yellow;		fill-opacity:0.85}
 		
+		.strokeaustria	{stroke:red}
+		.strokeengland 	{stroke:blue}
+		.strokefrance 	{stroke:deepskyblue}
+		.strokegermany 	{stroke:dimgray}
+		.strokeitaly 		{stroke:olive}
+		.strokerussia 	{stroke:white}
+		.stroketurkey 	{stroke:yellow}
+		
 		/* supply center styles */
 		
 		.scnopower	{fill:black;stroke:black;}

@@ -42,9 +42,10 @@ function getProvinceTuple(provinceElems, srcName) {
 }
 
 function getLine(srcLocationName, 
-	dstLocationName, strokeWidth, classStyleName) {
+	dstLocationName, strokeWidth, empireStrokeStyleName) {
 	var srcAlternateName = getUsedAlternateName(srcLocationName);
-	var dstAlternateName = getUsedAlternateName(dstLocationName)
+	var dstAlternateName = getUsedAlternateName(dstLocationName);
+	var svgNamespace = "http://www.w3.org/2000/svg";
 	
 	return srcAlternateName.bind(function(srcName) {
 		return dstAlternateName.map(function(dstName) {
@@ -62,16 +63,35 @@ function getLine(srcLocationName,
 			var srcUnit = srcProvince.getElementsByTagName("jdipns:unit")[0];
 			var dstUnit = dstProvince.getElementsByTagName("jdipns:unit")[0];
 			
-			var svgLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-			svgLine.setAttribute("x1", srcUnit.getAttribute("x"));
-			svgLine.setAttribute("x2", dstUnit.getAttribute("x"));
-			svgLine.setAttribute("y1", srcUnit.getAttribute("y"));
-			svgLine.setAttribute("y2", dstUnit.getAttribute("y"));
-			svgLine.setAttribute("stroke-width", strokeWidth);
-			svgLine.className = classStyleName;
+			var g = document.createElementNS(svgNamespace, "g");
 			
-			svgLine.setAttribute("style", "stroke-width: 6; fill: deepskyblue");
-			return svgLine;
+			var x1 = srcUnit.getAttribute("x");
+			var x2 = dstUnit.getAttribute("x");
+			var y1 = srcUnit.getAttribute("y");
+			var y2 = dstUnit.getAttribute("y");
+			
+			var shadowLine = document.createElementNS(svgNamespace, "line");
+			shadowLine.setAttribute("x1", x1);
+			shadowLine.setAttribute("x2", x2);
+			shadowLine.setAttribute("y1", y1);
+			shadowLine.setAttribute("y2", y2);
+			shadowLine.setAttribute("class", "shadoworder");
+			
+			
+			var svgLine = 
+				document.createElementNS(svgNamespace, "line");
+			svgLine.setAttribute("x1", x1);
+			svgLine.setAttribute("x2", x2);
+			svgLine.setAttribute("y1", y1);
+			svgLine.setAttribute("y2", y2);
+			svgLine.setAttribute("class", 
+					empireStrokeStyleName + " defaultorder");
+			svgLine.setAttribute("marker-end", "url(#arrow)");
+			
+			g.appendChild(shadowLine);
+			g.appendChild(svgLine);
+			
+			return g;
 		});
 	});
 }
