@@ -62,7 +62,7 @@ function getLine(srcLocationName,
 			var srcUnit = srcProvince.getElementsByTagName("jdipns:unit")[0];
 			var dstUnit = dstProvince.getElementsByTagName("jdipns:unit")[0];
 			
-			var svgLine = document.createElement("line");
+			var svgLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
 			svgLine.setAttribute("x1", srcUnit.getAttribute("x"));
 			svgLine.setAttribute("x2", dstUnit.getAttribute("x"));
 			svgLine.setAttribute("y1", srcUnit.getAttribute("y"));
@@ -70,7 +70,7 @@ function getLine(srcLocationName,
 			svgLine.setAttribute("stroke-width", strokeWidth);
 			svgLine.className = classStyleName;
 			
-			svgLine.setAttribute("style", "stroke-width: 6");
+			svgLine.setAttribute("style", "stroke-width: 6; fill: deepskyblue");
 			return svgLine;
 		});
 	});

@@ -97,7 +97,10 @@
 		var line = 
 			getLine(sourceName, basicTargetName, 5, "unitfrance");
 		line.map(function(line) {
-			$("#OrderLayer").append(line);
+			var svgElement = document.
+				getElementsByTagName("svg")[0]
+			svgElement.getElementById("OrderLayer").appendChild(line);
+			svgElement.forceRedraw();
 			
 			return null;
 		});
