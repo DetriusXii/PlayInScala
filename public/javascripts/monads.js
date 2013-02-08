@@ -1,3 +1,17 @@
+// degate Function is arity two delegateFunction(elem, index)
+Array.prototype.find = function(delegateFunction) {
+	
+	for (var i = 0; i < this.length; i++) {
+		var elem = this[i];
+		
+		if (delegateFunction(elem, i)) {
+			return new Some(elem);
+		}
+	}
+	
+	return new None();
+}
+
 function NotOptionException() {}
 
 function Option() {
