@@ -98,7 +98,9 @@
 			getLine(sourceName, basicTargetName, 5, "strokefrance");
 		line.map(function(line) {
 			var svgElement = document.
-				getElementsByTagName("svg")[0]
+				getElementsByTagName("svg")[0];
+			svgElement.setAttribute("class", 
+					"@MovementPhaseOrderHandler.SVG_ORDER_PREFIX");
 			svgElement.getElementById("OrderLayer").appendChild(line);
 			svgElement.forceRedraw();
 			

@@ -9,6 +9,7 @@ object MovementPhaseOrderHandler extends Controller with Kleislis {
   val GAME_PLAYER_EMPIRE_ID_NAME = "gamePlayerEmpireID"
   val UNIT_NAME = "unit"
   val ORDER_PREFIX = "order-"
+  val SVG_ORDER_PREFIX = "svg_order-"
   val SOURCE_PREFIX = "source-"
   val TARGET_PREFIX = "target-"
   val SUBMIT_MOVE_ORDERS_URL = 
