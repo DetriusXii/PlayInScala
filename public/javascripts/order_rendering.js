@@ -1,5 +1,14 @@
 ﻿var svgNamespace = "http://www.w3.org/2000/svg";
 
+function OrderRenderer(radius) {
+	this.radius = radius;
+}
+
+var ORDER_RENDERER = new OrderRenderer(30, svgNamespace);
+
+OrderRenderer.prototype.svgNamespace = svgNamespace;
+
+
 function getUsedAlternateName(srcLocationName) {
 	var splitName = srcLocationName.split("-")
 	var provinceName = splitName[0]
@@ -414,7 +423,7 @@ function getSupportMoveOrderOption(srcLocationName,
 			return targetAlternateNameOption.bind(function(targetName) {
 				var provinceElements = 
 					getArrayFromNodeList(
-							document.getElementsByTagName("jdipns:province"))
+							document.getElementsByTagName("jdipns:province"));
 				
 				var filteredProvinceElements = 
 					provinceElements.filter(function(provElem) {
@@ -425,6 +434,7 @@ function getSupportMoveOrderOption(srcLocationName,
 				var tupleOption =
 					getProvinceTripleTupleOption(filteredProvinceElements,
 						srcName, supportName, targetName);
+				
 				
 				return tupleOption.map(function(tuple) {
 					var srcProv = tuple.a;
@@ -472,6 +482,126 @@ function getSupportMoveOrderOption(srcLocationName,
 					
 					return g;
 				});
+			});
+		});
+	});
+}
+
+var getPointFromUnit(unit) {
+	var x = parseInt(unit.getAttribute("x"));
+	var y = parseInt(unit.getAttribute("y"));
+	
+	return new Point(x, y);
+}
+
+function getConvoyOrderGraphic(srcUnit, 
+		sptUnit, tgtUnit, empireStrokeStyleName, radius) {
+	var TRIANGLE_NUM_VERTICES = 3;
+	var STARTING_PHASE = Math.PI/2;
+	
+	var srcPoint = getPointFromUnit(srcUnit);
+	var sptPoint = getPointFromUnit(sptUnit);
+	var tgtPoint = getPointFromUnit(tgtUnit);
+	
+	var pointList =
+		getPointListAroundCentreForNVertexPolygon(sptPoint, 
+			ORDER_RENDERER.radius, TRIANGLE_NUM_VERTICES, STARTING_PHASE);
+	
+	var iPointOption = getIntersectionPointBetweenLineAndPolygon(srcPoint, 
+			sptPoint, ORDER_RENDERER.radius, TRIANGLE_NUM_VERTICES, 
+			STARTING_PHASE);
+	
+	var farthestPoint = 
+		pointList.reduce(function(previousPoint, currentPoint) {
+			var pRadius = getDistance(previousPoint, tgtPoint);
+			var cRadius = getDistance(currentPoint, tgtPoint);
+			
+			if (pRadius < cRadius) {
+				return currentPoint;
+			} else {
+				return previousPoint;
+			}
+		});
+	
+	return iPointOption.map(function(iPoint) {
+		var g = document.createElementNS(svgNamespace, "g");
+		
+		var srcToSptShadowLine = document.createElementNS(svgNamespace, "line");
+		var srcToSptColoredLine =
+			document.createElementNS(svgNamespace, "line");
+		
+		setLinePointAttributes(srcToSptShadowLine, srcPoint, iPoint);
+		srcToSptShadowLine.setAttribute("class", "shadowdash");
+		setLinePointAttributes(srcToSptColoredLine, srcPoint, iPoint);
+		srcToSptColoredLine.setAttribute("class", 
+				empireStrokeStyleName + " convoyorder");
+		
+		var pointsAttribute = points.map(function(point) {
+			return point.x + "," + point.y; 
+		}).join(" ");
+		
+		var shadowTriangle = document.createElementNS(svgNamespace, "polygon");
+		var coloredTriangle = document.createElementNS(svgNamespace, "polygon");
+		
+		shadowTriangle.setAttribute("points", pointsAttribute);
+		coloredTriangle.setAttribute("points", pointsAttribute);
+		
+		var sptToTgtShadowLine = document.createElementNS(svgNamespace, "line");
+		var sptToTgtColoredLine =
+			document.createElementNS(svgNamespace, "line");
+		
+		setLinePointAttributes(sptToTgtShadowLine, farthestPoint, iPoint);
+		
+		
+	});
+}
+
+function setLinePointAttributes(lineElement, srcPoint, dstPoint) {
+	lineElement.setAttribute("x1", srcPoint.x);
+	lineElement.setAttribute("x2", dstPoint.x);
+	lineElement.setAttribute("y1", srcPoint.y);
+	lineElement.setAttribute("y2", dstPoint.y);
+}
+
+function getConvoyOrderOption(srcLocationName, 
+		sptLocationName, tgtLocationName, empireStrokeStyleName) {
+	var srcAlternateNameOption = getUsedAlternateName(srcLocationName);
+	var sptAlternateNameOption = getUsedAlternateName(sptLocationName);
+	var tgtAlternateNameOption = getUsedAlternateName(tgtLocationName);
+	
+	return srcAlternateNameOption.bind(function(srcName) {
+		return sptAlternateNameOption.bind(function(sptName) {
+			return tgtAlternateNameOption.bind(function(tgtName) {
+				var provinceElements = 
+					getArrayFromNodeList(
+							document.getElementsByTagName("jdipns:province"));
+				
+				var filteredProvinceElements = 
+					provinceElements.filter(function(prov) {
+						return prov.getAttribute("name") === srcName ||
+							prov.getAttribute("name") === sptName ||
+							prov.getAttribute("name") === tgtName;
+					});
+				
+				var tupleOption = 
+					getProvinceTripleTupleOption(
+							filteredProvinceElements, 
+							srcName, sptName, tgtName);
+				return tupleOption.bind(function(tuple) {
+					var srcProv = tuple.a;
+					var sptProv = tuple.b;
+					var tgtProv = tuple.c;
+					
+					var srcUnit = 
+						srcProv.getElementsByTagName("jdipns:unit")[0];
+					var sptUnit = 
+						sptProv.getElementsByTagName("jdipns:unit")[0];
+					var tgtUnit =
+						tgtProv.getElementsByTagName("jdipns:unit")[0];
+					
+					var srcPoint = new Point()
+				});
+				
 			});
 		});
 	});

@@ -73,6 +73,12 @@
 			selectElement.appendChild(optionElement);
 		});
 		
+		$(selectElement).change(function() {
+			var value = this.value;
+			
+			$(".orderDrawing-" +id).remove();
+			prepareBasicGraphic(id, orderType);
+		});
 		
 		$("#" + id).before(basicHeading);
 		if (optionElements.length > 0) {
@@ -85,7 +91,29 @@
 		
 	}
 	
-	
+	function prepareAdvancedGraphic(id, orderType) {
+		var sourceName = $("#" + id + 
+				" .@GameScreenController.PRESENTATION_NAME").text();
+		var supportName = 
+			$("#" + id + " .@GameScreenController.FIRST_TARGET_SELECT").
+			map(function(idx, selectElement) {
+				return selectElement.options[selectElement.selectedIndex];
+			}).text();
+		var targetName =
+			$("#" + id) + " .@GameScreenController.SECOND_TARGET_SELECT").
+			map(function(idx, selectElement) {
+				return selectElement.options[selectElement.selectedIndex];
+			}).text();
+			
+		var graphicOption = null;
+		switch(orderType) {
+		case "@OrderType.SUPPORT_MOVE": {
+			graphicOption = getSupportMoveOrderOption(sourceName, 
+					supportName, targetName, "strokefrance");
+		}
+		case "@OrderType.CONVOY": 
+		}
+	}
 	
 	function prepareBasicGraphic(id, orderType) {
 		var sourceName =
