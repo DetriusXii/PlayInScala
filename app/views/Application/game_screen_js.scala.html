@@ -59,7 +59,7 @@
 	}
 	
 	function createBasicOrder(id, 
-			orders, targetLocationSelector, emptyTargetMessage) {
+			orders, targetLocationSelector, orderType) {
 		var basicOrdersForId = getBasicOrdersForId(id, orders);
 		var basicHeading = getBasicHeading(id);
 		
@@ -81,11 +81,13 @@
 			$(targetLocationSelector).append(emptyTargetMessage);
 		}
 		
-	
-		prepareBasicLine(id);
+		prepareBasicGraphic(id, orderType);
+		
 	}
 	
-	function prepareBasicLine(id) {
+	
+	
+	function prepareBasicGraphic(id, orderType) {
 		var sourceName =
 			$("#" + id + " .@GameScreenController.PRESENTATION_NAME").text();
 		var basicTargetName =
@@ -94,14 +96,26 @@
 				return selectElement.options[selectElement.selectedIndex];
 			}).text();
 		
-		var line = 
-			getLine(sourceName, basicTargetName, 5, "strokefrance");
-		line.map(function(line) {
-			var svgElement = document.
-				getElementsByTagName("svg")[0];
-			svgElement.setAttribute("class", 
-					"@MovementPhaseOrderHandler.SVG_ORDER_PREFIX");
-			svgElement.getElementById("OrderLayer").appendChild(line);
+		var graphicOption = null;
+		
+		switch(orderType) {
+		case "@OrderType.MOVE": {
+			graphicOption = 
+				getLineOption(sourceName, basicTargetName, "strokefrance");
+			break;
+		}
+		case "@OrderType.SUPPORT_HOLD": {
+			graphicOption =
+				getSupportOrderOption(sourceName, 
+						basicTargetName, "strokefrance");
+			break;
+		}
+		}
+		
+		graphicOption.map(function(graphic) {
+			var svgElement = document.getElementsByTagName("svg")[0];
+			graphic.setAttribute("class", "orderDrawing-" + id);
+			svgElement.getElementById("OrderLayer").appendChild(graphic);
 			svgElement.forceRedraw();
 			
 			return null;
@@ -229,14 +243,17 @@
 					break;
 				}
 				case "@OrderType.MOVE": {
-					createBasicOrder(id, getPotentialMoveOrders(), targetLocationSelector);
+					createBasicOrder(id, 
+							getPotentialMoveOrders(), 
+							targetLocationSelector,
+							$(this).val());
 					break;
 				}
 				case "@OrderType.SUPPORT_HOLD": {
 					createBasicOrder(id, 
 						getPotentialSupportHoldOrders(), 
 						targetLocationSelector,
-						"No support holds for this unit");
+						$(this).val());
 					break;
 				}
 				case "@OrderType.SUPPORT_MOVE": {
