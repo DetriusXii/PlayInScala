@@ -100,7 +100,7 @@
 				return selectElement.options[selectElement.selectedIndex];
 			}).text();
 		var targetName =
-			$("#" + id) + " .@GameScreenController.SECOND_TARGET_SELECT").
+			$("#" + id + " .@GameScreenController.SECOND_TARGET_SELECT").
 			map(function(idx, selectElement) {
 				return selectElement.options[selectElement.selectedIndex];
 			}).text();
@@ -112,7 +112,19 @@
 					supportName, targetName, "strokefrance");
 		}
 		case "@OrderType.CONVOY": 
+			graphicOption = getConvoyOrderOption(sourceName, 
+					supportName, 
+					targetName, "strokefrance");
 		}
+		
+		graphicOption.map(function(graphic) {
+			var svgElement = document.getElementsByTagName("svg")[0];
+			graphic.setAttribute("class", "orderDrawing-" + id);
+			svgElement.getElementById("OrderLayer").appendChild(graphic);
+			svgElement.forceRedraw();
+			
+			return null;
+		});
 	}
 	
 	function prepareBasicGraphic(id, orderType) {
@@ -148,9 +160,6 @@
 			
 			return null;
 		});
-		
-		
-		return 0;
 	}
 	
 	function createAdvancedOrder(id, orders, 

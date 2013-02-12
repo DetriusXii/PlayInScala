@@ -487,7 +487,7 @@ function getSupportMoveOrderOption(srcLocationName,
 	});
 }
 
-var getPointFromUnit(unit) {
+function getPointFromUnit(unit) {
 	var x = parseInt(unit.getAttribute("x"));
 	var y = parseInt(unit.getAttribute("y"));
 	
@@ -505,10 +505,10 @@ function getConvoyOrderGraphic(srcUnit,
 	
 	var pointList =
 		getPointListAroundCentreForNVertexPolygon(sptPoint, 
-			ORDER_RENDERER.radius, TRIANGLE_NUM_VERTICES, STARTING_PHASE);
+			radius, TRIANGLE_NUM_VERTICES, STARTING_PHASE);
 	
 	var iPointOption = getIntersectionPointBetweenLineAndPolygon(srcPoint, 
-			sptPoint, ORDER_RENDERER.radius, TRIANGLE_NUM_VERTICES, 
+			sptPoint, radius, TRIANGLE_NUM_VERTICES, 
 			STARTING_PHASE);
 	
 	var farthestPoint = 
@@ -550,9 +550,21 @@ function getConvoyOrderGraphic(srcUnit,
 		var sptToTgtColoredLine =
 			document.createElementNS(svgNamespace, "line");
 		
-		setLinePointAttributes(sptToTgtShadowLine, farthestPoint, iPoint);
+		setLinePointAttributes(sptToTgtShadowLine, farthestPoint, tgtPoint);
+		sptToTgtShadowLine.setAttribute("class", "shadowdash");
+		setLinePointAttributes(sptToTgtColoredLine, farthestPoint, tgtPoint);
+		sptToTgtColoredLine.setAttribute("class", empireStyleStrokeName + 
+				" convoyorder");
+		sptToTgtColoredLine.setAttribute("marker-end", "url(#arrow)");
 		
+		g.appendChild(srcToSptShadowLine);
+		g.appendChild(shadowTriangle);
+		g.appendChild(sptToTgtShadowLine);
+		g.appendChild(srcToSptColoredLine);
+		g.appendChild(coloredTriangle);
+		g.appendChild(sptToTgtColoredLine);
 		
+		return g;
 	});
 }
 
@@ -599,7 +611,9 @@ function getConvoyOrderOption(srcLocationName,
 					var tgtUnit =
 						tgtProv.getElementsByTagName("jdipns:unit")[0];
 					
-					var srcPoint = new Point()
+					return getConvoyOrderGraphic(srcUnit, 
+							sptUnit, tgtUnit, empireStrokeStyleName, 
+							ORDER_RENDERER.radius);
 				});
 				
 			});
