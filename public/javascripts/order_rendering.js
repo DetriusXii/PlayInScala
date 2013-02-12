@@ -287,7 +287,7 @@ function getIntersectionBetweenLines(s1, s2, d1, d2) {
 							var bDiff = bInterceptS - bInterceptD;
 							var slopeDiff = slopeD - slopeS;
 							var xIntersect = bDiff / slopeDiff;
-							var yIntersection = 
+							var yIntersect = 
 								slopeS*xIntersect + bInterceptS;
 							return new 
 								Some(new Point(xIntersect, yIntersect));
@@ -404,7 +404,7 @@ function getProvinceTripleTupleOption(filteredProvinceElements,
 	
 	return srcProvinceOption.bind(function(srcProv) {
 		return sptProvinceOption.bind(function(sptProv) {
-			return tgtProvinceOption.map(function(tgtProvince) {
+			return tgtProvinceOption.map(function(tgtProv) {
 				return {a: srcProv, b: sptProv, c: tgtProv};
 			});
 		});
@@ -448,12 +448,10 @@ function getSupportMoveOrderOption(srcLocationName,
 					var tgtUnit =
 						tgtProv.getElementsByTagName("jdipns:unit")[0];
 					
-					var srxX = srcUnit.getAttribute("x");
-					var srcY = srcUnit.getAttribute("y");
-					var sptX = sptUnit.getAttribute("x");
-					var sptY = sptUnit.getAttribute("y");
-					var tgtX = tgtUnit.getAttribute("x");
-					var tgtY = tgtUnit.getAttribute("y");
+					var srcPoint = getPointFromUnit(srcUnit);
+					var sptPoint = getPointFromUnit(sptUnit);
+					var tgtPoint = getPointFromUnit(tgtUnit);
+					
 					
 					var g = document.createElementNS(svgNamespace, "g");
 					
@@ -462,15 +460,15 @@ function getSupportMoveOrderOption(srcLocationName,
 					var coloredPath =
 						document.createElementNS(svgNamespace, "path");
 					
-					var srcCoordinate = srcX + "," + srcY;
-					var sptCoordinate = sptX + "," + sptY;
-					var tgtCoordinate = tgtX + "," + tgtY;
+					var srcCoordinate = srcPoint.x + "," + srcPoint.y;
+					var sptCoordinate = sptPoint.x + "," + sptPoint.y;
+					var tgtCoordinate = tgtPoint.x + "," + tgtPoint.y;
 					var d = "M " + srcCoordinate + " C " +
 						sptCoordinate + " " + sptCoordinate + " " + 
 						tgtCoordinate;
 					
 					shadowPath.setAttribute("d", d);
-					shadowPath.setAttribute("class", supportorder);
+					shadowPath.setAttribute("class", "shadowdash");
 					
 					coloredPath.setAttribute("d", d);
 					coloredPath.setAttribute("class", empireStrokeStyleName +
@@ -536,7 +534,7 @@ function getConvoyOrderGraphic(srcUnit,
 		srcToSptColoredLine.setAttribute("class", 
 				empireStrokeStyleName + " convoyorder");
 		
-		var pointsAttribute = points.map(function(point) {
+		var pointsAttribute = pointList.map(function(point) {
 			return point.x + "," + point.y; 
 		}).join(" ");
 		
@@ -553,7 +551,7 @@ function getConvoyOrderGraphic(srcUnit,
 		setLinePointAttributes(sptToTgtShadowLine, farthestPoint, tgtPoint);
 		sptToTgtShadowLine.setAttribute("class", "shadowdash");
 		setLinePointAttributes(sptToTgtColoredLine, farthestPoint, tgtPoint);
-		sptToTgtColoredLine.setAttribute("class", empireStyleStrokeName + 
+		sptToTgtColoredLine.setAttribute("class", empireStrokeStyleName + 
 				" convoyorder");
 		sptToTgtColoredLine.setAttribute("marker-end", "url(#arrow)");
 		

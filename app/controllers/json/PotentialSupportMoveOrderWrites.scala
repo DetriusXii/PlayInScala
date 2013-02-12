@@ -28,8 +28,8 @@ class PotentialSupportMoveOrderWrites(psmos: List[PotentialSupportMoveOrder]) ex
     JsValue =
       Json.toJson(Map(
         GameScreenController.DIPLOMACY_UNIT_ID -> u._1.diplomacyUnitID.toString,
-        GameScreenController.SOURCE_LOCATION_ID -> u._2.id.toString,
-        GameScreenController.SOURCE_PRESENTATION_NAME -> u._2.presentationName,
+        GameScreenController.SUPPORT_LOCATION_ID -> u._2.id.toString,
+        GameScreenController.SUPPORT_PRESENTATION_NAME -> u._2.presentationName,
         GameScreenController.TARGET_LOCATION_ID -> u._3.id.toString,
         GameScreenController.TARGET_PRESENTATION_NAME -> u._3.presentationName
       ))

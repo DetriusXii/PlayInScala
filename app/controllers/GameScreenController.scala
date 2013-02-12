@@ -9,21 +9,19 @@ import play.api.Play._
 import controllers.json._
 
 object GameScreenController extends Controller {
-  val TARGET_LOCATION = "targetLocation"
-  val SOURCE_LOCATION = "sourceLocation"
-  val SOURCE_UNIT = "sourceUnit"
-  val TARGET_UNIT = "targetUnit"
+  val FIRST_LOCATION = "firstLocation"
+  val SECOND_LOCATION = "secondLocation"
   val UNIT_ORDER = "unitOrder"
   val LOCATION_ID = "locationID"
   val GAME_PLAYER_EMPIRE_ID = "gamePlayerEmpireID"
   val PRESENTATION_NAME = "presentationName"
   val DIPLOMACY_UNIT_ID = "diplomacyUnitID"
-  val SOURCE_LOCATION_ID = "sourceLocationID"
+  val SUPPORT_LOCATION_ID = "supportLocationID"
   val TARGET_LOCATION_ID = "targetLocationID"
-  val SOURCE_PRESENTATION_NAME = "sourcePresentationName"
+  val SUPPORT_PRESENTATION_NAME = "supportPresentationName"
   val TARGET_PRESENTATION_NAME = "targetPresentationName"
-  val FIRST_TARGET_SELECT = "firstTargetSelect"
-  val SECOND_TARGET_SELECT = "secondTargetSelect"
+  val SUPPORT_SELECT = "supportSelect"
+  val TARGET_SELECT = "targetSelect"
   val DIPLOMACY_UNIT_ROW = "diplomacyUnitRow"
   
   private lazy val movementPhaseOrderTypes: List[OrderType] =
@@ -142,8 +140,8 @@ object GameScreenController extends Controller {
     	  	}}
     	  	</select>
     	  </td>
-    	  <td class={ TARGET_LOCATION }></td>
-    	  <td class={ SOURCE_LOCATION }></td>
+    	  <td class={ FIRST_LOCATION }></td>
+    	  <td class={ SECOND_LOCATION }></td>
     	</tr>
       })
       

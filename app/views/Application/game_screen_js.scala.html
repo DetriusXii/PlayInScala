@@ -68,7 +68,7 @@
 		document
 		selectElement.setAttribute("name", 
 				"@MovementPhaseOrderHandler.SOURCE_PREFIX" + id);
-		selectElement.className = "@GameScreenController.FIRST_TARGET_SELECT";
+		selectElement.className = "@GameScreenController.TARGET_SELECT";
 		optionElements.forEach(function(optionElement) {
 			selectElement.appendChild(optionElement);
 		});
@@ -95,26 +95,29 @@
 		var sourceName = $("#" + id + 
 				" .@GameScreenController.PRESENTATION_NAME").text();
 		var supportName = 
-			$("#" + id + " .@GameScreenController.FIRST_TARGET_SELECT").
+			$("#" + id + " .@GameScreenController.SUPPORT_SELECT").
 			map(function(idx, selectElement) {
 				return selectElement.options[selectElement.selectedIndex];
 			}).text();
 		var targetName =
-			$("#" + id + " .@GameScreenController.SECOND_TARGET_SELECT").
+			$("#" + id + " .@GameScreenController.TARGET_SELECT").
 			map(function(idx, selectElement) {
 				return selectElement.options[selectElement.selectedIndex];
 			}).text();
 			
 		var graphicOption = null;
 		switch(orderType) {
-		case "@OrderType.SUPPORT_MOVE": {
-			graphicOption = getSupportMoveOrderOption(sourceName, 
-					supportName, targetName, "strokefrance");
-		}
-		case "@OrderType.CONVOY": 
-			graphicOption = getConvoyOrderOption(sourceName, 
-					supportName, 
-					targetName, "strokefrance");
+			case "@OrderType.SUPPORT_MOVE": {
+				graphicOption = getSupportMoveOrderOption(sourceName, 
+						supportName, targetName, "strokefrance");
+				break;
+			}
+			case "@OrderType.CONVOY": {
+				graphicOption = getConvoyOrderOption(sourceName, 
+						supportName, 
+						targetName, "strokefrance");
+				break;
+			}
 		}
 		
 		graphicOption.map(function(graphic) {
@@ -131,7 +134,7 @@
 		var sourceName =
 			$("#" + id + " .@GameScreenController.PRESENTATION_NAME").text();
 		var basicTargetName =
-			$("#" + id + " .@GameScreenController.FIRST_TARGET_SELECT").
+			$("#" + id + " .@GameScreenController.TARGET_SELECT").
 			map(function (idx, selectElement) {
 				return selectElement.options[selectElement.selectedIndex];
 			}).text();
@@ -163,9 +166,9 @@
 	}
 	
 	function createAdvancedOrder(id, orders, 
-			sourceLocationSelector,
-			targetLocationSelector, 
-			emptySourceMessage, emptyTargetMessage) {
+			firstLocationSelector,
+			secondLocationSelector, 
+			orderType) {
 		var advancedOrdersForId = getAdvancedOrdersForId(id, orders);
 		var advancedHeading = getAdvancedHeading(id);
 		
@@ -174,48 +177,74 @@
 			getSourceOptionElements(id, 
 				uniqueSourceOrders, advancedOrdersForId);
 		
-		var selectElement = document.createElement("select");
-		selectElement.className = "@GameScreenController.SOURCE_UNIT";
-		selectElement.setAttribute("name", 
+		var firstSelectElement = document.createElement("select");
+		firstSelectElement.className = "@GameScreenController.SUPPORT_SELECT";
+		firstSelectElement.setAttribute("name", 
 				"@MovementPhaseOrderHandler.SOURCE_PREFIX" + id)
 		sourceOptionElements.forEach(function(optionElement) {
-			selectElement.appendChild(optionElement);
+			firstSelectElement.appendChild(optionElement);
 		});
 		
-		$(selectElement).change(function() {
+		$(firstLocationSelector).append(firstSelectElement);
+		
+		var selectedOption =
+			firstSelectElement.options[firstSelectElement.selectedIndex];
+		
+		var targets = advancedOrdersForId.filter(function(elem) {
+			return elem.@GameScreenController.SUPPORT_LOCATION_ID ===
+				selectedOption.value;
+		});
+		
+		var targetOptionElements = getTargetOptionElements(targets);
+		var secondSelectElement = document.createElement("select");
+		secondSelectElement.className = "@GameScreenController.TARGET_SELECT";
+		secondSelectElement.setAttribute("name",
+				"@MovementPhaseOrderHandler.TARGET_PREFIX" + id);
+		targetOptionElements.forEach(function(elem) {
+			secondSelectElement.appendChild(elem);
+		});
+		$(secondLocationSelector).append(secondSelectElement);
+		
+		
+		$(firstSelectElement).change(function() {
+			$(".orderDrawing-" +id).remove();
+			
 			var value = this.value;
-			$(sourceLocationSelector).empty();
+			$(secondLocationSelector).empty();
 			
 			var targets = advancedOrdersForId.filter(function(elem) {
-				return elem.@GameScreenController.SOURCE_LOCATION_ID === value;
+				return elem.@GameScreenController.SUPPORT_LOCATION_ID === value;
 			});
 			
 			var targetOptionElements = getTargetOptionElements(targets);
-			var selectElement = document.createElement("select");
-			selectElement.className = "@GameScreenController.TARGET_UNIT";
-			selectElement.setAttribute("name", 
-					"@MovementPhaseOrderHandler.TARGET_PREFIX" + id)
+			var secondSelectElement = document.createElement("select");
+			secondSelectElement.className = "@GameScreenController.TARGET_SELECT";
+			secondSelectElement.setAttribute("name", 
+					"@MovementPhaseOrderHandler.TARGET_PREFIX" + id);
 			targetOptionElements.forEach(function(elem) {
-				selectElement.appendChild(elem);
+				secondSelectElement.appendChild(elem);
 			});
 			
-			$(sourceLocationSelector).append(selectElement);
+			$(secondLocationSelector).append(secondSelectElement);
+			
+			prepareAdvancedGraphic(id, orderType);
+			
+			$(secondSelectElement).change(function() {
+				$(".orderDrawing-" +id).remove();
+				
+				prepareAdvancedGraphic(id, orderType);
+			});
 		});
 		
 		$("#" + id).before(getAdvancedHeading(id));
-		if (sourceOptionElements.length > 0) {
-			$(targetLocationSelector).append(selectElement);
-		} else {
-			$(targetLocationSelector).append(emptySourceMessage);
-		}
-		
+		prepareAdvancedGraphic(id, orderType);
 	}
 	
 	function getUniqueSourceOrders(advancedOrders) {
 		return advancedOrders.reduce(function(list, order) {
 			var doesExist = list.some(function(uniqueOrder) {
-				return order.@GameScreenController.SOURCE_LOCATION_ID === 
-					uniqueOrder.@GameScreenController.SOURCE_LOCATION_ID;
+				return order.@GameScreenController.SUPPORT_LOCATION_ID === 
+					uniqueOrder.@GameScreenController.SUPPORT_LOCATION_ID;
 			});
 			
 			if (!doesExist) {
@@ -231,9 +260,9 @@
 		return advancedOrdersForSource.map(function(order) {
 			var optionElement = document.createElement("option");
 			optionElement.textContent = 
-				order.@GameScreenController.SOURCE_PRESENTATION_NAME;
+				order.@GameScreenController.SUPPORT_PRESENTATION_NAME;
 			optionElement.setAttribute("value", 
-					order.@GameScreenController.SOURCE_LOCATION_ID);
+					order.@GameScreenController.SUPPORT_LOCATION_ID);
 			
 			return optionElement;
 		});
@@ -266,46 +295,46 @@
 			var tableRow = this.parentElement.parentElement;
 			var id = this.parentElement.parentElement.id;
 			var idSelector = "#" + id;
-			var targetLocationSelector = idSelector + " .@GameScreenController.TARGET_LOCATION";
-			var sourceLocationSelector = idSelector + " .@GameScreenController.SOURCE_LOCATION";
+			var firstLocationSelector = idSelector + 
+				" .@GameScreenController.FIRST_LOCATION";
+			var secondLocationSelector = idSelector + 
+				" .@GameScreenController.SECOND_LOCATION";
 			
-			$(targetLocationSelector).empty();
-			$(sourceLocationSelector).empty();
+			$(firstLocationSelector).empty();
+			$(secondLocationSelector).empty();
 			removeHeading(id);
 			
 			$(".orderDrawing-" +id).remove();
+			var orderType = $(this).val();
 			
-			switch($(this).val()) {
+			switch(orderType) {
 				case "@OrderType.HOLD": {
 					break;
 				}
 				case "@OrderType.MOVE": {
 					createBasicOrder(id, 
 							getPotentialMoveOrders(), 
-							targetLocationSelector,
-							$(this).val());
+							firstLocationSelector,
+							orderType);
 					break;
 				}
 				case "@OrderType.SUPPORT_HOLD": {
 					createBasicOrder(id, 
 						getPotentialSupportHoldOrders(), 
-						targetLocationSelector,
-						$(this).val());
+						firstLocationSelector,
+						orderType);
 					break;
 				}
 				case "@OrderType.SUPPORT_MOVE": {
 					createAdvancedOrder(id, getPotentialSupportMoveOrders(),
-						sourceLocationSelector, targetLocationSelector,
-						"No support moves for this unit",
-						"No suppr"
-					)
+						firstLocationSelector, secondLocationSelector,
+						orderType)
 					break;
 				}
 				case "@OrderType.CONVOY": {
 					createAdvancedOrder(id, getPotentialConvoyOrders(),
-						sourceLocationSelector, targetLocationSelector,
-						"No convoys for this unit",
-						"No support moves for this unit");
+							firstLocationSelector, secondLocationSelector,
+							orderType);
 					break;
 				}
 			}
